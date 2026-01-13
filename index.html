@@ -3,66 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد | البحث المتقدم</title>
+    <title>بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; background: #f1f5f9; }
-        .data-table th { position: sticky; top: 0; background: #1e3a8a; color: white; font-size: 11px; padding: 6px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; background: #f1f5f9; }
+        .data-table th { position: sticky; top: 0; background: #1e3a8a; color: white; font-size: 10px; padding: 6px; border-left: 1px solid #334155; text-align: right; }
         .data-table td { font-size: 11px; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #e2e8f0; }
-        .filter-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 3px; padding: 2px 5px; font-size: 11px; outline: none; }
-        .filter-input:focus { border-color: #3b82f6; ring: 1px #3b82f6; }
-        .status-pill { padding: 1px 6px; border-radius: 10px; font-size: 10px; }
+        .filter-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 2px; padding: 2px 4px; font-size: 10px; outline: none; transition: border 0.2s; }
+        .filter-input:focus { border-color: #3b82f6; background: #f8fafc; }
+        .status-pill { padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <header class="bg-blue-900 text-white p-2 flex justify-between items-center shadow-md">
+    <header class="bg-blue-900 text-white p-2.5 flex justify-between items-center shadow-md">
         <div class="flex items-center gap-4">
-            <h1 class="text-md font-bold">الفهرس الليبي الموحد</h1>
+            <h1 class="text-sm font-bold">بوابة الرسائل الجامعية الليبية</h1>
             <div class="flex gap-4 text-[10px] border-r pr-4 border-blue-700">
-                <span>الرسائل: <b id="stat-count" class="text-yellow-400">0</b></span>
-                <span>الجامعات: <b id="stat-unis" class="text-yellow-400">0</b></span>
+                <span>الرسائل الموثقة: <b id="stat-count" class="text-yellow-400">0</b></span>
+                <span>الجامعات المشاركة: <b id="stat-unis" class="text-yellow-400">0</b></span>
             </div>
         </div>
-        <button onclick="window.location.href='join.html'" class="text-[10px] bg-blue-800 hover:bg-blue-700 px-3 py-1 rounded">انضمام مكتبة</button>
+        <div class="text-[9px] text-blue-200">2026 © جميع الحقوق محفوظة</div>
     </header>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
-        
-        <div class="bg-white border-b p-2 grid grid-cols-8 gap-2 shadow-sm">
-            <input type="text" id="f-id" placeholder="رقم الرسالة..." class="filter-input">
-            <input type="text" id="f-author" placeholder="اسم الباحث..." class="filter-input">
-            <input type="text" id="f-title" placeholder="عنوان الرسالة..." class="filter-input">
-            <input type="text" id="f-supervisor" placeholder="المشرف..." class="filter-input">
-            <select id="f-uni" class="filter-input"><option value="">كل الجامعات</option></select>
-            <input type="text" id="f-faculty" placeholder="الكلية/القسم..." class="filter-input">
-            <select id="f-degree" class="filter-input">
-                <option value="">كل الدرجات</option>
-                <option value="ماجستير">ماجستير</option>
-                <option value="دكتوراه">دكتوراه</option>
-            </select>
-            <button onclick="resetFilters()" class="text-[10px] text-red-600 font-bold">تصفية الكل</button>
-        </div>
+    <div class="bg-white border-b p-2 grid grid-cols-10 gap-1.5 shadow-sm">
+        <input type="text" id="f-id" placeholder="رقم الرسالة" class="filter-input">
+        <input type="text" id="f-author" placeholder="اسم الباحث" class="filter-input">
+        <input type="text" id="f-title" placeholder="عنوان الرسالة" class="filter-input">
+        <input type="text" id="f-supervisor" placeholder="المشرف" class="filter-input">
+        <select id="f-uni" class="filter-input"><option value="">كل الجامعات</option></select>
+        <input type="text" id="f-faculty" placeholder="الكلية" class="filter-input">
+        <input type="text" id="f-dept" placeholder="القسم" class="filter-input">
+        <select id="f-degree" class="filter-input">
+            <option value="">الدرجة</option>
+            <option value="ماجستير">ماجستير</option>
+            <option value="دكتوراه">دكتوراه</option>
+        </select>
+        <select id="f-status" class="filter-input">
+            <option value="">الحالة</option>
+            <option value="متوفرة">متوفرة</option>
+            <option value="غير متوفرة">غير متوفرة</option>
+        </select>
+        <button onclick="resetFilters()" class="text-[10px] bg-red-50 text-red-600 border border-red-200 rounded py-1 hover:bg-red-100">تصفير</button>
+    </div>
 
-        <div class="flex-1 overflow-auto bg-white">
-            <table class="w-full text-right data-table">
-                <thead>
-                    <tr>
-                        <th>رقم الرسالة</th>
-                        <th>الباحث</th>
-                        <th>العنوان</th>
-                        <th>المشرف</th>
-                        <th>الجامعة</th>
-                        <th>الكلية / القسم</th>
-                        <th>الدرجة</th>
-                        <th>الحالة</th>
-                        <th>الرابط</th>
-                    </tr>
-                </thead>
-                <tbody id="theses-body">
-                    </tbody>
-            </table>
-        </div>
+    <main class="flex-1 overflow-auto bg-white">
+        <table class="w-full text-right data-table">
+            <thead>
+                <tr>
+                    <th>الرقم</th>
+                    <th>الباحث</th>
+                    <th>العنوان</th>
+                    <th>المشرف</th>
+                    <th>الجامعة</th>
+                    <th>الكلية</th>
+                    <th>القسم</th>
+                    <th>الدرجة</th>
+                    <th>الحالة</th>
+                    <th>الرابط</th>
+                </tr>
+            </thead>
+            <tbody id="theses-body">
+                </tbody>
+        </table>
     </main>
 
     <script>
@@ -74,12 +78,12 @@
                 allData = await res.json();
                 populateUnis();
                 updateDisplay(allData);
-            } catch (e) { console.error("خطأ في تحميل البيانات"); }
+            } catch (e) { console.error("Database connection error"); }
         }
 
         function populateUnis() {
             const uniSelect = document.getElementById('f-uni');
-            const unis = [...new Set(allData.map(t => t.الجامعة))];
+            const unis = [...new Set(allData.map(t => t.الجامعة))].filter(Boolean);
             unis.forEach(u => {
                 const opt = document.createElement('option');
                 opt.value = u; opt.innerText = u;
@@ -91,43 +95,40 @@
             const tbody = document.getElementById('theses-body');
             tbody.innerHTML = data.map(item => `
                 <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="font-mono text-blue-600">${item.الرقم || '-'}</td>
-                    <td class="font-bold">${item.الباحث}</td>
-                    <td class="truncate max-w-xs" title="${item.العنوان}">${item.العنوان}</td>
+                    <td class="text-blue-700 font-mono">${item.الرقم || '-'}</td>
+                    <td class="font-bold text-gray-800">${item.الباحث}</td>
+                    <td class="truncate max-w-[180px]" title="${item.العنوان}">${item.العنوان}</td>
                     <td>${item.المشرف}</td>
                     <td>${item.الجامعة}</td>
-                    <td>${item.الكلية} / ${item.القسم}</td>
-                    <td><span class="bg-gray-100 px-2 rounded">${item.الدرجة}</span></td>
-                    <td>
-                        <span class="status-pill ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${item.الحالة}
-                        </span>
-                    </td>
+                    <td>${item.الكلية}</td>
+                    <td>${item.القسم}</td>
+                    <td class="text-gray-500">${item.الدرجة}</td>
+                    <td><span class="status-pill ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.الحالة}</span></td>
                     <td>
                         ${item.الرابط && item.الرابط !== '#' ? 
-                        `<a href="${item.الرابط}" target="_blank" class="text-blue-500 hover:underline">تحميل ⬇</a>` : 
+                        `<a href="${item.الرابط}" target="_blank" class="text-blue-600 font-bold hover:underline">تحميل ⬇</a>` : 
                         '<span class="text-gray-300">غير متوفر</span>'}
                     </td>
                 </tr>
             `).join('');
-            
             document.getElementById('stat-count').innerText = data.length;
             document.getElementById('stat-unis').innerText = [...new Set(data.map(t => t.الجامعة))].length;
         }
 
-        // محرك البحث المتعدد
-        const filters = ['f-id', 'f-author', 'f-title', 'f-supervisor', 'f-uni', 'f-faculty', 'f-degree'];
+        const filters = ['f-id', 'f-author', 'f-title', 'f-supervisor', 'f-uni', 'f-faculty', 'f-dept', 'f-degree', 'f-status'];
         filters.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 const filtered = allData.filter(t => {
                     return (
-                        (t.الرقم || '').includes(document.getElementById('f-id').value) &&
+                        (t.الرقم || '').toLowerCase().includes(document.getElementById('f-id').value.toLowerCase()) &&
                         (t.الباحث || '').includes(document.getElementById('f-author').value) &&
                         (t.العنوان || '').includes(document.getElementById('f-title').value) &&
                         (t.المشرف || '').includes(document.getElementById('f-supervisor').value) &&
                         (t.الجامعة || '').includes(document.getElementById('f-uni').value) &&
-                        ((t.الكلية + t.القسم) || '').includes(document.getElementById('f-faculty').value) &&
-                        (t.الدرجة || '').includes(document.getElementById('f-degree').value)
+                        (t.الكلية || '').includes(document.getElementById('f-faculty').value) &&
+                        (t.القسم || '').includes(document.getElementById('f-dept').value) &&
+                        (t.الدرجة || '').includes(document.getElementById('f-degree').value) &&
+                        (t.الحالة || '').includes(document.getElementById('f-status').value)
                     );
                 });
                 updateDisplay(filtered);
