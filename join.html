@@ -1,0 +1,15 @@
+function submitForm() {
+    // جلب القيم من النموذج
+    const name = document.querySelector('input[placeholder*="مثلاً"]').value;
+    const uni = document.querySelector('input[placeholder*="الجامعة التابعة"]').value;
+    const email = document.querySelector('input[type="email"]').value;
+    const coords = document.getElementById('coords').value;
+
+    // تجهيز نص الطلب
+    const body = `طلب انضمام مكتبة جديدة:%0A- الاسم: ${name}%0A- الجامعة: ${uni}%0A- البريد: ${email}%0A- الإحداثيات: ${coords}`;
+    
+    // فتح رابط Issue في GitHub مع تعبئة البيانات تلقائياً
+    const githubUrl = `https://github.com/sidiqbens-cmd/libyan-theses-portal/issues/new?title=طلب_انضمام_${name}&body=${body}`;
+    
+    window.open(githubUrl, '_blank');
+}
