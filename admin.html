@@ -2,86 +2,76 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة بوابة الرسائل - استيراد البيانات</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
+        .admin-card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px; }
+        .json-area { background: #1e293b; color: #38bdf8; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 5px; height: 200px; overflow-y: auto; }
+    </style>
 </head>
-<body class="bg-gray-100 p-5">
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold mb-4 text-blue-900 border-b pb-2">لوحة التحكم: استيراد بيانات الرسائل</h1>
-        
-        <div class="bg-blue-50 p-4 rounded mb-6 text-sm">
-            <strong>تعليمات:</strong> ارفع ملف الإكسل (XLSX) الذي يحتوي على الأعمدة: (الباحث، العنوان، المشرف، الجامعة، الكلية، القسم، الدرجة، الحالة، الرقم، الرابط، ملاحظات).
+<body class="p-4">
+
+    <div class="max-w-4xl mx-auto space-y-4">
+        <div class="admin-card border-t-4 border-blue-600">
+            <h2 class="text-lg font-bold text-blue-900 mb-2">استيراد وتحديث البيانات</h2>
+            <p class="text-gray-600 mb-4">استخدم القالب الموحد لضمان توافق البيانات مع النظام.</p>
+            
+            <div class="flex gap-2">
+                <button onclick="downloadTemplate()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
+                    <span>⬇️ تحميل قالب الإكسل الموحد</span>
+                </button>
+                
+                <input type="file" id="upload" accept=".xlsx, .xls" class="hidden">
+                <button onclick="document.getElementById('upload').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    📁 اختر ملف البيانات المكتمل
+                </button>
+            </div>
         </div>
 
-        <div class="flex flex-col items-center justify-center border-2 border-dashed border-blue-300 p-10 rounded-lg bg-gray-50 hover:bg-blue-50 transition-all">
-            <input type="file" id="excel_file" class="hidden" accept=".xlsx, .xls">
-            <button onclick="document.getElementById('excel_file').click()" class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-blue-700">اختر ملف الإكسل</button>
-            <p id="file-name" class="mt-2 text-gray-500 text-xs"></p>
-        </div>
-
-        <div class="mt-8">
+        <div class="admin-card">
             <div class="flex justify-between items-center mb-2">
-                <h2 class="font-bold">معاينة البيانات (الصفوف الأولى):</h2>
-                <button id="copy-btn" class="hidden bg-green-600 text-white px-4 py-1 rounded text-xs">نسخ كود JSON للتحديث</button>
+                <h3 class="font-bold">كود JSON الناتج (للسخ في GitHub):</h3>
+                <button onclick="copyJSON()" id="copyBtn" class="bg-gray-800 text-white text-xs px-3 py-1 rounded hidden">نسخ الكود</button>
             </div>
-            <div id="preview-container" class="overflow-auto max-h-60 border rounded bg-gray-50 p-2 text-[10px]">
-                بانتظار رفع الملف...
-            </div>
+            <pre id="jsonOutput" class="json-area">انتظار رفع الملف...</pre>
         </div>
-
-        <textarea id="json-output" class="hidden w-full mt-4 h-40 p-2 font-mono text-xs border bg-black text-green-400"></textarea>
     </div>
 
     <script>
-        document.getElementById('excel_file').addEventListener('change', function(e) {
+        // دالة إنشاء وتحميل القالب الموحد فوراً
+        function downloadTemplate() {
+            const headers = [["الرقم", "الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "الدرجة", "الحالة", "الرابط", "ملاحظات"]];
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(headers);
+            XLSX.utils.book_append_sheet(wb, ws, "الرسائل");
+            XLSX.writeFile(wb, "قالب_الفهرس_الليبي_الموحد.xlsx");
+        }
+
+        // دالة معالجة الملف المرفوع
+        document.getElementById('upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            document.getElementById('file-name').innerText = "تم اختيار: " + file.name;
-            
             const reader = new FileReader();
             reader.onload = function(event) {
                 const data = new Uint8Array(event.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
                 
-                // تحويل الإكسل إلى JSON
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                
-                // عرض المعاينة
-                displayPreview(jsonData);
-                
-                // تجهيز النص النهائي
-                const finalJson = JSON.stringify(jsonData, null, 2);
-                document.getElementById('json-output').value = finalJson;
-                document.getElementById('json-output').classList.remove('hidden');
-                document.getElementById('copy-btn').classList.remove('hidden');
+                const output = document.getElementById('jsonOutput');
+                output.innerText = JSON.stringify(json, null, 2);
+                document.getElementById('copyBtn').classList.remove('hidden');
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function displayPreview(data) {
-            let html = '<table class="w-full border-collapse border"><thead><tr class="bg-gray-200">';
-            if (data.length > 0) {
-                Object.keys(data[0]).forEach(key => html += `<th class="border p-1">${key}</th>`);
-                html += '</tr></thead><tbody>';
-                data.slice(0, 5).forEach(row => {
-                    html += '<tr>';
-                    Object.values(row).forEach(val => html += `<td class="border p-1">${val}</td>`);
-                    html += '</tr>';
-                });
-                html += '</tbody></table>';
-                if (data.length > 5) html += `<p class="mt-2 text-blue-600 font-bold">... تم تحميل ${data.length} سجل بنجاح</p>`;
-            }
-            document.getElementById('preview-container').innerHTML = html;
+        function copyJSON() {
+            const text = document.getElementById('jsonOutput').innerText;
+            navigator.clipboard.writeText(text);
+            alert("تم نسخ الكود! اذهب الآن لملف theses.json في GitHub وقم بلصقه.");
         }
-
-        document.getElementById('copy-btn').addEventListener('click', function() {
-            const copyText = document.getElementById('json-output');
-            copyText.select();
-            document.execCommand("copy");
-            alert("تم نسخ البيانات! اذهب لملف theses.json في GitHub والصقها هناك.");
-        });
     </script>
 </body>
 </html>
