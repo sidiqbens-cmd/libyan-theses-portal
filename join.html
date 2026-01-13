@@ -1,15 +1,97 @@
-function submitForm() {
-    // جلب القيم من النموذج
-    const name = document.querySelector('input[placeholder*="مثلاً"]').value;
-    const uni = document.querySelector('input[placeholder*="الجامعة التابعة"]').value;
-    const email = document.querySelector('input[type="email"]').value;
-    const coords = document.getElementById('coords').value;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انضمام مكتبة | بوابة الرسائل الجامعية الليبية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; font-size: 13px; }
+        .form-card { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: 20px auto; padding: 20px; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; color: #1e3a8a; margin-bottom: 4px; font-size: 12px; }
+        input, select, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; outline: none; transition: 0.2s; }
+        input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+        .btn-submit { background: #1e3a8a; color: white; width: 100%; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-submit:hover { background: #1e40af; }
+    </style>
+</head>
+<body>
 
-    // تجهيز نص الطلب
-    const body = `طلب انضمام مكتبة جديدة:%0A- الاسم: ${name}%0A- الجامعة: ${uni}%0A- البريد: ${email}%0A- الإحداثيات: ${coords}`;
-    
-    // فتح رابط Issue في GitHub مع تعبئة البيانات تلقائياً
-    const githubUrl = `https://github.com/sidiqbens-cmd/libyan-theses-portal/issues/new?title=طلب_انضمام_${name}&body=${body}`;
-    
-    window.open(githubUrl, '_blank');
-}
+    <div class="form-card">
+        <div class="text-center mb-6">
+            <h1 class="text-xl font-bold text-blue-900">طلب انضمام مكتبة جامعية</h1>
+            <p class="text-gray-500 text-xs mt-1">ساهم في بناء أكبر قاعدة بيانات للرسائل العلمية في ليبيا</p>
+        </div>
+
+        <form id="joinForm">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>اسم الجامعة</label>
+                    <input type="text" id="uniName" placeholder="مثال: جامعة طرابلس" required>
+                </div>
+                <div class="input-group">
+                    <label>اسم المكتبة</label>
+                    <input type="text" id="libName" placeholder="المكتبة المركزية" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>المدينة / الموقع الجغرافي</label>
+                <input type="text" id="location" placeholder="المدينة، المنطقة" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>اسم ضابط الاتصال</label>
+                    <input type="text" id="contactPerson" placeholder="الاسم الرباعي" required>
+                </div>
+                <div class="input-group">
+                    <label>رقم الهاتف (واتساب)</label>
+                    <input type="tel" id="phone" placeholder="09XXXXXXXX" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>البريد الإلكتروني الرسمي</label>
+                <input type="email" id="email" placeholder="library@uni.edu.ly" required>
+            </div>
+
+            <div class="input-group">
+                <label>نوع المشاركة المتوقعة</label>
+                <select id="participationType">
+                    <option value="full">بيانات كاملة (PDF + بيانات وصفية)</option>
+                    <option value="metadata">بيانات وصفية فقط (فهرسة)</option>
+                    <option value="physical">إرشاد للموقع الفيزيائي فقط</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>ملاحظات إضافية</label>
+                <textarea id="notes" rows="2" placeholder="أي معلومات تود إضافتها..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">إرسال طلب الانضمام</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('joinForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // تجهيز نص الرسالة للواتساب (أو يمكنك ربطه بـ Formspree)
+            const text = `طلب انضمام جديد للبوابة:\n\n` +
+                         `الجامعة: ${document.getElementById('uniName').value}\n` +
+                         `المكتبة: ${document.getElementById('libName').value}\n` +
+                         `المسؤول: ${document.getElementById('contactPerson').value}\n` +
+                         `الهاتف: ${document.getElementById('phone').value}\n` +
+                         `النوع: ${document.getElementById('participationType').value}`;
+            
+            // فتح واتساب مباشرة لإرسال البيانات إليك (استبدل الرقم برقمك)
+            window.open(`https://wa.me/218XXXXXXXXX?text=${encodeURIComponent(text)}`, '_blank');
+            
+            alert('شكراً لك! سيتم توجيهك الآن لإرسال الطلب عبر واتساب للإدارة.');
+        });
+    </script>
+</body>
+</html>
