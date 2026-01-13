@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | الفهرس الليبي الموحد</title>
+    <title>لوحة التحكم | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -17,29 +17,27 @@
     <div class="max-w-4xl mx-auto space-y-3">
         
         <div class="admin-card border-r-4 border-yellow-500 bg-yellow-50">
-            <h3 class="font-bold text-yellow-800 mb-1 text-sm">⚠️ إرشادات تعبئة القالب:</h3>
+            <h3 class="font-bold text-yellow-800 mb-1 text-sm">⚠️ تعليمات بوابة الرسائل الجامعية:</h3>
             <ul class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-yellow-900">
-                <li>• <b>الحالة:</b> اكتب (متوفرة) أو (غير متوفرة) حصراً.</li>
-                <li>• <b>الرقم:</b> ضع رقم الإيداع المحلي أو الدولي للرسالة.</li>
-                <li>• <b>الرابط:</b> ضع رابط (Google Drive) أو (Dropbox) للملف.</li>
-                <li>• <b>الدرجة:</b> اكتب (ماجستير) أو (دكتوراه) لضبط التصفية.</li>
-                <li>• <b>الأعمدة:</b> لا تقم بتغيير ترتيب أو أسماء رؤوس الأعمدة.</li>
-                <li>• <b>بدون بيانات:</b> اترك الخانة فارغة بدلاً من كتابة "لا يوجد".</li>
+                <li>• <b>فصل البيانات:</b> يجب كتابة الكلية في عمود والقسم في عمود مستقل.</li>
+                <li>• <b>الحالة:</b> الالتزام بكلمة (متوفرة) أو (غير متوفرة) فقط.</li>
+                <li>• <b>الرابط:</b> يفضل روابط مباشرة لملفات الـ PDF.</li>
+                <li>• <b>القالب:</b> استخدم الزر الأخضر بالأسفل لتحميل القالب المعتمد.</li>
             </ul>
         </div>
 
         <div class="admin-card border-t-4 border-blue-600">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-md font-bold text-blue-900">إدارة قاعدة بيانات الفهرس</h2>
-                    <p class="text-gray-500 text-[10px]">حمل القالب، قم بتعبئته، ثم ارفعه هنا لتوليد كود التحديث.</p>
+                    <h2 class="text-md font-bold text-blue-900">إدارة قاعدة البيانات</h2>
+                    <p class="text-gray-500 text-[10px]">حمل القالب الموحد، عبئه، ثم ارفعه هنا لتحديث البوابة.</p>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="downloadTemplate()" class="bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold py-2 px-3 rounded flex items-center gap-1">
-                        <span>⬇️ تحميل القالب</span>
+                        <span>⬇️ تحميل القالب المحدث</span>
                     </button>
                     <button onclick="document.getElementById('upload').click()" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-2 px-3 rounded">
-                        📁 رفع البيانات
+                        📁 رفع الملف المكتمل
                     </button>
                 </div>
             </div>
@@ -48,25 +46,24 @@
 
         <div class="admin-card">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold text-sm">كود JSON الناتج:</h3>
-                <button onclick="copyJSON()" id="copyBtn" class="bg-gray-800 text-white text-[10px] px-3 py-1 rounded hidden">نسخ الكود للتحديث</button>
+                <h3 class="font-bold text-sm">كود JSON للتحديث (انسخه إلى GitHub):</h3>
+                <button onclick="copyJSON()" id="copyBtn" class="bg-gray-800 text-white text-[10px] px-3 py-1 rounded hidden">نسخ الكود</button>
             </div>
-            <pre id="jsonOutput" class="json-area">انتظار رفع ملف الإكسل المكتمل...</pre>
+            <pre id="jsonOutput" class="json-area">انتظار رفع ملف الإكسل...</pre>
         </div>
 
     </div>
 
     <script>
-        // دالة إنشاء القالب
         function downloadTemplate() {
+            // ملاحظة: تم فصل الكلية والقسم هنا ليتوافق مع صفحة الجمهور
             const headers = [["الرقم", "الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "الدرجة", "الحالة", "الرابط", "ملاحظات"]];
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(headers);
             XLSX.utils.book_append_sheet(wb, ws, "الرسائل");
-            XLSX.writeFile(wb, "قالب_الفهرس_الليبي_الموحد.xlsx");
+            XLSX.writeFile(wb, "قالب_بوابة_الرسائل_الجامعية_الليبية.xlsx");
         }
 
-        // دالة معالجة الرفع
         document.getElementById('upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -76,18 +73,15 @@
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const json = XLSX.utils.sheet_to_json(sheet);
                 
-                const output = document.getElementById('jsonOutput');
-                output.innerText = JSON.stringify(json, null, 2);
+                document.getElementById('jsonOutput').innerText = JSON.stringify(json, null, 2);
                 document.getElementById('copyBtn').classList.remove('hidden');
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // دالة النسخ
         function copyJSON() {
-            const text = document.getElementById('jsonOutput').innerText;
-            navigator.clipboard.writeText(text);
-            alert("تم نسخ الكود! اذهب لملف theses.json في GitHub وقم بلصقه.");
+            navigator.clipboard.writeText(document.getElementById('jsonOutput').innerText);
+            alert("تم النسخ! الصق الكود الآن في ملف theses.json");
         }
     </script>
 </body>
