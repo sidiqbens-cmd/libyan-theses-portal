@@ -45,7 +45,8 @@
                 </div>
                 <div>
                     <label>رقم هاتف التواصل</label>
-                    <input type="tel" id="phone" class="input-field" placeholder="2189XXXXXXXX" required>
+                    // استبدل الرقم التالي برقمك الخاص (مثلاً 218911234567)
+                    const myNumber = "218910000000"; 
                     window.open(`https://api.whatsapp.com/send?phone=${myNumber}&text=${whatsappMessage}`, '_blank');
                 </div>
             </div>
