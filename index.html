@@ -3,144 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الرسائل الجامعية الليبية</title>
+    <title>انضمام مكتبة | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; background: #f1f5f9; }
-        .data-table th { position: sticky; top: 0; background: #1e3a8a; color: white; font-size: 10px; padding: 6px; border-left: 1px solid #334155; text-align: right; }
-        .data-table td { font-size: 11px; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #e2e8f0; }
-        .filter-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 2px; padding: 2px 4px; font-size: 10px; outline: none; transition: border 0.2s; }
-        .filter-input:focus { border-color: #3b82f6; background: #f8fafc; }
-        .status-pill { padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
+        .form-container { max-width: 650px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; margin-top: 4px; outline: none; }
+        .input-field:focus { border-color: #1e3a8a; ring: 1px #1e3a8a; }
+        label { font-weight: 600; color: #334155; font-size: 12px; }
     </style>
 </head>
-<body class="flex flex-col">
+<body class="p-4">
 
-    <header class="bg-blue-900 text-white p-2.5 flex justify-between items-center shadow-md">
-        <div class="flex items-center gap-4">
-            <h1 class="text-sm font-bold">بوابة الرسائل الجامعية الليبية</h1>
-            <div class="flex gap-4 text-[10px] border-r pr-4 border-blue-700">
-                <span>الرسائل الموثقة: <b id="stat-count" class="text-yellow-400">0</b></span>
-                <span>الجامعات المشاركة: <b id="stat-unis" class="text-yellow-400">0</b></span>
-            </div>
+    <div class="form-container border-t-8 border-blue-900">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-blue-900">طلب انضمام مكتبة جامعية</h1>
+            <p class="text-gray-500 text-xs mt-2">المبادرة الوطنية لتوثيق وإتاحة الرسائل الجامعية الليبية</p>
         </div>
-        <div class="text-[9px] text-blue-200">2026 © جميع الحقوق محفوظة</div>
-    </header>
 
-    <div class="bg-white border-b p-2 grid grid-cols-10 gap-1.5 shadow-sm">
-        <input type="text" id="f-id" placeholder="رقم الرسالة" class="filter-input">
-        <input type="text" id="f-author" placeholder="اسم الباحث" class="filter-input">
-        <input type="text" id="f-title" placeholder="عنوان الرسالة" class="filter-input">
-        <input type="text" id="f-supervisor" placeholder="المشرف" class="filter-input">
-        <select id="f-uni" class="filter-input"><option value="">كل الجامعات</option></select>
-        <input type="text" id="f-faculty" placeholder="الكلية" class="filter-input">
-        <input type="text" id="f-dept" placeholder="القسم" class="filter-input">
-        <select id="f-degree" class="filter-input">
-            <option value="">الدرجة</option>
-            <option value="ماجستير">ماجستير</option>
-            <option value="دكتوراه">دكتوراه</option>
-        </select>
-        <select id="f-status" class="filter-input">
-            <option value="">الحالة</option>
-            <option value="متوفرة">متوفرة</option>
-            <option value="غير متوفرة">غير متوفرة</option>
-        </select>
-        <button onclick="resetFilters()" class="text-[10px] bg-red-50 text-red-600 border border-red-200 rounded py-1 hover:bg-red-100">تصفير</button>
+        <form id="libraryJoinForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label>اسم الجامعة</label>
+                    <input type="text" id="uni" class="input-field" placeholder="مثال: جامعة سبها" required>
+                </div>
+                <div>
+                    <label>الكلية / المركز</label>
+                    <input type="text" id="faculty" class="input-field" placeholder="مثال: كلية الهندسة" required>
+                </div>
+            </div>
+
+            <div>
+                <label>اسم ضابط الاتصال (المسؤول عن البيانات)</label>
+                <input type="text" id="adminName" class="input-field" placeholder="الاسم الرباعي" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label>البريد الإلكتروني الرسمي</label>
+                    <input type="email" id="email" class="input-field" placeholder="name@uni.edu.ly" required>
+                </div>
+                <div>
+                    <label>رقم هاتف التواصل</label>
+                    <input type="tel" id="phone" class="input-field" placeholder="09XXXXXXXX" required>
+                </div>
+            </div>
+
+            <div>
+                <label>حجم الوعاء المعرفي التقريبي (عدد الرسائل)</label>
+                <input type="number" id="thesesCount" class="input-field" placeholder="مثال: 500">
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-md border border-blue-100">
+                <p class="text-[11px] text-blue-800 leading-relaxed">
+                    <b>ملاحظة:</b> عند إرسال الطلب، سيتم التواصل معكم لتزويدكم بـ "دليل الاستخدام" و "قالب البيانات الموحد" للبدء في عملية الفهرسة الإلكترونية.
+                </p>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded shadow-lg transition duration-200">
+                إرسال طلب الانضمام
+            </button>
+        </form>
     </div>
 
-    <main class="flex-1 overflow-auto bg-white">
-        <table class="w-full text-right data-table">
-            <thead>
-                <tr>
-                    <th>الرقم</th>
-                    <th>الباحث</th>
-                    <th>العنوان</th>
-                    <th>المشرف</th>
-                    <th>الجامعة</th>
-                    <th>الكلية</th>
-                    <th>القسم</th>
-                    <th>الدرجة</th>
-                    <th>الحالة</th>
-                    <th>الرابط</th>
-                </tr>
-            </thead>
-            <tbody id="theses-body">
-                </tbody>
-        </table>
-    </main>
-
     <script>
-        let allData = [];
+        document.getElementById('libraryJoinForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const data = {
+                university: document.getElementById('uni').value,
+                admin: document.getElementById('adminName').value,
+                phone: document.getElementById('phone').value
+            };
 
-        async function init() {
-            try {
-                const res = await fetch('theses.json');
-                allData = await res.json();
-                populateUnis();
-                updateDisplay(allData);
-            } catch (e) { console.error("Database connection error"); }
-        }
-
-        function populateUnis() {
-            const uniSelect = document.getElementById('f-uni');
-            const unis = [...new Set(allData.map(t => t.الجامعة))].filter(Boolean);
-            unis.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u; opt.innerText = u;
-                uniSelect.appendChild(opt);
-            });
-        }
-
-        function updateDisplay(data) {
-            const tbody = document.getElementById('theses-body');
-            tbody.innerHTML = data.map(item => `
-                <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="text-blue-700 font-mono">${item.الرقم || '-'}</td>
-                    <td class="font-bold text-gray-800">${item.الباحث}</td>
-                    <td class="truncate max-w-[180px]" title="${item.العنوان}">${item.العنوان}</td>
-                    <td>${item.المشرف}</td>
-                    <td>${item.الجامعة}</td>
-                    <td>${item.الكلية}</td>
-                    <td>${item.القسم}</td>
-                    <td class="text-gray-500">${item.الدرجة}</td>
-                    <td><span class="status-pill ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.الحالة}</span></td>
-                    <td>
-                        ${item.الرابط && item.الرابط !== '#' ? 
-                        `<a href="${item.الرابط}" target="_blank" class="text-blue-600 font-bold hover:underline">تحميل ⬇</a>` : 
-                        '<span class="text-gray-300">غير متوفر</span>'}
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('stat-count').innerText = data.length;
-            document.getElementById('stat-unis').innerText = [...new Set(data.map(t => t.الجامعة))].length;
-        }
-
-        const filters = ['f-id', 'f-author', 'f-title', 'f-supervisor', 'f-uni', 'f-faculty', 'f-dept', 'f-degree', 'f-status'];
-        filters.forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
-                const filtered = allData.filter(t => {
-                    return (
-                        (t.الرقم || '').toLowerCase().includes(document.getElementById('f-id').value.toLowerCase()) &&
-                        (t.الباحث || '').includes(document.getElementById('f-author').value) &&
-                        (t.العنوان || '').includes(document.getElementById('f-title').value) &&
-                        (t.المشرف || '').includes(document.getElementById('f-supervisor').value) &&
-                        (t.الجامعة || '').includes(document.getElementById('f-uni').value) &&
-                        (t.الكلية || '').includes(document.getElementById('f-faculty').value) &&
-                        (t.القسم || '').includes(document.getElementById('f-dept').value) &&
-                        (t.الدرجة || '').includes(document.getElementById('f-degree').value) &&
-                        (t.الحالة || '').includes(document.getElementById('f-status').value)
-                    );
-                });
-                updateDisplay(filtered);
-            });
+            const whatsappMessage = `السلام عليكم، نرغب في الانضمام لبوابة الرسائل الجامعية الليبية.%0A%0Aالجامعة: ${data.university}%0Aالمسؤول: ${data.admin}%0Aالهاتف: ${data.phone}`;
+            
+            // استبدل الرقم التالي برقمك الخاص لاستقبال الطلبات
+            const myNumber = "2189XXXXXXXX"; 
+            
+            window.open(`https://wa.me/${myNumber}?text=${whatsappMessage}`, '_blank');
         });
-
-        function resetFilters() {
-            filters.forEach(id => document.getElementById(id).value = '');
-            updateDisplay(allData);
-        }
-
-        init();
     </script>
 </body>
 </html>
