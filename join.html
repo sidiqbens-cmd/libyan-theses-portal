@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
-        .form-container { max-width: 500px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border-top: 8px solid #1e3a8a; }
+        .form-container { max-width: 500px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 8px solid #1e3a8a; }
         .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px; margin-top: 4px; outline: none; transition: 0.2s; }
         .input-field:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30,58,138,0.1); }
         label { font-weight: 600; color: #1e3a8a; font-size: 12px; }
@@ -23,22 +23,22 @@
             <p class="text-gray-500 text-[10px] mt-1">بوابة الرسائل الجامعية الليبية</p>
         </div>
 
-        <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-4">
+        <form action="https://formspree.io/f/YOUR_ID" method="POST" class="space-y-4">
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label>الجامعة</label>
-                    <input type="text" name="الجامعة" class="input-field" placeholder="مثال: جامعة عمر المختار" required>
+                    <input type="text" name="الجامعة" class="input-field" placeholder="مثال: جامعة طرابلس" required>
                 </div>
                 <div>
                     <label>الكلية</label>
-                    <input type="text" name="الكلية" class="input-field" placeholder="مثال: كلية تقنية المعلومات" required>
+                    <input type="text" name="الكلية" class="input-field" placeholder="مثال: الهندسة" required>
                 </div>
             </div>
 
             <div>
                 <label>اسم المسؤول (ضابط الاتصال)</label>
-                <input type="text" name="اسم_المسؤول" class="input-field" placeholder="الاسم الكامل" required>
+                <input type="text" name="اسم_المسؤول" class="input-field" placeholder="الاسم الرباعي" required>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -48,22 +48,22 @@
                 </div>
                 <div>
                     <label>البريد الإلكتروني</label>
-                    <input type="email" name="البريد" class="input-field" placeholder="library@example.com" required>
+                    <input type="email" name="البريد" class="input-field" placeholder="library@uni.edu.ly" required>
                 </div>
             </div>
 
             <div>
                 <label>ملاحظات إضافية</label>
-                <textarea name="ملاحظات" rows="3" class="input-field" placeholder="أدخل أي استفسار أو تفاصيل أخرى..."></textarea>
+                <textarea name="ملاحظات" rows="3" class="input-field" placeholder="أي استفسار أو تفاصيل أخرى..."></textarea>
             </div>
 
             <div class="bg-blue-50 p-3 rounded border border-blue-100 text-center">
                 <p class="text-[10px] text-blue-800">
-                    عند الضغط على "إرسال الطلب"، سيصل نموذجك مباشرة إلى الإدارة الفنية للبوابة للمراجعة والرد.
+                    عند الضغط على "إرسال الطلب"، سيتم توجيه النموذج مباشرة إلى بريد الإدارة الفنية للمراجعة والرد.
                 </p>
             </div>
 
-            <button type="submit" class="submit-btn">إرسال الطلب عبر البريد</button>
+            <button type="submit" class="submit-btn">إرسال الطلب رسمياً</button>
         </form>
     </div>
 
