@@ -3,86 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | بوابة الرسائل الجامعية الليبية</title>
+    <title>مركز التزويد | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 12px; }
-        .admin-card { background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 12px; }
-        .json-area { background: #1e293b; color: #38bdf8; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 4px; height: 150px; overflow-y: auto; width: 100%; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .input-field { width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; margin-top: 4px; outline: none; }
+        .input-field:focus { border-color: #1e3a8a; ring: 2px ring-blue-100; }
+        label { font-weight: 600; color: #1e3a8a; font-size: 12px; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto space-y-3">
-        
-        <div class="admin-card border-r-4 border-yellow-500 bg-yellow-50">
-            <h3 class="font-bold text-yellow-800 mb-1 text-sm">⚠️ تعليمات بوابة الرسائل الجامعية:</h3>
-            <ul class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-yellow-900">
-                <li>• <b>فصل البيانات:</b> يجب كتابة الكلية في عمود والقسم في عمود مستقل.</li>
-                <li>• <b>الحالة:</b> الالتزام بكلمة (متوفرة) أو (غير متوفرة) فقط.</li>
-                <li>• <b>الرابط:</b> يفضل روابط مباشرة لملفات الـ PDF.</li>
-                <li>• <b>القالب:</b> استخدم الزر الأخضر بالأسفل لتحميل القالب المعتمد.</li>
-            </ul>
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-blue-900 text-white p-6 rounded-t-lg shadow-lg flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold">مركز تزويد البيانات المعتمد</h1>
+                <p class="text-blue-200 text-xs mt-1">بوابة الرسائل الجامعية الليبية</p>
+            </div>
+            <div class="text-left">
+                <span class="bg-blue-800 px-3 py-1 rounded text-[10px]">لوحة تحكم المكتبات</span>
+            </div>
         </div>
 
-        <div class="admin-card border-t-4 border-blue-600">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-md font-bold text-blue-900">إدارة قاعدة البيانات</h2>
-                    <p class="text-gray-500 text-[10px]">حمل القالب الموحد، عبئه، ثم ارفعه هنا لتحديث البوابة.</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            
+            <div class="space-y-6">
+                <div class="card p-5 border-t-4 border-yellow-500">
+                    <h2 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        📥 تحميل القالب الموحد
+                    </h2>
+                    <p class="text-gray-600 text-[11px] mb-4 leading-relaxed">
+                        استخدم هذا الخيار إذا كان لديك <b>عدد كبير</b> من الرسائل المخطط رفعها دفعة واحدة.
+                    </p>
+                    <a href="template.xlsx" class="block text-center bg-gray-800 text-white py-2 rounded text-xs font-bold hover:bg-black transition">
+                        تحميل ملف Excel
+                    </a>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="downloadTemplate()" class="bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold py-2 px-3 rounded flex items-center gap-1">
-                        <span>⬇️ تحميل القالب المحدث</span>
-                    </button>
-                    <button onclick="document.getElementById('upload').click()" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-2 px-3 rounded">
-                        📁 رفع الملف المكتمل
-                    </button>
+
+                <div class="card p-5 border-t-4 border-green-500">
+                    <h2 class="font-bold text-gray-800 mb-3">📤 رفع الملف المكتمل</h2>
+                    <form action="https://formspree.io/f/mwvvkgzr" method="POST" enctype="multipart/form-data">
+                        <input type="file" name="excel_file" class="text-[10px] mb-4 w-full" required>
+                        <button type="submit" class="w-full bg-green-700 text-white py-2 rounded text-xs font-bold hover:bg-green-800">
+                            إرسال الملف للإدارة
+                        </button>
+                    </form>
                 </div>
             </div>
-            <input type="file" id="upload" accept=".xlsx, .xls" class="hidden">
-        </div>
 
-        <div class="admin-card">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold text-sm">كود JSON للتحديث (انسخه إلى GitHub):</h3>
-                <button onclick="copyJSON()" id="copyBtn" class="bg-gray-800 text-white text-[10px] px-3 py-1 rounded hidden">نسخ الكود</button>
+            <div class="lg:col-span-2">
+                <div class="card p-6 border-t-4 border-blue-700">
+                    <h2 class="font-bold text-gray-800 mb-1 flex items-center gap-2 text-lg">
+                        📝 إضافة رسالة جامعية (إدخال يدوي)
+                    </h2>
+                    <p class="text-gray-500 text-xs mb-6">يرجى تعبئة الحقول بدقة لضمان جودة الفهرسة الوطنية.</p>
+
+                    <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label>اسم الباحث (الكامل)</label>
+                                <input type="text" name="author" class="input-field" placeholder="مثال: محمد علي المبروك" required>
+                            </div>
+                            <div>
+                                <label>رقم الرسالة (ID)</label>
+                                <input type="text" name="thesis_id" class="input-field" placeholder="رقم التصنيف أو القيد">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>عنوان الرسالة الجامعية</label>
+                            <input type="text" name="title" class="input-field" required>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label>المشرف العلمي</label>
+                                <input type="text" name="supervisor" class="input-field" required>
+                            </div>
+                            <div>
+                                <label>الدرجة العلمية</label>
+                                <select name="degree" class="input-field">
+                                    <option value="ماجستير">ماجستير</option>
+                                    <option value="دكتوراه">دكتوراه</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label>الكلية</label>
+                                <input type="text" name="faculty" class="input-field" required>
+                            </div>
+                            <div>
+                                <label>القسم</label>
+                                <input type="text" name="department" class="input-field" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label>حالة الرسالة</label>
+                                <select name="status" class="input-field">
+                                    <option value="متوفرة">متوفرة</option>
+                                    <option value="غير متوفرة">غير متوفرة</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>رابط الملف (إن وجد)</label>
+                                <input type="url" name="link" class="input-field" placeholder="https://...">
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t mt-6">
+                            <button type="submit" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-md">
+                                اعتماد ونشر الرسالة
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <pre id="jsonOutput" class="json-area">انتظار رفع ملف الإكسل...</pre>
+
         </div>
 
+        <footer class="mt-8 text-center text-gray-400 text-[10px]">
+            جميع الحقوق محفوظة © 2026 - اللجنة الفنية لبوابة الرسائل الجامعية الليبية
+        </footer>
     </div>
 
-    <script>
-        function downloadTemplate() {
-            // ملاحظة: تم فصل الكلية والقسم هنا ليتوافق مع صفحة الجمهور
-            const headers = [["الرقم", "الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "الدرجة", "الحالة", "الرابط", "ملاحظات"]];
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(headers);
-            XLSX.utils.book_append_sheet(wb, ws, "الرسائل");
-            XLSX.writeFile(wb, "قالب_بوابة_الرسائل_الجامعية_الليبية.xlsx");
-        }
-
-        document.getElementById('upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
-                
-                document.getElementById('jsonOutput').innerText = JSON.stringify(json, null, 2);
-                document.getElementById('copyBtn').classList.remove('hidden');
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        function copyJSON() {
-            navigator.clipboard.writeText(document.getElementById('jsonOutput').innerText);
-            alert("تم النسخ! الصق الكود الآن في ملف theses.json");
-        }
-    </script>
 </body>
 </html>
