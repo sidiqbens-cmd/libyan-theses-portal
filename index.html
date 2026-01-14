@@ -3,100 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انضمام مكتبة | بوابة الرسائل الجامعية الليبية</title>
+    <title>بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
-        .form-container { max-width: 550px; margin: 25px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-        .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px; margin-top: 4px; outline: none; transition: 0.2s; }
-        .input-field:focus { border-color: #1e3a8a; background: #fdfdfd; }
-        label { font-weight: 600; color: #1e3a8a; font-size: 11px; }
-        .whatsapp-btn { background: #25D366; color: white; width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; border: none; cursor: pointer; }
-        .whatsapp-btn:hover { background: #128C7E; transform: translateY(-1px); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; background: #f1f5f9; }
+        .data-table th { position: sticky; top: 0; background: #1e3a8a; color: white; font-size: 10px; padding: 6px; border-left: 1px solid #334155; text-align: right; }
+        .data-table td { font-size: 11px; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #e2e8f0; }
+        .filter-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 2px; padding: 2px 4px; font-size: 10px; outline: none; }
+        .status-pill { padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
     </style>
 </head>
-<body class="p-4">
+<body class="flex flex-col">
 
-    <div class="form-container border-t-4 border-blue-900">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-blue-900">طلب انضمام مكتبة</h1>
-            <p class="text-gray-500 text-[10px] mt-1">بوابة الرسائل الجامعية الليبية - نظام الاعتماد الموحد</p>
+    <header class="bg-blue-900 text-white p-2.5 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-4">
+            <h1 class="text-sm font-bold">بوابة الرسائل الجامعية الليبية</h1>
+            <div class="flex gap-4 text-[10px] border-r pr-4 border-blue-700">
+                <span>الرسائل: <b id="stat-count" class="text-yellow-400">0</b></span>
+                <span>الجامعات: <b id="stat-unis" class="text-yellow-400">0</b></span>
+            </div>
         </div>
+        <div class="flex gap-2">
+            <a href="join.html" class="bg-blue-700 hover:bg-blue-600 text-[10px] px-3 py-1 rounded transition">انضمام مكتبة</a>
+            <div class="text-[9px] text-blue-200 self-center">2026 ©</div>
+        </div>
+    </header>
 
-        <form id="libraryJoinForm" class="space-y-3">
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label>الجامعة</label>
-                    <input type="text" id="uni" class="input-field" placeholder="مثال: جامعة بنغازي" required>
-                </div>
-                <div>
-                    <label>الكلية</label>
-                    <input type="text" id="faculty" class="input-field" placeholder="العلوم / الآداب" required>
-                </div>
-            </div>
-
-            <div>
-                <label>اسم ضابط الاتصال (المسؤول)</label>
-                <input type="text" id="adminName" class="input-field" placeholder="الاسم الكامل" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label>رقم الهاتف</label>
-                    <input type="tel" id="phone" class="input-field" placeholder="2189xxxxxxx" required>
-                </div>
-                <div>
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="email" class="input-field" placeholder="info@uni.edu.ly" required>
-                </div>
-            </div>
-
-            <div class="bg-gray-50 p-3 rounded border border-gray-100 mt-2">
-                <p class="text-[10px] text-gray-600 leading-relaxed text-center">
-                    سيتم توجيهك الآن لإرسال الطلب عبر <b>واتساب</b> لضمان سرعة معالجة بيانات الاعتماد وتزويدكم بقالب الإكسل الموحد.
-                </p>
-            </div>
-
-            <button type="submit" class="whatsapp-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-                </svg>
-                إرسال طلب الانضمام
-            </button>
-        </form>
+    <div class="bg-white border-b p-2 grid grid-cols-10 gap-1.5 shadow-sm">
+        <input type="text" id="f-id" placeholder="رقم الرسالة" class="filter-input">
+        <input type="text" id="f-author" placeholder="الباحث" class="filter-input">
+        <input type="text" id="f-title" placeholder="العنوان" class="filter-input">
+        <input type="text" id="f-supervisor" placeholder="المشرف" class="filter-input">
+        <select id="f-uni" class="filter-input"><option value="">كل الجامعات</option></select>
+        <input type="text" id="f-faculty" placeholder="الكلية" class="filter-input">
+        <input type="text" id="f-dept" placeholder="القسم" class="filter-input">
+        <select id="f-degree" class="filter-input">
+            <option value="">الدرجة</option>
+            <option value="ماجستير">ماجستير</option>
+            <option value="دكتوراه">دكتوراه</option>
+        </select>
+        <select id="f-status" class="filter-input">
+            <option value="">الحالة</option>
+            <option value="متوفرة">متوفرة</option>
+            <option value="غير متوفرة">غير متوفرة</option>
+        </select>
+        <button onclick="resetFilters()" class="text-[10px] bg-red-50 text-red-600 border border-red-200 rounded py-1">تصفير</button>
     </div>
 
+    <main class="flex-1 overflow-auto bg-white">
+        <table class="w-full text-right data-table">
+            <thead>
+                <tr>
+                    <th>الرقم</th>
+                    <th>الباحث</th>
+                    <th>العنوان</th>
+                    <th>المشرف</th>
+                    <th>الجامعة</th>
+                    <th>الكلية</th>
+                    <th>القسم</th>
+                    <th>الدرجة</th>
+                    <th>الحالة</th>
+                    <th>الرابط</th>
+                </tr>
+            </thead>
+            <tbody id="theses-body"></tbody>
+        </table>
+    </main>
+
     <script>
-        document.getElementById('libraryJoinForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // استخلاص البيانات
-            const uni = document.getElementById('uni').value;
-            const faculty = document.getElementById('faculty').value;
-            const admin = document.getElementById('adminName').value;
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
+        let allData = [];
+        async function init() {
+            try {
+                const res = await fetch('theses.json');
+                allData = await res.json();
+                populateUnis();
+                updateDisplay(allData);
+            } catch (e) { console.error("Data Error"); }
+        }
 
-            // تجهيز نص الرسالة
-            const message = `طلب انضمام لبوابة الرسائل الجامعية:\n\n` +
-                            `الجامعة: ${uni}\n` +
-                            `الكلية: ${faculty}\n` +
-                            `المسؤول: ${admin}\n` +
-                            `الهاتف: ${phone}\n` +
-                            `البريد: ${email}`;
+        function populateUnis() {
+            const uniSelect = document.getElementById('f-uni');
+            const unis = [...new Set(allData.map(t => t.الجامعة))].filter(Boolean);
+            unis.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u; opt.innerText = u;
+                uniSelect.appendChild(opt);
+            });
+        }
 
-            // تشفير النص ليعمل في الرابط
-            const encodedMessage = encodeURIComponent(message);
-            
-            // رقم الهاتف (استبدل هذا بـ رقمك الشخصي ليبدأ بـ 218)
-            const myNumber = "218910000000"; 
+        function updateDisplay(data) {
+            const tbody = document.getElementById('theses-body');
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-blue-50 transition-colors">
+                    <td class="text-blue-700 font-mono">${item.الرقم || '-'}</td>
+                    <td class="font-bold text-gray-800">${item.الباحث}</td>
+                    <td class="truncate max-w-[150px]" title="${item.العنوان}">${item.العنوان}</td>
+                    <td>${item.المشرف}</td>
+                    <td>${item.الجامعة}</td>
+                    <td>${item.الكلية || 'غير محدد'}</td>
+                    <td>${item.القسم || 'غير محدد'}</td>
+                    <td>${item.الدرجة}</td>
+                    <td><span class="status-pill ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.الحالة}</span></td>
+                    <td>
+                        ${item.الرابط && item.الرابط !== '#' ? 
+                        `<a href="${item.الرابط}" target="_blank" class="text-blue-600 font-bold hover:underline">تحميل</a>` : 
+                        '<span class="text-gray-300">غير متوفر</span>'}
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('stat-count').innerText = data.length;
+            document.getElementById('stat-unis').innerText = [...new Set(data.map(t => t.الجامعة))].length;
+        }
 
-            // الرابط المباشر لواتساب
-            const whatsappUrl = `https://wa.me/${myNumber}?text=${encodedMessage}`;
-            
-            // التوجيه
-            window.open(whatsappUrl, '_blank');
+        const filters = ['f-id', 'f-author', 'f-title', 'f-supervisor', 'f-uni', 'f-faculty', 'f-dept', 'f-degree', 'f-status'];
+        filters.forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                const filtered = allData.filter(t => {
+                    return filters.every(fId => {
+                        const val = document.getElementById(fId).value;
+                        if (!val) return true;
+                        const key = fId === 'f-id' ? 'الرقم' : fId.replace('f-', '');
+                        // Map shorthand to actual JSON keys
+                        const keyMap = {'author':'الباحث','title':'العنوان','supervisor':'المشرف','uni':'الجامعة','faculty':'الكلية','dept':'القسم','degree':'الدرجة','status':'الحالة'};
+                        const jsonKey = keyMap[key] || 'الرقم';
+                        return (t[jsonKey] || '').toString().toLowerCase().includes(val.toLowerCase());
+                    });
+                });
+                updateDisplay(filtered);
+            });
         });
+
+        function resetFilters() {
+            filters.forEach(id => document.getElementById(id).value = '');
+            updateDisplay(allData);
+        }
+        init();
     </script>
 </body>
 </html>
