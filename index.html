@@ -3,141 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الرسائل الجامعية الليبية</title>
+    <title>الفهرس الليبي الموحد | بحث الرسائل الجامعية</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; background: #f1f5f9; }
-        .data-table th { position: sticky; top: 0; background: #1e3a8a; color: white; font-size: 10px; padding: 6px; border-left: 1px solid #334155; text-align: right; }
-        .data-table td { font-size: 11px; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #e2e8f0; }
-        .filter-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 2px; padding: 2px 4px; font-size: 10px; outline: none; }
-        .status-pill { padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; }
+        .dense-table th, .dense-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+        .dense-table tr:hover { background-color: #f8fafc; }
     </style>
 </head>
-<body class="flex flex-col">
+<body class="p-2 md:p-4">
 
-    <header class="bg-blue-900 text-white p-2.5 flex justify-between items-center shadow-md">
-        <div class="flex items-center gap-4">
-            <h1 class="text-sm font-bold">بوابة الرسائل الجامعية الليبية</h1>
-            <div class="flex gap-4 text-[10px] border-r pr-4 border-blue-700">
-                <span>الرسائل: <b id="stat-count" class="text-yellow-400">0</b></span>
-                <span>الجامعات: <b id="stat-unis" class="text-yellow-400">0</b></span>
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-blue-900 text-white p-4 rounded-xl shadow-lg mb-4 flex justify-between items-center">
+            <h1 class="text-lg font-bold">الفهرس الليبي الموحد</h1>
+            <input type="text" id="searchInput" placeholder="ابحث بالعنوان، الباحث، أو الجامعة..." 
+                   class="w-1/2 p-2 rounded-lg text-black text-sm outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right dense-table">
+                    <thead class="bg-slate-100 text-blue-900">
+                        <tr>
+                            <th>الجامعة</th>
+                            <th>الباحث</th>
+                            <th>العنوان</th>
+                            <th>الكلية/القسم</th>
+                            <th>الدرجة</th>
+                            <th>تاريخ الإضافة</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="thesesTable">
+                        </tbody>
+                </table>
             </div>
+            <div id="loader" class="p-10 text-center text-blue-900 font-bold">جاري تحميل البيانات من السحاب...</div>
         </div>
-        <div class="flex gap-2">
-            <a href="join.html" class="bg-blue-700 hover:bg-blue-600 text-[10px] px-3 py-1 rounded transition">انضمام مكتبة</a>
-            <div class="text-[9px] text-blue-200 self-center">2026 ©</div>
-        </div>
-    </header>
-
-    <div class="bg-white border-b p-2 grid grid-cols-10 gap-1.5 shadow-sm">
-        <input type="text" id="f-id" placeholder="رقم الرسالة" class="filter-input">
-        <input type="text" id="f-author" placeholder="الباحث" class="filter-input">
-        <input type="text" id="f-title" placeholder="العنوان" class="filter-input">
-        <input type="text" id="f-supervisor" placeholder="المشرف" class="filter-input">
-        <select id="f-uni" class="filter-input"><option value="">كل الجامعات</option></select>
-        <input type="text" id="f-faculty" placeholder="الكلية" class="filter-input">
-        <input type="text" id="f-dept" placeholder="القسم" class="filter-input">
-        <select id="f-degree" class="filter-input">
-            <option value="">الدرجة</option>
-            <option value="ماجستير">ماجستير</option>
-            <option value="دكتوراه">دكتوراه</option>
-        </select>
-        <select id="f-status" class="filter-input">
-            <option value="">الحالة</option>
-            <option value="متوفرة">متوفرة</option>
-            <option value="غير متوفرة">غير متوفرة</option>
-        </select>
-        <button onclick="resetFilters()" class="text-[10px] bg-red-50 text-red-600 border border-red-200 rounded py-1">تصفير</button>
     </div>
 
-    <main class="flex-1 overflow-auto bg-white">
-        <table class="w-full text-right data-table">
-            <thead>
-                <tr>
-                    <th>الرقم</th>
-                    <th>الباحث</th>
-                    <th>العنوان</th>
-                    <th>المشرف</th>
-                    <th>الجامعة</th>
-                    <th>الكلية</th>
-                    <th>القسم</th>
-                    <th>الدرجة</th>
-                    <th>الحالة</th>
-                    <th>الرابط</th>
-                </tr>
-            </thead>
-            <tbody id="theses-body"></tbody>
-        </table>
-    </main>
-
     <script>
-        let allData = [];
-        async function init() {
-            try {
-                const res = await fetch('theses.json');
-                allData = await res.json();
-                populateUnis();
-                updateDisplay(allData);
-            } catch (e) { console.error("Data Error"); }
-        }
+        // إعدادات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            projectId: "libyan-theses-portal",
+            storageBucket: "libyan-theses-portal.firebasestorage.app",
+            messagingSenderId: "80818219253",
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+        };
 
-        function populateUnis() {
-            const uniSelect = document.getElementById('f-uni');
-            const unis = [...new Set(allData.map(t => t.الجامعة))].filter(Boolean);
-            unis.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u; opt.innerText = u;
-                uniSelect.appendChild(opt);
-            });
-        }
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        function updateDisplay(data) {
-            const tbody = document.getElementById('theses-body');
-            tbody.innerHTML = data.map(item => `
-                <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="text-blue-700 font-mono">${item.الرقم || '-'}</td>
-                    <td class="font-bold text-gray-800">${item.الباحث}</td>
-                    <td class="truncate max-w-[150px]" title="${item.العنوان}">${item.العنوان}</td>
-                    <td>${item.المشرف}</td>
-                    <td>${item.الجامعة}</td>
-                    <td>${item.الكلية || 'غير محدد'}</td>
-                    <td>${item.القسم || 'غير محدد'}</td>
-                    <td>${item.الدرجة}</td>
-                    <td><span class="status-pill ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.الحالة}</span></td>
-                    <td>
-                        ${item.الرابط && item.الرابط !== '#' ? 
-                        `<a href="${item.الرابط}" target="_blank" class="text-blue-600 font-bold hover:underline">تحميل</a>` : 
-                        '<span class="text-gray-300">غير متوفر</span>'}
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('stat-count').innerText = data.length;
-            document.getElementById('stat-unis').innerText = [...new Set(data.map(t => t.الجامعة))].length;
-        }
+        // جلب البيانات وعرضها
+        const thesesTable = document.getElementById('thesesTable');
+        const loader = document.getElementById('loader');
 
-        const filters = ['f-id', 'f-author', 'f-title', 'f-supervisor', 'f-uni', 'f-faculty', 'f-dept', 'f-degree', 'f-status'];
-        filters.forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
-                const filtered = allData.filter(t => {
-                    return filters.every(fId => {
-                        const val = document.getElementById(fId).value;
-                        if (!val) return true;
-                        const key = fId === 'f-id' ? 'الرقم' : fId.replace('f-', '');
-                        // Map shorthand to actual JSON keys
-                        const keyMap = {'author':'الباحث','title':'العنوان','supervisor':'المشرف','uni':'الجامعة','faculty':'الكلية','dept':'القسم','degree':'الدرجة','status':'الحالة'};
-                        const jsonKey = keyMap[key] || 'الرقم';
-                        return (t[jsonKey] || '').toString().toLowerCase().includes(val.toLowerCase());
-                    });
+        database.ref('theses').on('value', (snapshot) => {
+            loader.style.display = 'none';
+            thesesTable.innerHTML = '';
+            const data = snapshot.val();
+            
+            if (data) {
+                Object.values(data).reverse().forEach(item => {
+                    const row = `
+                        <tr>
+                            <td class="font-bold text-blue-800">${item.university}</td>
+                            <td>${item.author}</td>
+                            <td class="text-blue-900 font-medium">${item.title}</td>
+                            <td>${item.faculty} / ${item.dept}</td>
+                            <td><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px]">${item.degree}</span></td>
+                            <td class="text-gray-500">${item.dateAdded || '-'}</td>
+                            <td class="text-gray-400 italic">${item.notes || '-'}</td>
+                        </tr>
+                    `;
+                    thesesTable.innerHTML += row;
                 });
-                updateDisplay(filtered);
-            });
+            } else {
+                thesesTable.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-gray-500">لا توجد بيانات مسجلة حالياً</td></tr>';
+            }
         });
 
-        function resetFilters() {
-            filters.forEach(id => document.getElementById(id).value = '');
-            updateDisplay(allData);
-        }
-        init();
+        // ميزة البحث الفوري
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = thesesTable.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+            }
+        });
     </script>
 </body>
 </html>
