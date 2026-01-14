@@ -35,31 +35,26 @@
                 </div>
 
                 <div class="card p-6 border-t-4 border-green-600">
-                    <h2 class="font-bold text-lg mb-3 text-gray-800">2. إرسال البيانات</h2>
-                    <form action="https://formspree.io/f/mwvvkgzr" method="POST" enctype="multipart/form-data">
-                        <label class="text-gray-500 block mb-2">ارفاق ملف الإكسل المكتمل:</label>
-                        <input type="file" name="upload" class="text-xs mb-5 w-full cursor-pointer" required>
-                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 shadow-md">
-                            إرسال للمراجعة والاعتماد
-                        </button>
+    <h2 class="font-bold text-lg mb-3 text-gray-800">2. إرسال البيانات المكتملة</h2>
+    <p class="text-xs text-gray-600 mb-4">اضغط على الزر أدناه لإرسال ملف الإكسل المعبأ عبر البريد الإلكتروني الرسمي:</p>
+    <a href="mailto:your-email@example.com?subject=بيانات رسائل جامعية جديدة" 
+       class="block text-center bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 shadow-md">
+        إرسال الملف عبر الإيميل
+    </a>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="card p-8 border-t-4 border-blue-700">
+                    <h2 class="font-bold text-xl text-gray-800 mb-6 border-b pb-4">📝 إضافة رسالة (إدخال يدوي)</h2>
+                    <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-5">
+                        <div>
+                            <label>الجامعة</label>
+                            <input type="text" name="university" class="input-field" placeholder="مثال: جامعة سبها" required>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold">اعتماد ونشر الرسالة</button>
                     </form>
                 </div>
             </div>
-
-                <div class="lg:col-span-2">
-                    <div class="card p-8 border-t-4 border-blue-800">
-                        <h2 class="font-bold text-xl text-gray-800 mb-6 border-b pb-4">إضافة رسالة فردية (خيار سريع)</h2>
-                        <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-5">
-                            <div>
-                                <label>ملاحظات إضافية</label>
-                                <textarea name="notes" class="input-field h-24" placeholder="مثال: تحتوي الرسالة على ملحق خرائط، أو ملاحظات حول جودة النسخة الضوئية..."></textarea>
-                            </div>
-                            <button type="submit" class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-800 transition shadow-lg mt-4">
-                                اعتماد البيانات وإرسالها        
-                            </button>
-                        </form>
-                    </div>
-                </div>
 
                         <div>
                             <label>ملاحظات إضافية</label>
