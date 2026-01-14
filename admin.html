@@ -46,29 +46,20 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-2">
-                <div class="card p-8 border-t-4 border-blue-800">
-                    <h2 class="font-bold text-xl text-gray-800 mb-6 border-b pb-4">إضافة رسالة فردية (خيار سريع)</h2>
-                    
-                    <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div><label>الجامعة</label><input type="text" name="university" class="input-field" required placeholder="مثال: جامعة بنغازي"></div>
-                            <div><label>اسم الباحث</label><input type="text" name="author" class="input-field" required></div>
-                        </div>
-
-                        <div><label>عنوان الرسالة</label><input type="text" name="title" class="input-field" required></div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                            <div><label>الكلية</label><input type="text" name="faculty" class="input-field" required></div>
-                            <div><label>القسم</label><input type="text" name="dept" class="input-field" required></div>
+                <div class="lg:col-span-2">
+                    <div class="card p-8 border-t-4 border-blue-800">
+                        <h2 class="font-bold text-xl text-gray-800 mb-6 border-b pb-4">إضافة رسالة فردية (خيار سريع)</h2>
+                        <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-5">
                             <div>
-                                <label>الدرجة</label>
-                                <select name="degree" class="input-field">
-                                    <option value="ماجستير">ماجستير</option>
-                                    <option value="دكتوراه">دكتوراه</option>
-                                </select>
+                                <label>ملاحظات إضافية</label>
+                                <textarea name="notes" class="input-field h-24" placeholder="مثال: تحتوي الرسالة على ملحق خرائط، أو ملاحظات حول جودة النسخة الضوئية..."></textarea>
                             </div>
-                        </div>
+                            <button type="submit" class="w-full bg-blue-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-800 transition shadow-lg mt-4">
+                                اعتماد البيانات وإرسالها        
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
                         <div>
                             <label>ملاحظات إضافية</label>
