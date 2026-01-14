@@ -6,60 +6,54 @@
     <title>انضمام مكتبة | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; font-size: 13px; }
-        .form-container { max-width: 500px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 8px solid #1e3a8a; }
-        .input-field { width: 100%; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px; margin-top: 4px; outline: none; transition: 0.2s; }
-        .input-field:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30,58,138,0.1); }
-        label { font-weight: 600; color: #1e3a8a; font-size: 12px; }
-        .submit-btn { background: #1e3a8a; color: white; width: 100%; padding: 12px; border-radius: 6px; font-weight: bold; margin-top: 15px; cursor: pointer; border: none; transition: 0.3s; }
-        .submit-btn:hover { background: #1e40af; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; font-size: 13px; }
+        .form-container { max-width: 500px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-top: 6px solid #1e3a8a; }
+        .input-field { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; margin-top: 6px; outline: none; transition: 0.2s; background: #fcfcfc; }
+        .input-field:focus { border-color: #1e3a8a; background: white; box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
+        label { font-weight: 700; color: #1e3a8a; font-size: 12px; }
+        .submit-btn { background: #1e3a8a; color: white; width: 100%; padding: 14px; border-radius: 6px; font-weight: bold; margin-top: 20px; cursor: pointer; border: none; font-size: 14px; transition: 0.3s; }
+        .submit-btn:hover { background: #1e40af; transform: translateY(-1px); }
     </style>
 </head>
-<body class="p-4">
+<body class="p-6">
 
     <div class="form-container">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-blue-900">نموذج انضمام مكتبة</h1>
-            <p class="text-gray-500 text-[10px] mt-1">بوابة الرسائل الجامعية الليبية</p>
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-blue-900">طلب انضمام مكتبة</h1>
+            <p class="text-gray-500 text-xs mt-2">بوابة الرسائل الجامعية الليبية - قناة التواصل الرسمي</p>
         </div>
 
-        <form action="https://formspree.io/mwvvkgzr" method="POST" class="space-y-4">
+        <form action="https://formspree.io/f/mwvvkgzr" method="POST" class="space-y-5">
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label>الجامعة</label>
-                    <input type="text" name="الجامعة" class="input-field" placeholder="مثال: جامعة طرابلس" required>
+                    <label>الجامعة المشاركة</label>
+                    <input type="text" name="university" class="input-field" placeholder="مثال: جامعة طرابلس" required>
                 </div>
                 <div>
-                    <label>الكلية</label>
-                    <input type="text" name="الكلية" class="input-field" placeholder="مثال: الهندسة" required>
-                </div>
-            </div>
-
-            <div>
-                <label>اسم المسؤول (ضابط الاتصال)</label>
-                <input type="text" name="اسم_المسؤول" class="input-field" placeholder="الاسم الرباعي" required>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label>رقم الهاتف</label>
-                    <input type="tel" name="الهاتف" class="input-field" placeholder="09XXXXXXXX" required>
-                </div>
-                <div>
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" name="البريد" class="input-field" placeholder="library@uni.edu.ly" required>
+                    <label>الكلية / القسم</label>
+                    <input type="text" name="faculty" class="input-field" placeholder="مثال: كلية العلوم" required>
                 </div>
             </div>
 
             <div>
-                <label>ملاحظات إضافية</label>
-                <textarea name="ملاحظات" rows="3" class="input-field" placeholder="أي استفسار أو تفاصيل أخرى..."></textarea>
+                <label>اسم المسؤول عن تزويد البيانات</label>
+                <input type="text" name="admin_name" class="input-field" placeholder="الاسم الكامل" required>
             </div>
 
-            <div class="bg-blue-50 p-3 rounded border border-blue-100 text-center">
-                <p class="text-[10px] text-blue-800">
-                    عند الضغط على "إرسال الطلب"، سيتم توجيه النموذج مباشرة إلى بريد الإدارة الفنية للمراجعة والرد.
+            <div>
+                <label>البريد الإلكتروني للجهة</label>
+                <input type="email" name="email" class="input-field" placeholder="library@example.com" required>
+            </div>
+
+            <div>
+                <label>رسالة إضافية (اختياري)</label>
+                <textarea name="message" rows="4" class="input-field" placeholder="اكتب أي استفسار تود طرحه على إدارة البوابة..."></textarea>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
+                <p class="text-[11px] text-gray-600 leading-relaxed">
+                    بمجرد الضغط على إرسال، سيتم تحويل طلبكم إلى الإدارة الفنية. يرجى مراجعة بريدكم الإلكتروني لاحقاً لاستلام <b>دليل الفهرسة</b>.
                 </p>
             </div>
 
