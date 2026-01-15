@@ -73,30 +73,30 @@
         const database = firebase.database();
 
         // جلب البيانات وعرضها
-const thesesTable = document.getElementById('thesesTable');
-const loader = document.getElementById('loader');
+        const thesesTable = document.getElementById('thesesTable');
+        const loader = document.getElementById('loader');
 
-database.ref('theses').on('value', (snapshot) => {
-    loader.style.display = 'none';
-    thesesTable.innerHTML = '';
-    const data = snapshot.val();
+        database.ref('theses').on('value', (snapshot) => {
+            loader.style.display = 'none';
+            thesesTable.innerHTML = '';
+        const data = snapshot.val();
 
     if (data) {
         Object.values(data).reverse().forEach(item => {
-const row = `
-    <tr class="hover:bg-gray-50 border-b">
-        <td class="p-2">${item.author || '-'}</td>
-        <td class="p-2 font-semibold">${item.title || '-'}</td>
-        <td class="p-2">${item.supervisor || '-'}</td>
-        <td class="p-2">${item.university || '-'}</td>
-        <td class="p-2">${item.faculty || '-'}</td>
-        <td class="p-2">${item.dept || '-'}</td>
-        <td class="p-2">${item.year || '-'}</td>
-        <td class="p-2">${item.thesisID || '-'}</td>
-        <td class="p-2">${item.status || '-'}</td>
-        <td class="p-2"><a href="${item.link}" target="_blank" class="text-blue-600">رابط</a></td>
-        <td class="p-2 text-gray-500">${item.notes || '-'}</td>
-    </tr>`;
+        const row = `
+            <tr class="hover:bg-gray-50 border-b">
+                <td class="p-2">${item.author || '-'}</td>
+                <td class="p-2 font-semibold">${item.title || '-'}</td>
+                <td class="p-2">${item.supervisor || '-'}</td>
+                <td class="p-2">${item.university || '-'}</td>
+                <td class="p-2">${item.faculty || '-'}</td>
+                <td class="p-2">${item.dept || '-'}</td>
+                <td class="p-2">${item.year || '-'}</td>
+                <td class="p-2">${item.thesisID || '-'}</td>
+                <td class="p-2">${item.status || '-'}</td>
+                <td class="p-2"><a href="${item.link}" target="_blank" class="text-blue-600">رابط</a></td>
+                <td class="p-2 text-gray-500">${item.notes || '-'}</td>
+            </tr>`;
             thesesTable.innerHTML += row;
         });
     }
