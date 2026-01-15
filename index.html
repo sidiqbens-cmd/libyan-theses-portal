@@ -3,101 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد | بحث الرسائل الجامعية</title>
+    <title>بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; }
-        .dense-table th, .dense-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
-        .dense-table tr:hover { background-color: #f8fafc; }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .dense-table td, .dense-table th { padding: 4px 8px; font-size: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+        select { cursor: pointer; border: 1px solid #cbd5e1; outline: none; }
+        select:focus { border-color: #1e3a8a; }
     </style>
 </head>
-<body class="p-2 md:p-4">
-
-<div class="max-w-7xl mx-auto">
-    <div class="bg-blue-900 text-white p-4 rounded-xl shadow-lg mb-4">
-        <h1 class="text-xl font-bold mb-4 text-center">بوابة الرسائل الجامعية الليبية</h1>
-        
-        <input type="text" id="searchInput" placeholder="ابحث بالاسم، العنوان، أو المشرف..." 
-               class="w-full p-2 rounded-lg text-black text-sm mb-4 outline-none focus:ring-2 focus:ring-blue-400">
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <select id="filterUniversity" class="text-black p-2 rounded text-xs"><option value="">كل الجامعات</option></select>
-            <select id="filterFaculty" class="text-black p-2 rounded text-xs"><option value="">كل الكليات</option></select>
-            <select id="filterDept" class="text-black p-2 rounded text-xs"><option value="">كل الأقسام</option></select>
-            <select id="filterYear" class="text-black p-2 rounded text-xs"><option value="">كل السنوات</option></select>
+<body class="p-2">
+    <div class="max-w-full mx-auto">
+        <div class="bg-blue-900 text-white p-3 rounded-lg shadow-md mb-3">
+            <h1 class="text-lg font-bold text-center mb-3">بوابة الرسائل الجامعية الليبية</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                <input type="text" id="searchInput" placeholder="بحث عام..." class="p-1.5 rounded text-black text-sm outline-none">
+                <select id="filterUniversity" class="p-1.5 rounded text-black text-xs"><option value="">كل الجامعات</option></select>
+                <select id="filterFaculty" class="p-1.5 rounded text-black text-xs"><option value="">كل الكليات</option></select>
+                <select id="filterDept" class="p-1.5 rounded text-black text-xs"><option value="">كل الأقسام</option></select>
+                <select id="filterYear" class="p-1.5 rounded text-black text-xs"><option value="">كل السنوات</option></select>
+            </div>
         </div>
-    </div>
 
-    <div class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs dense-table">
-                <thead class="bg-slate-100 text-blue-900 border-b">
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <table class="w-full text-right dense-table">
+                <thead class="bg-gray-100 text-blue-900 sticky top-0">
                     <tr>
-                        <th class="p-2">الباحث</th>
-                        <th class="p-2">عنوان الرسالة</th>
-                        <th class="p-2">المشرف</th>
-                        <th class="p-2">الجامعة</th>
-                        <th class="p-2">الكلية</th>
-                        <th class="p-2">القسم</th>
-                        <th class="p-2">السنة</th>
-                        <th class="p-2">رقم الرسالة</th>
-                        <th class="p-2">حالة الرسالة</th>
-                        <th class="p-2">رابط</th>
-                        <th class="p-2">ملاحظات</th>
+                        <th>الباحث</th>
+                        <th>عنوان الرسالة</th>
+                        <th>المشرف</th>
+                        <th>الجامعة</th>
+                        <th>الكلية</th>
+                        <th>القسم</th>
+                        <th>السنة</th>
+                        <th>رقم الرسالة</th>
+                        <th>حالة الرسالة</th>
+                        <th>رابط</th>
+                        <th>ملاحظات</th>
                     </tr>
                 </thead>
-                <tbody id="thesesTable" class="divide-y divide-gray-200">
-                    </tbody>
+                <tbody id="thesesTable"></tbody>
             </table>
+            <div id="loader" class="p-5 text-center text-blue-900 animate-pulse">جاري تحميل البيانات...</div>
         </div>
-        <div id="loader" class="p-10 text-center text-blue-900 font-bold">جاري تحميل البيانات من السحاب...</div>
     </div>
-</div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
-          apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-          authDomain: "libyan-theses-portal.firebaseapp.com",
-          projectId: "libyan-theses-portal",
-          // السطر المفقود الذي يجب إضافته هو التالي:
-          databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-          storageBucket: "libyan-theses-portal.appspot.com",
-          messagingSenderId: "80818219253",
-          appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            projectId: "libyan-theses-portal",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "80818219253",
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
-        // جلب البيانات وعرضها
-        const thesesTable = document.getElementById('thesesTable');
+        const tableBody = document.getElementById('thesesTable');
         const loader = document.getElementById('loader');
 
+        // جلب البيانات وتفعيل التصفية
         database.ref('theses').on('value', (snapshot) => {
             loader.style.display = 'none';
-            thesesTable.innerHTML = '';
-        const data = snapshot.val();
+            tableBody.innerHTML = '';
+            const data = snapshot.val();
+            if (!data) return;
 
-    if (data) {
-        Object.values(data).reverse().forEach(item => {
-        const row = `
-            <tr class="hover:bg-gray-50 border-b">
-                <td class="p-2">${item.author || '-'}</td>
-                <td class="p-2 font-semibold">${item.title || '-'}</td>
-                <td class="p-2">${item.supervisor || '-'}</td>
-                <td class="p-2">${item.university || '-'}</td>
-                <td class="p-2">${item.faculty || '-'}</td>
-                <td class="p-2">${item.dept || '-'}</td>
-                <td class="p-2">${item.year || '-'}</td>
-                <td class="p-2">${item.thesisID || '-'}</td>
-                <td class="p-2">${item.status || '-'}</td>
-                <td class="p-2"><a href="${item.link}" target="_blank" class="text-blue-600">رابط</a></td>
-                <td class="p-2 text-gray-500">${item.notes || '-'}</td>
-            </tr>`;
-            thesesTable.innerHTML += row;
+            const items = Object.values(data).reverse();
+            renderTable(items);
+            fillFilters(items);
         });
-    }
-});
+
+        function renderTable(items) {
+            tableBody.innerHTML = items.map(item => `
+                <tr class="hover:bg-blue-50">
+                    <td class="font-medium">${item.author || '-'}</td>
+                    <td class="font-bold text-blue-900">${item.title || '-'}</td>
+                    <td>${item.supervisor || '-'}</td>
+                    <td>${item.university || '-'}</td>
+                    <td>${item.faculty || '-'}</td>
+                    <td>${item.dept || '-'}</td>
+                    <td>${item.year || '-'}</td>
+                    <td>${item.thesisID || '-'}</td>
+                    <td><span class="px-1 bg-blue-100 rounded text-[10px]">${item.status || '-'}</span></td>
+                    <td>${item.link ? `<a href="${item.link}" target="_blank" class="text-blue-600 underline">رابط</a>` : '-'}</td>
+                    <td class="text-gray-400">${item.notes || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function fillFilters(items) {
+            const getUnique = (key) => [...new Set(items.map(i => i[key]).filter(Boolean))].sort();
+            updateSelect('filterUniversity', getUnique('university'));
+            updateSelect('filterFaculty', getUnique('faculty'));
+            updateSelect('filterDept', getUnique('dept'));
+            updateSelect('filterYear', getUnique('year'));
+        }
+
+        function updateSelect(id, values) {
+            const select = document.getElementById(id);
+            const current = select.value;
+            select.innerHTML = `<option value="">${select.options[0].text}</option>` + 
+                values.map(v => `<option value="${v}" ${v === current ? 'selected' : ''}>${v}</option>`).join('');
+        }
+
+        // تفعيل البحث والتصفية اللحظية
+        document.addEventListener('input', () => {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const uni = document.getElementById('filterUniversity').value;
+            const fac = document.getElementById('filterFaculty').value;
+            const dep = document.getElementById('filterDept').value;
+            const yr = document.getElementById('filterYear').value;
+
+            database.ref('theses').once('value', (snap) => {
+                const filtered = Object.values(snap.val() || {}).filter(i => {
+                    return (!uni || i.university === uni) &&
+                           (!fac || i.faculty === fac) &&
+                           (!dep || i.dept === dep) &&
+                           (!yr || i.year === yr) &&
+                           (JSON.stringify(i).toLowerCase().includes(search));
+                }).reverse();
+                renderTable(filtered);
+            });
+        });
+    </script>
+</body>
+</html>
