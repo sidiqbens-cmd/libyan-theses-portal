@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة الطلبات - بوابة الرسائل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-family: system-ui; background-color: #f1f5f9; font-size: 12px; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        table th, table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-6xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="bg-blue-900 text-white p-4 flex justify-between items-center">
+            <h1 class="text-lg font-bold">إدارة طلبات انضمام المكتبات</h1>
+            <span id="requestCount" class="bg-blue-700 px-3 py-1 rounded-full text-xs">0 طلبات</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-right">
+                <thead class="bg-gray-50 text-blue-900">
+                    <tr>
+                        <th>المكتبة</th>
+                        <th>النوع/التبعية</th>
+                        <th>الموقع</th>
+                        <th>المسؤول</th>
+                        <th>الهاتف</th>
+                        <th>الحالة</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="requestsBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            projectId: "libyan-theses-portal",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "80818219253",
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // جلب الطلبات من Firebase
+        database.ref('join_requests').on('value', (snapshot) => {
+            const requestsBody = document.getElementById('requestsBody');
+            const countSpan = document.getElementById('requestCount');
+            requestsBody.innerHTML = '';
+            const data = snapshot.val();
+
+            if (data) {
+                const entries = Object.entries(data).reverse();
+                countSpan.textContent = `${entries.length} طلبات`;
+                
+                entries.forEach(([id, item]) => {
+                    const row = `
+                        <tr class="hover:bg-gray-50">
+                            <td class="font-bold">${item.libraryName}</td>
+                            <td>${item.libraryType} / ${item.affiliation}</td>
+                            <td>${item.location}</td>
+                            <td>${item.adminName}</td>
+                            <td>${item.phone}</td>
+                            <td>
+                                <span class="px-2 py-0.5 rounded text-[10px] ${item.status === 'pending' ? 'status-pending' : 'status-approved'}">
+                                    ${item.status === 'pending' ? 'قيد الانتظار' : 'تم الاعتماد'}
+                                </span>
+                            </td>
+                            <td>
+                                ${item.status === 'pending' ? 
+                                `<button onclick="approveRequest('${id}')" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 shadow-sm font-bold">اعتماد ✅</button>` : 
+                                `<span class="text-gray-400">مكتمل</span>`}
+                            </td>
+                        </tr>`;
+                    requestsBody.innerHTML += row;
+                });
+            }
+        });
+
+        // دالة تغيير الحالة في السحاب
+        function approveRequest(requestId) {
+            if(confirm('هل أنت متأكد من اعتماد هذه المكتبة؟')) {
+                database.ref('join_requests/' + requestId).update({
+                    status: 'approved'
+                }).then(() => {
+                    alert('تم اعتماد المكتبة بنجاح!');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
