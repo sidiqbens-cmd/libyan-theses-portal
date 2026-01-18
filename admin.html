@@ -60,15 +60,23 @@
                 <input type="text" id="thesisID" required placeholder="ID-12345">
             </div>
 
-            <div>
-                <label>حالة الرسالة</label>
-                <select id="status">
-                    <option value="تمت المناقشة">تمت المناقشة</option>
-                    <option value="قيد الدراسة">قيد الدراسة</option>
-                    <option value="ملغاة">ملغاة</option>
-                </select>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-700">الدرجة العلمية</label>
+                    <select id="degree" class="w-full p-2 border rounded-lg text-xs">
+                        <option value="ماجستير">ماجستير</option>
+                        <option value="دكتوراه">دكتوراه</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-700">حالة الرسالة</label>
+                    <select id="status" class="w-full p-2 border rounded-lg text-xs">
+                        <option value="متوفرة">متوفرة ✅</option>
+                        <option value="غير متوفرة">غير متوفرة ❌</option>
+                        <option value="قيد المعالجة">قيد المعالجة ⏳</option>
+                    </select>
+                </div>
             </div>
-            <div>
                 <label>رابط الرسالة (إن وجد)</label>
                 <input type="url" id="link" placeholder="https://example.com">
             </div>
