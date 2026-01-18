@@ -60,39 +60,30 @@
                 <input type="text" id="thesisID" required placeholder="ID-12345">
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-700">الدرجة العلمية</label>
-                    <select id="degree" class="w-full p-2 border rounded-lg text-xs">
-                        <option value="ماجستير">ماجستير</option>
-                        <option value="دكتوراه">دكتوراه</option>
-                    </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 mb-1">الدرجة العلمية</label>
+                        <select id="degree" class="w-full p-2 border rounded bg-white text-xs">
+                            <option value="ماجستير">ماجستير</option>
+                            <option value="دكتوراه">دكتوراه</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-700 mb-1">حالة الرسالة</label>
+                        <select id="status" class="w-full p-2 border rounded bg-white text-xs">
+                            <option value="متوفرة">متوفرة ✅</option>
+                            <option value="غير متوفرة">غير متوفرة ❌</option>
+                            <option value="قيد المعالجة">قيد المعالجة ⏳</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-700">حالة الرسالة</label>
-                    <select id="status" class="w-full p-2 border rounded-lg text-xs">
-                        <option value="متوفرة">متوفرة ✅</option>
-                        <option value="غير متوفرة">غير متوفرة ❌</option>
-                        <option value="قيد المعالجة">قيد المعالجة ⏳</option>
-                    </select>
-                </div>
-            </div>
-                <label>رابط الرسالة (إن وجد)</label>
-                <input type="url" id="link" placeholder="https://example.com">
-            </div>
 
-            <div class="full-width">
-                <label>ملاحظات إضافية</label>
-                <textarea id="notes" rows="2" placeholder="أي تفاصيل أخرى..."></textarea>
-            </div>
-
-            <button type="submit" class="full-width bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-all mt-4">
-                نشر الرسالة في البوابة فوراً 🚀
-            </button>
-        </form>
-
-        <div id="statusMsg" class="hidden mt-4 p-4 text-center rounded-lg font-bold"></div>
+    <div>
+        <label class="block text-[10px] font-bold text-gray-700 mb-1">رابط الرسالة (إن وجد)</label>
+        <input type="url" id="thesisUrl" placeholder="https://example.com" class="w-full p-2 border rounded text-xs">
     </div>
+</div>
 
     <script>
         // إعدادات Firebase
