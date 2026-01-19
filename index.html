@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -9,9 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: system-ui; background-color: #f8fafc; font-size: 11px; overflow-x: hidden; }
-        .dense-table td, .dense-table th { padding: 3px 6px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
-        #modalOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:100; justify-content:center; align-items:center; }
-        select, input { font-size: 10px !important; padding: 4px !important; }
+        .dense-table td, .dense-table th { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:100; justify-content:center; align-items:center; }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="p-2">
@@ -21,12 +21,10 @@
             <button onclick="location.href='join.html'" class="bg-yellow-500 text-blue-900 px-2 py-0.5 rounded font-bold text-[9px]">انضمام مكتبة +</button>
         </div>
 
-        <div class="grid grid-cols-3 md:grid-cols-6 gap-1 mb-2">
-            <input type="text" id="searchInput" placeholder="بحث سريع..." class="rounded border">
-            <select id="filterDegree" class="rounded border"><option value="">كل الدرجات</option><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
-            <select id="filterUni" class="rounded border"><option value="">كل الجامعات</option></select>
-            <select id="filterFaculty" class="rounded border"><option value="">كل الكليات</option></select>
-            <select id="filterYear" class="rounded border"><option value="">كل السنوات</option></select>
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-1 mb-2">
+            <input type="text" id="searchInput" placeholder="بحث سريع..." class="p-1 border rounded text-[10px]">
+            <select id="filterDegree" class="p-1 border rounded text-[10px]"><option value="">الدرجة</option><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
+            <select id="filterStatus" class="p-1 border rounded text-[10px]"><option value="">الحالة</option><option value="متوفرة">متوفرة</option><option value="غير متوفرة">غير متوفرة</option></select>
         </div>
 
         <div class="bg-white rounded shadow overflow-hidden">
@@ -46,13 +44,33 @@
         </div>
     </div>
 
-    <div id="modalOverlay">
-        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full relative overflow-hidden m-4">
-            <button onclick="closeModal()" class="absolute top-2 left-2 text-gray-400 hover:text-red-500 text-2xl z-10">&times;</button>
-            <div id="cardDetails" class="p-5"></div>
-            <div class="bg-gray-100 p-3 flex gap-2 border-t">
-                <button onclick="alert('قريباً: تعديل البيانات')" class="flex-1 bg-blue-600 text-white py-1.5 rounded font-bold text-[10px]">تعديل ✏️</button>
-                <button id="delBtn" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px]">حذف 🗑️</button>
+    <div id="viewModal" class="modal-overlay">
+        <div class="bg-white rounded-xl card-shadow max-w-sm w-full relative overflow-hidden m-4">
+            <button onclick="closeModal('viewModal')" class="absolute top-2 left-2 text-gray-400 hover:text-red-500 text-2xl z-10">&times;</button>
+            <div id="cardContent" class="p-5"></div>
+            <div class="bg-gray-50 p-3 flex gap-2 border-t">
+                <button id="editTriggerBtn" class="flex-1 bg-blue-600 text-white py-1.5 rounded font-bold text-[10px]">تعديل البيانات ✏️</button>
+                <button id="deleteTriggerBtn" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px]">حذف الرسالة 🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="bg-gray-100 rounded-xl card-shadow max-w-md w-full p-5 m-4 relative border border-gray-300">
+            <h3 class="text-blue-900 font-bold mb-4 text-center border-b pb-2">تعديل بيانات الرسالة</h3>
+            <div class="grid grid-cols-1 gap-3">
+                <input type="text" id="edit_researcher" placeholder="اسم الباحث" class="p-2 border rounded text-xs">
+                <input type="text" id="edit_title" placeholder="عنوان الرسالة" class="p-2 border rounded text-xs font-bold">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="edit_degree" class="p-2 border rounded text-xs bg-white font-bold"><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
+                    <select id="edit_status" class="p-2 border rounded text-xs bg-white font-bold"><option value="متوفرة">متوفرة ✅</option><option value="غير متوفرة">غير متوفرة ❌</option></select>
+                </div>
+                <input type="url" id="edit_url" placeholder="رابط الرسالة" class="p-2 border rounded text-xs">
+                <textarea id="edit_notes" placeholder="ملاحظات..." class="p-2 border rounded text-xs" rows="2"></textarea>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button id="saveUpdateBtn" class="flex-1 bg-green-700 text-white py-2 rounded font-bold text-xs">حفظ التعديلات 💾</button>
+                <button onclick="closeModal('editModal')" class="flex-1 bg-gray-400 text-white py-2 rounded font-bold text-xs">إلغاء</button>
             </div>
         </div>
     </div>
@@ -68,16 +86,17 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // عرض البيانات في الجدول
         db.ref('theses').on('value', (snap) => {
             const tbody = document.getElementById('thesesBody');
             tbody.innerHTML = '';
             snap.forEach((child) => {
                 const item = child.val();
                 tbody.innerHTML += `
-                    <tr class="hover:bg-blue-50">
-                        <td class="text-blue-600 font-bold">${item.degree || '---'}</td>
+                    <tr>
+                        <td class="font-bold text-blue-700">${item.degree}</td>
                         <td>${item.researcher}</td>
-                        <td class="truncate max-w-[150px]" title="${item.title}">${item.title}</td>
+                        <td class="truncate max-w-[120px]">${item.title}</td>
                         <td>${item.university}</td>
                         <td>${item.year}</td>
                         <td class="text-center"><button onclick="showCard('${child.key}')" class="bg-blue-800 text-white px-2 py-0.5 rounded text-[9px]">عرض 🔍</button></td>
@@ -89,23 +108,48 @@
             db.ref('theses/' + id).once('value', (snap) => {
                 const d = snap.val();
                 const statusColor = d.status === 'متوفرة' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-        
-                document.getElementById('cardDetails').innerHTML = `
+                document.getElementById('cardContent').innerHTML = `
                     <div class="flex justify-between mb-3">
-                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-[10px]">${d.degree}</span>
-                        <span class="${statusColor} px-3 py-1 rounded-full text-[10px] font-bold">${d.status}</span>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-[9px]">${d.degree}</span>
+                        <span class="${statusColor} px-3 py-1 rounded-full font-bold text-[9px]">${d.status}</span>
                     </div>
-                    <h2 class="text-md font-bold text-blue-900 mb-4 leading-tight">${d.title}</h2>
-                    <div class="grid grid-cols-1 gap-2 text-[11px] border-t pt-3 text-gray-700">
-                        <div>👤 <b>الباحث:</b> ${d.researcher}</div>
-                        <div>🏛️ <b>الجامعة:</b> ${d.university}</div>
-                        <div>🗓️ <b>سنة المناقشة:</b> ${d.year}</div>
+                    <h2 class="text-sm font-bold text-blue-900 mb-4">${d.title}</h2>
+                    <div class="space-y-2 text-[11px] border-t pt-3">
+                        <div>👤 الباحث: ${d.researcher}</div>
+                        <div>🏛️ الجهة: ${d.university} - ${d.faculty}</div>
+                        <div>🗓️ السنة: ${d.year}</div>
+                        ${d.thesisUrl ? `<div class="text-blue-600">🔗 <a href="${d.thesisUrl}" target="_blank">رابط الرسالة</a></div>` : ''}
                     </div>
                 `;
-                document.getElementById('modalOverlay').style.display = 'flex';
+                document.getElementById('editTriggerBtn').onclick = () => openEdit(id, d);
+                document.getElementById('deleteTriggerBtn').onclick = () => { if(confirm('حذف نهائي؟')) db.ref('theses/'+id).remove().then(()=>closeModal('viewModal')); };
+                document.getElementById('viewModal').style.display = 'flex';
             });
         }
-        function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+        function openEdit(id, data) {
+            closeModal('viewModal');
+            document.getElementById('edit_researcher').value = data.researcher;
+            document.getElementById('edit_title').value = data.title;
+            document.getElementById('edit_degree').value = data.degree;
+            document.getElementById('edit_status').value = data.status;
+            document.getElementById('edit_url').value = data.thesisUrl || '';
+            document.getElementById('edit_notes').value = data.notes || '';
+            document.getElementById('saveUpdateBtn').onclick = () => {
+                const upData = {
+                    researcher: document.getElementById('edit_researcher').value,
+                    title: document.getElementById('edit_title').value,
+                    degree: document.getElementById('edit_degree').value,
+                    status: document.getElementById('edit_status').value,
+                    thesisUrl: document.getElementById('edit_url').value,
+                    notes: document.getElementById('edit_notes').value
+                };
+                db.ref('theses/' + id).update(upData).then(() => { alert('تم التحديث ✅'); closeModal('editModal'); });
+            };
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal(mId) { document.getElementById(mId).style.display = 'none'; }
     </script>
 </body>
 </html>
