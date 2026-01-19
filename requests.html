@@ -90,15 +90,21 @@
         });
 
         // دالة تغيير الحالة في السحاب
-        function approveRequest(requestId) {
-            if(confirm('هل أنت متأكد من اعتماد هذه المكتبة؟')) {
-                database.ref('join_requests/' + requestId).update({
-                    status: 'approved'
-                }).then(() => {
-                    alert('تم اعتماد المكتبة بنجاح!');
-                });
-            }
-        }
-    </script>
+function approveLibrary(requestId, email) {
+    // 1. تحديث الحالة في قاعدة البيانات
+    db.ref('libraryRequests/' + requestId).update({
+        status: 'تم الاعتماد'
+    }).then(() => {
+        // 2. إرسال رابط ضبط كلمة المرور تلقائياً [تلقائياً من فضلك]
+        firebase.auth().sendPasswordResetEmail(email)
+            .then(() => {
+                alert("تم اعتماد المكتبة بنجاح ✅ وإرسال رابط ضبط كلمة المرور إلى: " + email);
+            })
+            .catch((error) => {
+                console.error("فشل إرسال الإيميل: ", error);
+                alert("تم الاعتماد، ولكن تعذر إرسال الإيميل تلقائياً.");
+            });
+    });
+}
 </body>
 </html>
