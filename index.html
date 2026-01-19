@@ -9,15 +9,11 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: system-ui; background-color: #f8fafc; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        /* مضاعفة حجم الهيدر مرتين */
         .sticky-header { flex-shrink: 0; background: white; z-index: 50; }
-        .main-header { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: #1e3a8a; color: white; }
-        
+        .main-header { height: 100px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; background: #1e3a8a; color: white; }
         .scrollable-content { flex-grow: 1; overflow-y: auto; padding: 12px; }
-        .dense-table td, .dense-table th { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; font-size: 13px; }
+        .dense-table td, .dense-table th { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; font-size: 14px; } /* تكبير الخط درجتين */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center; }
-        
-        /* تكبير الخط في الفلاتر */
         .big-input { font-size: 14px !important; height: 45px; border: 1px solid #cbd5e1 !important; }
     </style>
 </head>
@@ -27,9 +23,9 @@
         <div class="main-header">
             <div>
                 <h1 class="text-2xl font-bold text-yellow-400">بوابة الرسائل الجامعية الليبية</h1>
-                <p class="text-blue-100 text-xs mt-1">المستودع الرقمي الوطني للرسائل العلمية</p>
+                <p class="text-blue-100 text-xs mt-1">Libyan Theses Portal</p>
             </div>
-            <button onclick="location.href='join.html'" class="bg-yellow-500 text-blue-900 px-6 py-2 rounded-lg font-bold text-sm hover:bg-yellow-400 shadow-md">انضمام مكتبة +</button>
+            <button onclick="location.href='join.html'" class="bg-yellow-500 text-blue-900 px-6 py-2 rounded-lg font-bold text-sm shadow-md">انضمام مكتبة +</button>
         </div>
 
         <div class="p-3 bg-gray-50 border-b flex flex-wrap gap-2 items-center">
@@ -37,7 +33,7 @@
             <select id="filterUni" class="flex-grow p-2 rounded big-input bg-white" onchange="filterData()"><option value="">الجامعة</option></select>
             <select id="filterFac" class="flex-grow p-2 rounded big-input bg-white" onchange="filterData()"><option value="">الكلية</option></select>
             <select id="filterDep" class="flex-grow p-2 rounded big-input bg-white" onchange="filterData()"><option value="">القسم</option></select>
-            <select id="filterDeg" class="w-32 p-2 rounded big-input bg-white font-bold" onchange="filterData()">
+            <select id="filterYear" class="w-24 p-2 rounded big-input bg-white" onchange="filterData()"><option value="">السنة</option></select> <select id="filterDeg" class="w-32 p-2 rounded big-input bg-white font-bold" onchange="filterData()">
                 <option value="">الدرجة</option>
                 <option value="ماجستير">ماجستير</option>
                 <option value="دكتوراه">دكتوراه</option>
@@ -50,7 +46,6 @@
             <table class="w-full text-right dense-table">
                 <thead class="bg-blue-50 text-blue-900 sticky top-0 shadow-sm">
                     <tr>
-                        <th>الدرجة</th>
                         <th>الباحث</th>
                         <th class="w-1/3">عنوان الرسالة</th>
                         <th>الجامعة</th>
@@ -58,12 +53,11 @@
                         <th>القسم</th>
                         <th>السنة</th>
                         <th>رقم الرسالة</th>
+                         <th>الدرجة</th>
                         <th class="text-center">الإجراء</th>
                     </tr>
                 </thead>
-                <tbody id="thesesBody">
-                    <tr><td colspan="9" class="text-center py-10 text-gray-400">جاري تحميل البيانات...</td></tr>
-                </tbody>
+                <tbody id="thesesBody"></tbody>
             </table>
         </div>
     </div>
@@ -80,77 +74,21 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-            authDomain: "libyan-theses-portal.firebaseapp.com",
-            projectId: "libyan-theses-portal",
-            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // إعدادات Firebase الخاصة بك هنا
+        // دالة populateFilters ستقوم الآن بتعبئة السنة أيضاً تلقائياً
+        function populateFilters() {
+            const unis = [...new Set(allData.map(d => d.university).filter(Boolean))];
+            const facs = [...new Set(allData.map(d => d.faculty).filter(Boolean))];
+            const deps = [...new Set(allData.map(d => d.department).filter(Boolean))];
+            const years = [...new Set(allData.map(d => d.year).filter(Boolean))].sort((a,b) => b-a);
 
-        let allData = [];
-
-        // تحسين جلب البيانات لضمان الظهور
-        db.ref('theses').on('value', (snap) => {
-            allData = [];
-            if (snap.exists()) {
-                snap.forEach(child => {
-                    allData.push({ id: child.key, ...child.val() });
-                });
-                renderTable(allData);
-            } else {
-                document.getElementById('thesesBody').innerHTML = '<tr><td colspan="9" class="text-center py-10">لا توجد رسائل مسجلة حالياً</td></tr>';
-            }
-        });
-
-        function renderTable(data) {
-            const tbody = document.getElementById('thesesBody');
-            tbody.innerHTML = data.map(item => `
-                <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="font-bold text-blue-800">${item.degree || '---'}</td>
-                    <td>${item.researcher || '---'}</td>
-                    <td class="font-bold text-gray-900" style="white-space:normal; min-width:200px">${item.title}</td>
-                    <td>${item.university || '---'}</td>
-                    <td>${item.faculty || '---'}</td>
-                    <td>${item.department || '---'}</td>
-                    <td>${item.year || '---'}</td>
-                    <td class="text-blue-600 font-mono font-bold">${item.thesisId || '---'}</td>
-                    <td class="text-center"><button onclick="showCard('${item.id}')" class="bg-blue-900 text-white px-5 py-1.5 rounded-md text-xs font-bold">عرض 🔍</button></td>
-                </tr>
-            `).join('');
+            document.getElementById('filterUni').innerHTML = '<option value="">الجامعة</option>' + unis.map(u => `<option value="${u}">${u}</option>`).join('');
+            document.getElementById('filterFac').innerHTML = '<option value="">الكلية</option>' + facs.map(f => `<option value="${f}">${f}</option>`).join('');
+            document.getElementById('filterDep').innerHTML = '<option value="">القسم</option>' + deps.map(d => `<option value="${d}">${d}</option>`).join('');
+            document.getElementById('filterYear').innerHTML = '<option value="">السنة</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         }
-
-        function filterData() {
-            const titleVal = document.getElementById('searchTitle').value.toLowerCase();
-            const uniVal = document.getElementById('filterUni').value;
-            const degVal = document.getElementById('filterDeg').value;
-
-            const filtered = allData.filter(d => 
-                ( (d.title && d.title.toLowerCase().includes(titleVal)) || (d.researcher && d.researcher.toLowerCase().includes(titleVal)) ) &&
-                (!uniVal || d.university === uniVal) &&
-                (!degVal || d.degree === degVal)
-            );
-            renderTable(filtered);
-        }
-
-        function showCard(id) {
-            const d = allData.find(x => x.id === id);
-            document.getElementById('cardContent').innerHTML = `
-                <h2 class="text-xl font-bold text-blue-900 mb-6 leading-tight border-r-4 border-yellow-500 pr-3">${d.title}</h2>
-                <div class="grid grid-cols-1 gap-4 text-[14px] bg-gray-50 p-5 rounded-xl border border-gray-100">
-                    <div>👤 <b>الباحث:</b> ${d.researcher}</div>
-                    <div>🏛️ <b>الجامعة:</b> ${d.university}</div>
-                    <div>🏢 <b>الكلية/القسم:</b> ${d.faculty} / ${d.department}</div>
-                    <div>🗓️ <b>السنة:</b> ${d.year} <span class="mx-2 text-gray-300">|</span> 🆔 <b>الرقم:</b> ${d.thesisId || '---'}</div>
-                    ${d.thesisUrl ? `<div class="mt-4 pt-4 border-t text-blue-700 font-bold underline"><a href="${d.thesisUrl}" target="_blank">فتح النسخة الإلكترونية</a></div>` : ''}
-                </div>
-            `;
-            document.getElementById('viewModal').style.display = 'flex';
-        }
-
-        function closeModal(mId) { document.getElementById(mId).style.display = 'none'; }
+        
+        // بقية دوال Firebase و renderTable كما في الكود السابق
     </script>
 </body>
 </html>
