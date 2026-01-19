@@ -92,7 +92,7 @@
         // دالة تغيير الحالة في السحاب
 function approveLibrary(requestId, email) {
     // 1. تحديث الحالة في قاعدة البيانات
-    db.ref('join_requests/' + requestId).update({
+    db.ref('join_requests').on('value', (snapshot) => {
         status: 'تم الاعتماد'
     }).then(() => {
         // 2. إرسال رابط ضبط كلمة المرور تلقائياً [تلقائياً من فضلك]
