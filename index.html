@@ -11,7 +11,9 @@
         body { font-family: system-ui; background-color: #f8fafc; font-size: 11px; overflow-x: hidden; }
         .dense-table td, .dense-table th { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:100; justify-content:center; align-items:center; }
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        /* تكبير حجم الخط في البطاقة درجتين */
+        .card-text { font-size: 13px; line-height: 1.6; }
+        .card-title { font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body class="p-2">
@@ -45,32 +47,44 @@
     </div>
 
     <div id="viewModal" class="modal-overlay">
-        <div class="bg-white rounded-xl card-shadow max-w-sm w-full relative overflow-hidden m-4">
-            <button onclick="closeModal('viewModal')" class="absolute top-2 left-2 text-gray-400 hover:text-red-500 text-2xl z-10">&times;</button>
-            <div id="cardContent" class="p-5"></div>
-            <div class="bg-gray-50 p-3 flex gap-2 border-t">
-                <button id="editTriggerBtn" class="flex-1 bg-blue-600 text-white py-1.5 rounded font-bold text-[10px]">تعديل البيانات ✏️</button>
-                <button id="deleteTriggerBtn" class="flex-1 bg-red-600 text-white py-1.5 rounded font-bold text-[10px]">حذف الرسالة 🗑️</button>
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full relative overflow-hidden m-4 border-2 border-blue-900">
+            <button onclick="closeModal('viewModal')" class="absolute top-2 left-2 text-gray-400 hover:text-red-500 text-3xl z-10">&times;</button>
+            <div id="cardContent" class="p-6 card-text"></div>
+            <div class="bg-gray-50 p-4 flex gap-2 border-t">
+                <button id="editTriggerBtn" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold text-[12px]">تعديل البيانات ✏️</button>
+                <button id="deleteTriggerBtn" class="flex-1 bg-red-600 text-white py-2 rounded font-bold text-[12px]">حذف الرسالة 🗑️</button>
             </div>
         </div>
     </div>
 
     <div id="editModal" class="modal-overlay">
-        <div class="bg-gray-100 rounded-xl card-shadow max-w-md w-full p-5 m-4 relative border border-gray-300">
-            <h3 class="text-blue-900 font-bold mb-4 text-center border-b pb-2">تعديل بيانات الرسالة</h3>
+        <div class="bg-gray-100 rounded-xl shadow-2xl max-w-lg w-full p-6 m-4 relative border border-gray-300">
+            <h3 class="text-blue-900 font-bold mb-4 text-center border-b-2 border-blue-200 pb-2">تعديل بيانات الرسالة</h3>
             <div class="grid grid-cols-1 gap-3">
-                <input type="text" id="edit_researcher" placeholder="اسم الباحث" class="p-2 border rounded text-xs">
-                <input type="text" id="edit_title" placeholder="عنوان الرسالة" class="p-2 border rounded text-xs font-bold">
+                <input type="text" id="edit_researcher" placeholder="اسم الباحث" class="p-2 border rounded text-xs bg-white">
+                <input type="text" id="edit_title" placeholder="عنوان الرسالة" class="p-2 border rounded text-xs font-bold bg-white">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-500 mr-1">السنة</label>
+                        <input type="number" id="edit_year" class="w-full p-2 border rounded text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold text-gray-500 mr-1">رقم الرسالة</label>
+                        <input type="text" id="edit_thesisId" class="w-full p-2 border rounded text-xs bg-white">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <select id="edit_degree" class="p-2 border rounded text-xs bg-white font-bold"><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
                     <select id="edit_status" class="p-2 border rounded text-xs bg-white font-bold"><option value="متوفرة">متوفرة ✅</option><option value="غير متوفرة">غير متوفرة ❌</option></select>
                 </div>
-                <input type="url" id="edit_url" placeholder="رابط الرسالة" class="p-2 border rounded text-xs">
-                <textarea id="edit_notes" placeholder="ملاحظات..." class="p-2 border rounded text-xs" rows="2"></textarea>
+                <input type="url" id="edit_url" placeholder="رابط الرسالة" class="p-2 border rounded text-xs bg-white">
+                <textarea id="edit_notes" placeholder="ملاحظات..." class="p-2 border rounded text-xs bg-white" rows="2"></textarea>
             </div>
             <div class="flex gap-2 mt-4">
-                <button id="saveUpdateBtn" class="flex-1 bg-green-700 text-white py-2 rounded font-bold text-xs">حفظ التعديلات 💾</button>
-                <button onclick="closeModal('editModal')" class="flex-1 bg-gray-400 text-white py-2 rounded font-bold text-xs">إلغاء</button>
+                <button id="saveUpdateBtn" class="flex-1 bg-green-700 text-white py-2 rounded font-bold text-sm">حفظ التعديلات 💾</button>
+                <button onclick="closeModal('editModal')" class="flex-1 bg-gray-400 text-white py-2 rounded font-bold text-sm">إلغاء</button>
             </div>
         </div>
     </div>
@@ -86,21 +100,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // عرض البيانات في الجدول
         db.ref('theses').on('value', (snap) => {
             const tbody = document.getElementById('thesesBody');
             tbody.innerHTML = '';
             snap.forEach((child) => {
                 const item = child.val();
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="font-bold text-blue-700">${item.degree}</td>
-                        <td>${item.researcher}</td>
-                        <td class="truncate max-w-[120px]">${item.title}</td>
-                        <td>${item.university}</td>
-                        <td>${item.year}</td>
-                        <td class="text-center"><button onclick="showCard('${child.key}')" class="bg-blue-800 text-white px-2 py-0.5 rounded text-[9px]">عرض 🔍</button></td>
-                    </tr>`;
+                tbody.innerHTML += `<tr><td class="font-bold text-blue-700">${item.degree}</td><td>${item.researcher}</td><td class="truncate max-w-[120px]">${item.title}</td><td>${item.university}</td><td>${item.year}</td><td class="text-center"><button onclick="showCard('${child.key}')" class="bg-blue-800 text-white px-2 py-0.5 rounded text-[9px]">عرض 🔍</button></td></tr>`;
             });
         });
 
@@ -109,16 +114,16 @@
                 const d = snap.val();
                 const statusColor = d.status === 'متوفرة' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 document.getElementById('cardContent').innerHTML = `
-                    <div class="flex justify-between mb-3">
-                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-[9px]">${d.degree}</span>
-                        <span class="${statusColor} px-3 py-1 rounded-full font-bold text-[9px]">${d.status}</span>
+                    <div class="flex justify-between mb-4">
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-[11px]">${d.degree}</span>
+                        <span class="${statusColor} px-3 py-1 rounded-full font-bold text-[11px]">${d.status}</span>
                     </div>
-                    <h2 class="text-sm font-bold text-blue-900 mb-4">${d.title}</h2>
-                    <div class="space-y-2 text-[11px] border-t pt-3">
-                        <div>👤 الباحث: ${d.researcher}</div>
-                        <div>🏛️ الجهة: ${d.university} - ${d.faculty}</div>
-                        <div>🗓️ السنة: ${d.year}</div>
-                        ${d.thesisUrl ? `<div class="text-blue-600">🔗 <a href="${d.thesisUrl}" target="_blank">رابط الرسالة</a></div>` : ''}
+                    <h2 class="card-title text-blue-900 mb-4">${d.title}</h2>
+                    <div class="space-y-3 card-text border-t pt-4">
+                        <div>👤 <b>الباحث:</b> ${d.researcher}</div>
+                        <div>🏛️ <b>الجامعة:</b> ${d.university}</div>
+                        <div>🗓️ <b>السنة:</b> ${d.year} | 🆔 <b>الرقم:</b> ${d.thesisId || '---'}</div>
+                        ${d.thesisUrl ? `<div class="text-blue-600 font-bold">🔗 <a href="${d.thesisUrl}" target="_blank">رابط الرسالة الإلكتروني</a></div>` : ''}
                     </div>
                 `;
                 document.getElementById('editTriggerBtn').onclick = () => openEdit(id, d);
@@ -133,18 +138,13 @@
             document.getElementById('edit_title').value = data.title;
             document.getElementById('edit_degree').value = data.degree;
             document.getElementById('edit_status').value = data.status;
+            document.getElementById('edit_year').value = data.year;
+            document.getElementById('edit_thesisId').value = data.thesisId || '';
             document.getElementById('edit_url').value = data.thesisUrl || '';
             document.getElementById('edit_notes').value = data.notes || '';
             document.getElementById('saveUpdateBtn').onclick = () => {
-                const upData = {
-                    researcher: document.getElementById('edit_researcher').value,
-                    title: document.getElementById('edit_title').value,
-                    degree: document.getElementById('edit_degree').value,
-                    status: document.getElementById('edit_status').value,
-                    thesisUrl: document.getElementById('edit_url').value,
-                    notes: document.getElementById('edit_notes').value
-                };
-                db.ref('theses/' + id).update(upData).then(() => { alert('تم التحديث ✅'); closeModal('editModal'); });
+                const upData = { researcher: document.getElementById('edit_researcher').value, title: document.getElementById('edit_title').value, degree: document.getElementById('edit_degree').value, status: document.getElementById('edit_status').value, year: document.getElementById('edit_year').value, thesisId: document.getElementById('edit_thesisId').value, thesisUrl: document.getElementById('edit_url').value, notes: document.getElementById('edit_notes').value };
+                db.ref('theses/' + id).update(upData).then(() => { alert('تم التحديث بنجاح ✅'); closeModal('editModal'); });
             };
             document.getElementById('editModal').style.display = 'flex';
         }
