@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول المكتبات | الفهرس الليبي الموحد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-sm border-t-4 border-blue-600">
+        <div class="text-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">الفهرس الليبي الموحد</h2>
+            <p class="text-xs text-gray-500">بوابة دخول المناديب المعتمدين</p>
+        </div>
+
+        <form id="loginForm" class="space-y-3">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">البريد الإلكتروني</label>
+                <input type="email" id="email" class="w-full p-2 border rounded text-sm focus:outline-blue-500" required>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">كلمة المرور</label>
+                <input type="password" id="password" class="w-full p-2 border rounded text-sm focus:outline-blue-500" required>
+            </div>
+            
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition">
+                دخول
+            </button>
+        </form>
+
+        <div class="mt-4 text-center">
+            <a href="#" onclick="resetPassword()" class="text-xs text-blue-500 hover:underline">نسيت كلمة المرور؟</a>
+        </div>
+        
+        <div id="errorMessage" class="hidden mt-2 p-2 bg-red-100 text-red-700 text-[10px] rounded text-center"></div>
+    </div>
+
+    <script>
+        // إعدادات Firebase (نفس الإعدادات التي استخدمناها سابقاً)
+        const firebaseConfig = {
+            apiKey: "AIzaSy...", 
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "libyan-theses-portal",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // عملية الدخول
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // التوجه لصفحة رفع الرسائل بعد النجاح
+                    window.location.href = "upload.html"; 
+                })
+                .catch((error) => {
+                    errorDiv.innerText = "خطأ: تأكد من البيانات أو الاعتماد";
+                    errorDiv.classList.remove('hidden');
+                });
+        });
+
+        // وظيفة استعادة كلمة المرور
+        function resetPassword() {
+            const email = document.getElementById('email').value;
+            if(!email) return alert("يرجى كتابة البريد الإلكتروني أولاً");
+            
+            firebase.auth().languageCode = 'ar';
+            firebase.auth().sendPasswordResetEmail(email)
+                .then(() => alert("تم إرسال رابط التعيين لبريدك بنجاح"));
+        }
+    </script>
+</body>
+</html>
