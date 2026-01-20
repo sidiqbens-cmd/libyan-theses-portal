@@ -3,52 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>استعراض الرسائل | الفهرس الليبي الموحد</title>
+    <title>استعراض الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; }
-        .filter-select { padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; background: white; outline: none; }
-        th { background-color: #1e40af; color: white; font-weight: bold; font-size: 12px; padding: 8px; position: sticky; top: 0; }
-        td { font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; overflow: hidden; }
+        .filter-select { padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; background: white; outline: none; min-width: 120px; }
+        th { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 11px; padding: 6px; position: sticky; top: 0; border: 1px solid #1e40af; }
+        td { font-size: 11px; border-bottom: 1px solid #e2e8f0; padding: 4px; border-left: 1px solid #f1f5f9; }
         tr:hover { background-color: #f1f5f9; }
-        /* واجهة مكثفة لتقليل التمرير */
-        .dense-container { height: calc(100vh - 120px); overflow-y: auto; }
+        .scroll-container { height: calc(100vh - 80px); overflow-y: auto; }
     </style>
 </head>
 <body class="p-2">
 
-    <div class="bg-white shadow-sm rounded-lg p-3 mb-2 border-r-4 border-blue-700">
-        <div class="flex flex-wrap items-center gap-3">
-            <h1 class="text-sm font-bold text-blue-900 ml-4">الفهرس الليبي الموحد</h1>
+    <div class="bg-white shadow-sm rounded border-r-4 border-blue-800 p-2 mb-2">
+        <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-xs font-bold text-blue-900 ml-2">الفهرس الليبي الموحد</h1>
             
-            <input type="text" id="searchInput" placeholder="بحث بالعنوان أو الباحث..." class="filter-select w-64 border-blue-300 focus:ring-1 focus:ring-blue-500">
+            <input type="text" id="searchInput" placeholder="بحث بالاسم، العنوان، أو المشرف..." class="filter-select w-64 border-blue-200 focus:border-blue-500">
             
             <select id="uniFilter" class="filter-select"><option value="">كل الجامعات</option></select>
+            <select id="collegeFilter" class="filter-select"><option value="">كل الكليات</option></select>
             <select id="yearFilter" class="filter-select"><option value="">كل السنوات</option></select>
-            <select id="statusFilter" class="filter-select">
-                <option value="">كل الحالات</option>
-                <option value="متوفرة">✅ متوفرة</option>
-                <option value="غير متوفرة">❌ غير متوفرة</option>
-            </select>
             
-            <div id="stats" class="text-[11px] text-gray-500 mr-auto font-bold">جاري تحميل البيانات...</div>
+            <div id="stats" class="text-[10px] text-blue-700 mr-auto font-bold bg-blue-50 px-2 py-1 rounded">جاري جلب البيانات...</div>
         </div>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden dense-container">
+    <div class="bg-white shadow rounded overflow-hidden scroll-container">
         <table class="w-full text-right border-collapse">
             <thead>
                 <tr>
-                    <th class="w-16">رقم الرسالة</th>
-                    <th>عنوان الرسالة العلمية</th>
-                    <th>اسم الباحث</th>
-                    <th>الجامعة/الكلية</th>
-                    <th class="w-16 text-center">السنة</th>
-                    <th class="w-20 text-center">الحالة</th>
-                    <th class="w-20 text-center">الرابط</th>
-                    <th>الملاحظات</th>
+                    <th class="w-[12%]">الباحث</th>
+                    <th class="w-[20%]">عنوان الرسالة</th>
+                    <th class="w-[12%]">المشرف</th>
+                    <th>الجامعة</th>
+                    <th>الكلية</th>
+                    <th>القسم</th>
+                    <th class="w-14 text-center">السنة</th>
+                    <th class="w-20 text-center">الرقم</th>
+                    <th class="w-16 text-center">الحالة</th>
+                    <th class="w-10 text-center">🔗</th>
+                    <th class="w-[12%]">ملاحظات</th>
                 </tr>
             </thead>
             <tbody id="thesesBody">
@@ -57,7 +55,6 @@
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -70,42 +67,79 @@
 
         let allTheses = [];
 
-        // جلب البيانات فورياً
+        // الاستماع المباشر لقاعدة البيانات
         db.ref('theses').on('value', (snapshot) => {
             allTheses = [];
             if (snapshot.exists()) {
                 snapshot.forEach(child => {
                     allTheses.push({ key: child.key, ...child.val() });
                 });
-                updateFilters();
+                updateDropdowns();
                 applyFilters();
             } else {
-                document.getElementById('thesesBody').innerHTML = '<tr><td colspan="8" class="text-center py-10">لا توجد رسائل مرفوعة حالياً</td></tr>';
+                document.getElementById('thesesBody').innerHTML = '<tr><td colspan="11" class="text-center py-10">لا توجد بيانات حالياً</td></tr>';
                 document.getElementById('stats').innerText = "0 رسالة";
             }
         });
 
-        // تحديث القوائم المنسدلة بناءً على البيانات الموجودة
-        function updateFilters() {
-            const unis = [...new Set(allTheses.map(t => t.uni || t["الجامعة"]))].filter(Boolean);
+        function updateDropdowns() {
+            const unis = [...new Set(allTheses.map(t => t.uni || t["الجامعة"]))].filter(Boolean).sort();
+            const colleges = [...new Set(allTheses.map(t => t.college || t["الكلية"]))].filter(Boolean).sort();
             const years = [...new Set(allTheses.map(t => t.year || t["السنة"]))].filter(Boolean).sort((a,b)=>b-a);
             
-            const uniSelect = document.getElementById('uniFilter');
-            const yearSelect = document.getElementById('yearFilter');
-            
-            uniSelect.innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option value="${u}">${u}</option>`).join('');
-            yearSelect.innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+            document.getElementById('uniFilter').innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option value="${u}">${u}</option>`).join('');
+            document.getElementById('collegeFilter').innerHTML = '<option value="">كل الكليات</option>' + colleges.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('yearFilter').innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         }
 
-        // دالة الفلترة والعرض
         function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const selectedUni = document.getElementById('uniFilter').value;
-            const selectedYear = document.getElementById('yearFilter').value;
-            const selectedStatus = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const uni = document.getElementById('uniFilter').value;
+            const college = document.getElementById('collegeFilter').value;
+            const year = document.getElementById('yearFilter').value;
 
             const filtered = allTheses.filter(t => {
-                const title = (t.title || t["العنوان"] || "").toLowerCase();
-                const author = (t.author || t["الباحث"] || "").toLowerCase();
-                const uni = t.uni || t["الجامعة"] || "";
-                const year = t
+                const textMatch = (t.author + t.title + t.sup + (t["الباحث"]||"") + (t["العنوان"]||"") + (t["المشرف"]||"")).toLowerCase().includes(search);
+                return textMatch && 
+                       (uni === "" || (t.uni || t["الجامعة"]) === uni) &&
+                       (college === "" || (t.college || t["الكلية"]) === college) &&
+                       (year === "" || (t.year || t["السنة"]).toString() === year);
+            });
+
+            renderTable(filtered);
+            document.getElementById('stats').innerText = `إجمالي النتائج: ${filtered.length}`;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('thesesBody');
+            tbody.innerHTML = data.map(t => `
+                <tr>
+                    <td class="font-bold text-gray-700">${t.author || t["الباحث"] || '-'}</td>
+                    <td class="text-blue-900 font-medium">${t.title || t["العنوان"] || '-'}</td>
+                    <td class="text-gray-600">${t.sup || t["المشرف"] || '-'}</td>
+                    <td>${t.uni || t["الجامعة"] || '-'}</td>
+                    <td>${t.college || t["الكلية"] || '-'}</td>
+                    <td>${t.dept || t["القسم"] || '-'}</td>
+                    <td class="text-center font-mono">${t.year || t["السنة"] || '-'}</td>
+                    <td class="text-center text-gray-500 font-mono">${t.id || t["رقم الرسالة"] || '-'}</td>
+                    <td class="text-center">
+                        <span class="px-1.5 py-0.5 rounded text-[9px] ${ (t.status || t["الحالة"]) === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                            ${t.status || t["الحالة"] || '-'}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        ${(t.link || t["الرابط"]) ? `<a href="${t.link || t["الرابط"]}" target="_blank" class="text-blue-500 hover:underline">🔗</a>` : '-'}
+                    </td>
+                    <td class="text-gray-400 italic text-[10px] truncate max-w-[100px]" title="${t.notes || t["الملاحظات"] || ''}">${t.notes || t["الملاحظات"] || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // ربط الأحداث
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('uniFilter').addEventListener('change', applyFilters);
+        document.getElementById('collegeFilter').addEventListener('change', applyFilters);
+        document.getElementById('yearFilter').addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>
