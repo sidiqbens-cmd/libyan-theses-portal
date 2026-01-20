@@ -2,98 +2,69 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>رفع الرسائل | الفهرس الليبي الموحد</title>
+    <title>رفع البيانات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .dense-input { padding: 4px 8px; font-size: 13px; border: 1px solid #ddd; border-radius: 4px; width: 100%; }
-        label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; font-size: 12px; }
+        .input-dense { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100%; outline: none; }
+        .input-dense:focus { border-color: #1e40af; ring: 1px #1e40af; }
+        label { display: block; margin-bottom: 2px; font-weight: bold; color: #334155; font-size: 11px; }
+        th { background: #1e40af; color: white; padding: 6px; border: 1px solid #1e3a8a; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; }
     </style>
 </head>
-<body class="bg-gray-100 p-2">
+<body class="p-2">
 
-    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="bg-blue-800 text-white p-3 flex justify-between items-center">
-            <h1 class="text-lg font-bold">الفهرس الليبي الموحد - لوحة المندوب</h1>
+    <div class="max-w-[1400px] mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
+        <div class="bg-blue-900 text-white p-3 flex justify-between items-center">
+            <h1 class="text-sm font-bold">إضافة بيانات الرسائل - الفهرس الليبي الموحد</h1>
             <div class="flex gap-2">
-                <button onclick="downloadExcelTemplate()" class="bg-green-600 hover:bg-green-700 text-xs py-1 px-3 rounded">📥 تحميل قالب الإكسل</button>
+                <button onclick="downloadTemplate()" class="bg-green-600 px-3 py-1 rounded text-[11px] hover:bg-green-700">📥 قالب الإكسل</button>
                 <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls" onchange="handleExcel(event)">
-                <button onclick="document.getElementById('excelFile').click()" class="bg-yellow-500 hover:bg-yellow-600 text-xs py-1 px-3 text-blue-900 font-bold rounded">📤 رفع إكسل جماعي</button>
+                <button onclick="document.getElementById('excelFile').click()" class="bg-yellow-500 text-blue-900 px-3 py-1 rounded text-[11px] font-bold">📤 رفع إكسل جماعي</button>
             </div>
         </div>
 
-        <div class="p-4 border-b">
-            <h2 class="text-sm font-bold mb-3 border-r-4 border-blue-600 pr-2">إضافة رسالة جديدة</h2>
-            <form id="singleUploadForm" class="grid grid-cols-4 gap-3">
-                <div>
-                    <label>رقم الرسالة</label>
-                    <input type="text" id="thesisID" class="dense-input" required>
-                </div>
-                <div class="col-span-2">
-                    <label>عنوان الرسالة</label>
-                    <input type="text" id="title" class="dense-input" required>
-                </div>
-                <div>
-                    <label>اسم الباحث</label>
-                    <input type="text" id="author" class="dense-input" required>
-                </div>
-                <div>
-                    <label>الجامعة / الكلية</label>
-                    <input type="text" id="university" class="dense-input" required>
-                </div>
-                <div>
-                    <label>اسم المشرف</label>
-                    <input type="text" id="supervisor" class="dense-input">
-                </div>
-                <div>
-                    <label>السنة</label>
-                    <input type="number" id="year" class="dense-input" required>
-                </div>
+        <div class="p-3 border-b bg-blue-50">
+            <form id="uploadForm" class="grid grid-cols-6 gap-2">
+                <div><label>اسم الباحث</label><input type="text" id="author" class="input-dense" required></div>
+                <div class="col-span-2"><label>عنوان الرسالة</label><input type="text" id="title" class="input-dense" required></div>
+                <div><label>اسم المشرف</label><input type="text" id="sup" class="input-dense"></div>
+                <div><label>الجامعة</label><input type="text" id="uni" class="input-dense" required></div>
+                <div><label>الكلية</label><input type="text" id="college" class="input-dense"></div>
+                <div><label>القسم</label><input type="text" id="dept" class="input-dense"></div>
+                <div><label>السنة</label><input type="number" id="year" class="input-dense"></div>
+                <div><label>رقم الرسالة</label><input type="text" id="id" class="input-dense"></div>
                 <div>
                     <label>الحالة</label>
-                    <select id="status" class="dense-input">
+                    <select id="status" class="input-dense">
                         <option value="متوفرة">✅ متوفرة</option>
                         <option value="غير متوفرة">❌ غير متوفرة</option>
                     </select>
                 </div>
-                <div class="col-span-2">
-                    <label>رابط الرسالة (إن وجد)</label>
-                    <input type="url" id="link" class="dense-input" placeholder="http://...">
-                </div>
-                <div class="col-span-2">
-                    <label>ملاحظات إضافية</label>
-                    <input type="text" id="notes" class="dense-input">
-                </div>
-                <div class="col-span-4 flex justify-end">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-1 rounded text-sm hover:bg-blue-700">حفظ الرسالة</button>
-                </div>
+                <div><label>رابط الرسالة</label><input type="url" id="link" class="input-dense"></div>
+                <div><label>ملاحظات</label><input type="text" id="notes" class="input-dense"></div>
+                <div class="flex items-end"><button type="submit" class="bg-blue-800 text-white w-full py-1 rounded font-bold hover:bg-blue-900">حفظ فردي</button></div>
             </form>
         </div>
 
-        <div class="p-2 bg-gray-50 max-h-[300px] overflow-y-auto">
-            <table class="w-full text-[12px] text-right border-collapse">
-                <thead class="bg-gray-200 sticky top-0">
+        <div class="overflow-x-auto max-h-[400px]">
+            <table class="w-full text-right border-collapse">
+                <thead>
                     <tr>
-                        <th class="p-1 border">الرقم</th>
-                        <th class="p-1 border">العنوان</th>
-                        <th class="p-1 border">الباحث</th>
-                        <th class="p-1 border">الحالة</th>
-                        <th class="p-1 border">الملاحظات</th>
+                        <th>الباحث</th><th>العنوان</th><th>المشرف</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الرقم</th><th>الحالة</th><th>الرابط</th><th>ملاحظات</th>
                     </tr>
                 </thead>
-                <tbody id="previewTable">
-                    </tbody>
+                <tbody id="previewBody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase
-        const firebaseConfig = { /*const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
             projectId: "libyan-theses-portal",
@@ -103,67 +74,53 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // حفظ رسالة واحدة
-        document.getElementById('singleUploadForm').addEventListener('submit', function(e) {
+        // حفظ فردي
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const data = {
-                id: document.getElementById('thesisID').value,
-                title: document.getElementById('title').value,
                 author: document.getElementById('author').value,
-                uni: document.getElementById('university').value,
-                sup: document.getElementById('supervisor').value,
+                title: document.getElementById('title').value,
+                sup: document.getElementById('sup').value,
+                uni: document.getElementById('uni').value,
+                college: document.getElementById('college').value,
+                dept: document.getElementById('dept').value,
                 year: document.getElementById('year').value,
+                id: document.getElementById('id').value,
                 status: document.getElementById('status').value,
                 link: document.getElementById('link').value,
-                notes: document.getElementById('notes').value,
-                timestamp: Date.now()
+                notes: document.getElementById('notes').value
             };
-            
-            db.ref('theses/').push(data).then(() => {
-                alert("تم الحفظ بنجاح");
-                addToTable(data);
-                this.reset();
-            });
+            db.ref('theses').push(data).then(() => { alert('تم الحفظ!'); location.reload(); });
         });
 
-        // وظيفة الإكسل (تحميل القالب)
-        function downloadExcelTemplate() {
-            const data = [["رقم الرسالة", "العنوان", "الباحث", "الجامعة", "المشرف", "السنة", "الحالة", "الرابط", "الملاحظات"]];
-            const ws = XLSX.utils.aoa_to_sheet(data);
+        // تحميل القالب بالترتيب الجديد
+        function downloadTemplate() {
+            const headers = [["الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "السنة", "رقم الرسالة", "الحالة", "الرابط", "الملاحظات"]];
+            const ws = XLSX.utils.aoa_to_sheet(headers);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Template");
             XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
         }
 
-        // معالجة ملف الإكسل المرفوع
+        // معالجة الإكسل
         function handleExcel(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                
-                // رفع كل سطر إلى Firebase
+            reader.onload = (event) => {
+                const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                 jsonData.forEach(row => {
-                    db.ref('theses/').push(row);
-                    addToTable(row);
+                    db.ref('theses').push({
+                        author: row["الباحث"], title: row["العنوان"], sup: row["المشرف"],
+                        uni: row["الجامعة"], college: row["الكلية"], dept: row["القسم"],
+                        year: row["السنة"], id: row["رقم الرسالة"], status: row["الحالة"],
+                        link: row["الرابط"], notes: row["الملاحظات"]
+                    });
                 });
-                alert("تم رفع " + jsonData.length + " رسالة بنجاح!");
+                alert('تم رفع ' + jsonData.length + ' رسالة!');
+                location.reload();
             };
             reader.readAsArrayBuffer(file);
-        }
-
-        function addToTable(data) {
-            const row = `<tr>
-                <td class="p-1 border">${data.id || data["رقم الرسالة"]}</td>
-                <td class="p-1 border">${data.title || data["العنوان"]}</td>
-                <td class="p-1 border">${data.author || data["الباحث"]}</td>
-                <td class="p-1 border">${data.status || data["الحالة"]}</td>
-                <td class="p-1 border text-gray-500">${data.notes || data["الملاحظات"] || '-'}</td>
-            </tr>`;
-            document.getElementById('previewTable').innerHTML += row;
         }
     </script>
 </body>
