@@ -82,37 +82,30 @@
 
         // 3. دالة الاعتماد وإرسال الإيميل
         function approveLibrary(requestId, email) {
-            // إنشاء كلمة مرور عشوائية مؤقتة (سيتم تغييرها فوراً عبر الإيميل)
-            const temporaryPassword = "Libya" + Math.random().toString(36).slice(-8);
+            // 1. كلمة مرور مؤقتة (سيتم تغييرها فوراً)
+            const tempPass = "Libya2026@" + Math.random().toString(36).slice(-4);
 
-            // 1. إنشاء المستخدم في نظام Authentication أولاً
-            firebase.auth().createUserWithEmailAndPassword(email, temporaryPassword)
-                .then((userCredential) => {
-                    // 2. بعد إنشاء الحساب بنجاح، نطلب من Firebase إرسال إيميل إعادة تعيين كلمة المرور
+            // 2. إنشاء الحساب في قائمة Users لكي يتعرف عليه النظام
+            firebase.auth().createUserWithEmailAndPassword(email, tempPass)
+                .then(() => {
+                    // 3. إرسال إيميل ضبط كلمة المرور (سيعمل الآن لأن المستخدم مسجل)
                     return firebase.auth().sendPasswordResetEmail(email);
                 })
                 .then(() => {
-                    // 3. تحديث حالة الطلب في قاعدة البيانات إلى "تم الاعتماد"
-                    return db.ref('join_requests/' + requestId).update({
-                        status: 'تم الاعتماد'
-                    });
+                    // 4. تحديث حالة المكتبة في قاعدة البيانات لتختفي من قائمة الانتظار
+                    return db.ref('join_requests/' + requestId).update({ status: 'تم الاعتماد' });
                 })
                 .then(() => {
-                    alert("تم اعتماد المكتبة بنجاح ✅\n1. تم إنشاء الحساب.\n2. تم إرسال رابط ضبط كلمة المرور إلى: " + email);
+                    alert("تم اعتماد المكتبة بنجاح ✅\nسيصل رابط ضبط كلمة المرور إلى: " + email + "\nيرجى مراجعة مجلد Junk Email.");
                 })
                 .catch((error) => {
-                    // معالجة حالة إذا كان الحساب موجوداً مسبقاً في نظام Authentication
                     if (error.code === 'auth/email-already-in-use') {
-                        firebase.auth().sendPasswordResetEmail(email)
-                            .then(() => {
-                                return db.ref('join_requests/' + requestId).update({ status: 'تم الاعتماد' });
-                            })
-                            .then(() => {
-                                alert("هذا الحساب موجود مسبقاً. تم تحديث الحالة وإعادة إرسال رابط ضبط كلمة المرور.");
-                            });
+                        // إذا كان الحساب موجوداً مسبقاً، نكتفي بإرسال الإيميل وتحديث الحالة
+                        firebase.auth().sendPasswordResetEmail(email);
+                        db.ref('join_requests/' + requestId).update({ status: 'تم الاعتماد' });
+                        alert("تم تحديث الحالة وإرسال رابط كلمة المرور مجدداً.");
                     } else {
-                        console.error("خطأ في العملية: ", error);
-                        alert("حدث خطأ تقني: " + error.message);
+                        alert("خطأ: " + error.message);
                     }
                 });
         }
