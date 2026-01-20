@@ -82,16 +82,22 @@
 
         // 3. دالة الاعتماد وإرسال الإيميل
         function approveLibrary(requestId, email) {
+            // 1. تحديث الحالة في قاعدة البيانات
             db.ref('join_requests/' + requestId).update({
                 status: 'تم الاعتماد'
             }).then(() => {
+                // 2. محاولة إرسال إيميل إعادة التعيين
+                // ملاحظة: إذا لم يكن الإيميل مسجلاً كـ User، سيفشل الإرسال هنا
                 firebase.auth().sendPasswordResetEmail(email)
                     .then(() => {
-                        alert("تم اعتماد المكتبة بنجاح ✅ وإرسال رابط ضبط كلمة المرور إلى: " + email);
+                        alert("تم الاعتماد وإرسال رابط كلمة المرور بنجاح ✅");
                     })
                     .catch((error) => {
-                        console.error("فشل إرسال الإيميل: ", error);
-                        alert("تم التحديث في القاعدة، ولكن تعذر إرسال الإيميل التلقائي.");
+                        if (error.code === 'auth/user-not-found') {
+                            alert("تنبيه: تم اعتماد المكتبة، ولكن يجب عليك إضافة هذا الإيميل يدوياً في تبويب Authentication أولاً ليتمكن من استلام كلمة المرور.");
+                        } else {
+                            console.error("خطأ:", error);
+                        }
                     });
             });
         }
