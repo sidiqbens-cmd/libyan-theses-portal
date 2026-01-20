@@ -82,28 +82,27 @@
 
         // 3. دالة الاعتماد وإرسال الإيميل
         function approveLibrary(requestId, email) {
-            // 1. كلمة مرور مؤقتة (سيتم تغييرها فوراً)
+            // إجبار النظام على إرسال الإيميلات باللغة العربية
+            firebase.auth().languageCode = 'ar';
+
             const tempPass = "Libya2026@" + Math.random().toString(36).slice(-4);
 
-            // 2. إنشاء الحساب في قائمة Users لكي يتعرف عليه النظام
             firebase.auth().createUserWithEmailAndPassword(email, tempPass)
                 .then(() => {
-                    // 3. إرسال إيميل ضبط كلمة المرور (سيعمل الآن لأن المستخدم مسجل)
                     return firebase.auth().sendPasswordResetEmail(email);
                 })
                 .then(() => {
-                    // 4. تحديث حالة المكتبة في قاعدة البيانات لتختفي من قائمة الانتظار
                     return db.ref('join_requests/' + requestId).update({ status: 'تم الاعتماد' });
                 })
                 .then(() => {
-                    alert("تم اعتماد المكتبة بنجاح ✅\nسيصل رابط ضبط كلمة المرور إلى: " + email + "\nيرجى مراجعة مجلد Junk Email.");
+                    alert("تم اعتماد المكتبة بنجاح ✅\nستصل رسالة ضبط كلمة المرور بالعربية إلى: " + email);
                 })
                 .catch((error) => {
                     if (error.code === 'auth/email-already-in-use') {
-                        // إذا كان الحساب موجوداً مسبقاً، نكتفي بإرسال الإيميل وتحديث الحالة
+                        firebase.auth().languageCode = 'ar'; // التأكيد هنا أيضاً
                         firebase.auth().sendPasswordResetEmail(email);
                         db.ref('join_requests/' + requestId).update({ status: 'تم الاعتماد' });
-                        alert("تم تحديث الحالة وإرسال رابط كلمة المرور مجدداً.");
+                        alert("تم تحديث الحالة وإعادة إرسال رابط اللغة العربية.");
                     } else {
                         alert("خطأ: " + error.message);
                     }
