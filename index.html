@@ -9,48 +9,53 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8fafc; overflow: hidden; }
-        .filter-select { padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; background: white; outline: none; min-width: 120px; }
-        th { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 11px; padding: 6px; position: sticky; top: 0; border: 1px solid #1e40af; }
-        td { font-size: 11px; border-bottom: 1px solid #e2e8f0; padding: 4px; border-left: 1px solid #f1f5f9; }
-        tr:hover { background-color: #f1f5f9; }
-        .scroll-container { height: calc(100vh - 80px); overflow-y: auto; }
+        .filter-select { padding: 4px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; background: white; outline: none; min-width: 100px; }
+        th { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 10px; padding: 6px; position: sticky; top: 0; z-index: 10; }
+        td { font-size: 11px; border-bottom: 1px solid #e2e8f0; padding: 4px; }
+        .scroll-container { height: calc(100vh - 80px); overflow-y: auto; overflow-x: auto; }
+        /* تصميم النافذة المنبثقة */
+        #libModal { display: none; position: fixed; z-index: 50; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="p-2">
+<body class="p-2 text-right">
 
-    <div class="bg-white shadow-sm rounded border-r-4 border-blue-800 p-2 mb-2">
-        <div class="flex flex-wrap items-center gap-2">
-            <h1 class="text-xs font-bold text-blue-900 ml-2">الفهرس الليبي الموحد</h1>
-            
-            <input type="text" id="searchInput" placeholder="بحث بالاسم، العنوان، أو المشرف..." class="filter-select w-64 border-blue-200 focus:border-blue-500">
-            
-            <select id="uniFilter" class="filter-select"><option value="">كل الجامعات</option></select>
-            <select id="collegeFilter" class="filter-select"><option value="">كل الكليات</option></select>
-            <select id="yearFilter" class="filter-select"><option value="">كل السنوات</option></select>
-            
-            <div id="stats" class="text-[10px] text-blue-700 mr-auto font-bold bg-blue-50 px-2 py-1 rounded">جاري جلب البيانات...</div>
+    <div id="libModal" onclick="this.style.display='none'">
+        <div class="bg-white p-6 rounded-lg shadow-2xl max-w-sm w-full m-4" onclick="event.stopPropagation()">
+            <h2 id="m_name" class="text-xl font-bold text-blue-900 mb-2"></h2>
+            <p id="m_uni" class="text-sm text-gray-600 mb-4 border-b pb-2"></p>
+            <div class="space-y-3">
+                <div class="flex items-center gap-2"><span>📞</span> <a id="m_phone" class="text-blue-700 font-bold underline"></a></div>
+                <div class="flex items-center gap-2"><span>📧</span> <span id="m_email" class="text-gray-700"></span></div>
+                <a id="m_map" target="_blank" class="block w-full bg-green-600 text-white text-center py-2 rounded-md font-bold hover:bg-green-700 mt-4">📍 الانتقال للموقع على الخريطة</a>
+            </div>
+            <button onclick="document.getElementById('libModal').style.display='none'" class="mt-4 text-gray-400 text-xs w-full text-center">إغلاق</button>
         </div>
     </div>
 
-    <div class="bg-white shadow rounded overflow-hidden scroll-container">
-        <table class="w-full text-right border-collapse">
+    <div class="bg-white shadow-sm rounded border-r-4 border-blue-800 p-2 mb-2 flex flex-wrap items-center gap-2">
+        <h1 class="text-xs font-bold text-blue-900 ml-2">الفهرس الليبي الموحد</h1>
+        <input type="text" id="searchInput" placeholder="بحث بالباحث أو العنوان..." class="filter-select w-56 border-blue-200">
+        <select id="uniFilter" class="filter-select"><option value="">كل الجامعات</option></select>
+        <select id="degreeFilter" class="filter-select"><option value="">كل الدرجات</option><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
+        <div id="stats" class="text-[10px] text-blue-700 mr-auto font-bold bg-blue-50 px-2 py-1 rounded">جاري التحميل...</div>
+    </div>
+
+    <div class="bg-white shadow rounded scroll-container">
+        <table class="w-full text-right border-collapse min-w-[1000px]">
             <thead>
                 <tr>
-                    <th class="w-[12%]">الباحث</th>
-                    <th class="w-[20%]">عنوان الرسالة</th>
-                    <th class="w-[12%]">المشرف</th>
-                    <th>الجامعة</th>
-                    <th>الكلية</th>
-                    <th>القسم</th>
+                    <th class="w-[15%]">الباحث</th>
+                    <th class="w-[25%]">عنوان الرسالة</th>
+                    <th>المشرف</th>
+                    <th>الجامعة/الكلية</th>
+                    <th class="w-16 text-center">الدرجة</th>
                     <th class="w-14 text-center">السنة</th>
-                    <th class="w-20 text-center">الرقم</th>
                     <th class="w-16 text-center">الحالة</th>
+                    <th class="w-[15%]">المكتبة المقتنية</th>
                     <th class="w-10 text-center">🔗</th>
-                    <th class="w-[12%]">ملاحظات</th>
                 </tr>
             </thead>
-            <tbody id="thesesBody">
-                </tbody>
+            <tbody id="thesesBody"></tbody>
         </table>
     </div>
 
@@ -66,80 +71,93 @@
         const db = firebase.database();
 
         let allTheses = [];
+        let libraries = {};
 
-        // الاستماع المباشر لقاعدة البيانات
-        db.ref('theses').on('value', (snapshot) => {
-            allTheses = [];
-            if (snapshot.exists()) {
-                snapshot.forEach(child => {
-                    allTheses.push({ key: child.key, ...child.val() });
-                });
+        // 1. جلب دليل المكتبات المعتمدة أولاً
+        db.ref('libraries_directory').on('value', (snap) => {
+            libraries = {};
+            snap.forEach(child => {
+                const data = child.val();
+                if(data.status === 'active') {
+                    libraries[data.name.trim()] = data;
+                }
+            });
+            fetchTheses(); // جلب الرسائل بعد تحميل المكتبات
+        });
+
+        function fetchTheses() {
+            db.ref('theses').on('value', (snapshot) => {
+                allTheses = [];
+                snapshot.forEach(child => { allTheses.push(child.val()); });
                 updateDropdowns();
                 applyFilters();
-            } else {
-                document.getElementById('thesesBody').innerHTML = '<tr><td colspan="11" class="text-center py-10">لا توجد بيانات حالياً</td></tr>';
-                document.getElementById('stats').innerText = "0 رسالة";
-            }
-        });
+            });
+        }
 
         function updateDropdowns() {
             const unis = [...new Set(allTheses.map(t => t.uni || t["الجامعة"]))].filter(Boolean).sort();
-            const colleges = [...new Set(allTheses.map(t => t.college || t["الكلية"]))].filter(Boolean).sort();
-            const years = [...new Set(allTheses.map(t => t.year || t["السنة"]))].filter(Boolean).sort((a,b)=>b-a);
-            
             document.getElementById('uniFilter').innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option value="${u}">${u}</option>`).join('');
-            document.getElementById('collegeFilter').innerHTML = '<option value="">كل الكليات</option>' + colleges.map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('yearFilter').innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         }
 
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const uni = document.getElementById('uniFilter').value;
-            const college = document.getElementById('collegeFilter').value;
-            const year = document.getElementById('yearFilter').value;
+            const degree = document.getElementById('degreeFilter').value;
 
             const filtered = allTheses.filter(t => {
-                const textMatch = (t.author + t.title + t.sup + (t["الباحث"]||"") + (t["العنوان"]||"") + (t["المشرف"]||"")).toLowerCase().includes(search);
-                return textMatch && 
+                const text = (t.author + t.title + (t["الباحث"]||"") + (t["العنوان"]||"")).toLowerCase();
+                return text.includes(search) && 
                        (uni === "" || (t.uni || t["الجامعة"]) === uni) &&
-                       (college === "" || (t.college || t["الكلية"]) === college) &&
-                       (year === "" || (t.year || t["السنة"]).toString() === year);
+                       (degree === "" || (t.degree || t["الدرجة"]) === degree);
             });
-
             renderTable(filtered);
-            document.getElementById('stats').innerText = `إجمالي النتائج: ${filtered.length}`;
+            document.getElementById('stats').innerText = `النتائج: ${filtered.length}`;
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('thesesBody');
-            tbody.innerHTML = data.map(t => `
+            tbody.innerHTML = data.map(t => {
+                const libName = (t.library || t["المكتبة"] || "").trim();
+                const libInfo = libraries[libName];
+                
+                // إذا كانت المكتبة معتمدة، نجعل اسمها قابلاً للضغط
+                const libDisplay = libInfo 
+                    ? `<button onclick="showLib('${libName}')" class="text-blue-600 font-bold underline hover:text-blue-900 text-right">${libName}</button>`
+                    : `<span class="text-gray-400">${libName || '-'}</span>`;
+
+                return `
                 <tr>
-                    <td class="font-bold text-gray-700">${t.author || t["الباحث"] || '-'}</td>
-                    <td class="text-blue-900 font-medium">${t.title || t["العنوان"] || '-'}</td>
-                    <td class="text-gray-600">${t.sup || t["المشرف"] || '-'}</td>
-                    <td>${t.uni || t["الجامعة"] || '-'}</td>
-                    <td>${t.college || t["الكلية"] || '-'}</td>
-                    <td>${t.dept || t["القسم"] || '-'}</td>
+                    <td class="font-bold text-gray-800">${t.author || t["الباحث"] || '-'}</td>
+                    <td class="text-blue-900 font-medium leading-tight">${t.title || t["العنوان"] || '-'}</td>
+                    <td class="text-gray-500 text-[10px]">${t.sup || t["المشرف"] || '-'}</td>
+                    <td class="text-[10px]">${t.uni || t["الجامعة"] || '-'} / ${t.college || t["الكلية"] || '-'}</td>
+                    <td class="text-center font-bold text-blue-700">${t.degree || t["الدرجة"] || '-'}</td>
                     <td class="text-center font-mono">${t.year || t["السنة"] || '-'}</td>
-                    <td class="text-center text-gray-500 font-mono">${t.id || t["رقم الرسالة"] || '-'}</td>
                     <td class="text-center">
-                        <span class="px-1.5 py-0.5 rounded text-[9px] ${ (t.status || t["الحالة"]) === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                        <span class="px-1 py-0.5 rounded text-[9px] ${ (t.status || t["الحالة"]) === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
                             ${t.status || t["الحالة"] || '-'}
                         </span>
                     </td>
-                    <td class="text-center">
-                        ${(t.link || t["الرابط"]) ? `<a href="${t.link || t["الرابط"]}" target="_blank" class="text-blue-500 hover:underline">🔗</a>` : '-'}
-                    </td>
-                    <td class="text-gray-400 italic text-[10px] truncate max-w-[100px]" title="${t.notes || t["الملاحظات"] || ''}">${t.notes || t["الملاحظات"] || '-'}</td>
-                </tr>
-            `).join('');
+                    <td>${libDisplay}</td>
+                    <td class="text-center">${(t.link || t["الرابط"]) ? `<a href="${t.link || t["الرابط"]}" target="_blank">🔗</a>` : '-'}</td>
+                </tr>`;
+            }).join('');
         }
 
-        // ربط الأحداث
+        function showLib(name) {
+            const lib = libraries[name];
+            document.getElementById('m_name').innerText = lib.name;
+            document.getElementById('m_uni').innerText = lib.university + (lib.college ? ' - ' + lib.college : '');
+            document.getElementById('m_phone').innerText = lib.phone;
+            document.getElementById('m_phone').href = "tel:" + lib.phone;
+            document.getElementById('m_email').innerText = lib.email || 'غير متوفر';
+            document.getElementById('m_map').href = lib.mapUrl;
+            document.getElementById('libModal').style.display = 'flex';
+        }
+
         document.getElementById('searchInput').addEventListener('input', applyFilters);
         document.getElementById('uniFilter').addEventListener('change', applyFilters);
-        document.getElementById('collegeFilter').addEventListener('change', applyFilters);
-        document.getElementById('yearFilter').addEventListener('change', applyFilters);
+        document.getElementById('degreeFilter').addEventListener('change', applyFilters);
     </script>
 </body>
 </html>
