@@ -2,89 +2,47 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد | البحث والاستعراض</title>
+    <title>الفهرس الليبي الموحد | صفحة البحث</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f1f5f9; overflow: hidden; }
-        .filter-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; background: white; outline: none; }
-        th { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 10px; padding: 6px; position: sticky; top: 0; z-index: 10; border: 1px solid #1e40af; }
-        td { font-size: 11px; border-bottom: 1px solid #e2e8f0; padding: 4px; border-left: 1px solid #f1f5f9; background: white; }
-        tr:hover td { background-color: #f8fafc; }
-        .scroll-container { height: calc(100vh - 110px); overflow-y: auto; overflow-x: auto; }
-        #libModal { display: none; position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .filter-select { padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 11px; }
+        th { background-color: #1e3a8a; color: white; font-size: 10px; padding: 6px; position: sticky; top: 0; }
+        td { font-size: 11px; border-bottom: 1px solid #e2e8f0; padding: 4px; background: white; }
+        .scroll-container { height: calc(100vh - 120px); overflow-y: auto; }
     </style>
 </head>
-<body class="p-2 text-right">
+<body class="p-2">
 
-    <div id="libModal" onclick="this.style.display='none'">
-        <div class="bg-white p-6 rounded-lg shadow-2xl max-w-sm w-full m-4 border-t-8 border-orange-500" onclick="event.stopPropagation()">
-            <h2 id="m_name" class="text-xl font-bold text-blue-900 mb-1"></h2>
-            <p id="m_uni" class="text-xs text-gray-500 mb-4 border-b pb-2"></p>
-            <div class="space-y-4">
-                <div class="flex items-center gap-3 bg-blue-50 p-2 rounded">
-                    <span class="text-xl">📞</span> 
-                    <a id="m_phone" class="text-blue-700 font-bold underline text-lg"></a>
-                </div>
-                <div class="flex items-center gap-3 bg-gray-50 p-2 rounded">
-                    <span class="text-xl">📧</span> 
-                    <span id="m_email" class="text-gray-700 text-sm"></span>
-                </div>
-                <a id="m_map" target="_blank" class="block w-full bg-green-600 text-white text-center py-3 rounded-md font-bold hover:bg-green-700 shadow-lg transition">📍 فتح الموقع على خرائط جوجل</a>
-            </div>
-            <button onclick="document.getElementById('libModal').style.display='none'" class="mt-6 text-gray-400 text-[10px] w-full text-center hover:text-red-500 transition">إغلاق النافذة [X]</button>
+    <div class="bg-white shadow-md mb-2 p-3 rounded-lg flex justify-between items-center border-b-2 border-orange-500">
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-black text-blue-900">الفهرس الليبي الموحد</h1>
+            <input type="text" id="searchInput" placeholder="بحث بالعنوان أو الباحث..." class="filter-select w-64 border-blue-200">
         </div>
-    </div>
-
-    <div class="bg-white shadow-md mb-2 rounded-lg overflow-hidden border border-gray-200">
-        <div class="flex justify-between items-center p-3 border-b-2 border-blue-900 bg-white">
-            <div class="flex items-center gap-3">
-                <h1 class="text-lg font-black text-blue-900 tracking-tighter">الفهرس الليبي الموحد</h1>
-                <span class="hidden md:inline-block text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">بوابة الباحثين</span>
-            </div>
-            
-            <a href="join.html" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95">
-                <span class="text-lg">➕</span>
-                <span>انضمام مكتبة جديدة</span>
+        
+        <div class="flex gap-2">
+            <a href="join.html" class="bg-orange-500 text-white px-4 py-1.5 rounded text-xs font-bold hover:bg-orange-600 transition shadow-sm">
+                ➕ انضمام مكتبة
             </a>
-        </div>
-
-        <div class="p-2 flex flex-wrap items-center gap-3 bg-gray-50/50">
-            <div class="relative">
-                <input type="text" id="searchInput" placeholder="بحث بالباحث، العنوان، المشرف..." class="filter-select w-72 border-blue-200 focus:border-blue-600 py-1.5 pr-8">
-                <span class="absolute right-2 top-1.5 text-gray-400">🔍</span>
-            </div>
-            
-            <select id="uniFilter" class="filter-select border-blue-100"><option value="">كل الجامعات</option></select>
-            
-            <select id="degreeFilter" class="filter-select border-blue-100">
-                <option value="">كل الدرجات</option>
-                <option value="ماجستير">ماجستير</option>
-                <option value="دكتوراه">دكتوراه</option>
-                <option value="دبلوم عالي">دبلوم عالي</option>
-            </select>
-            
-            <div id="stats" class="text-[10px] text-blue-800 mr-auto font-bold bg-white px-3 py-1.5 border border-blue-100 rounded-md shadow-sm">
-                جاري التحميل...
+            <div id="stats" class="text-[10px] bg-blue-50 text-blue-800 px-3 py-1.5 rounded border border-blue-100 font-bold">
+                جاري التحديث...
             </div>
         </div>
     </div>
 
-    <div class="bg-white shadow-inner rounded-lg overflow-hidden scroll-container border border-gray-200">
-        <table class="w-full text-right border-collapse min-w-[1100px]">
+    <div class="scroll-container shadow-inner rounded border border-gray-200">
+        <table class="w-full text-right border-collapse">
             <thead>
                 <tr>
-                    <th class="w-[12%]">الباحث</th>
-                    <th class="w-[25%]">عنوان الرسالة العلمية</th>
-                    <th class="w-[12%]">المشرف</th>
-                    <th>الجامعة / الكلية</th>
-                    <th class="w-16 text-center">الدرجة</th>
-                    <th class="w-14 text-center">السنة</th>
-                    <th class="w-16 text-center">الحالة</th>
-                    <th class="w-[15%]">المكتبة المقتنية</th>
-                    <th class="w-10 text-center">🔗</th>
+                    <th>الباحث</th>
+                    <th>عنوان الرسالة</th>
+                    <th>الجامعة</th>
+                    <th>الدرجة</th>
+                    <th>السنة</th>
+                    <th>المكتبة المقتنية</th>
+                    <th>التواصل</th>
                 </tr>
             </thead>
             <tbody id="thesesBody">
@@ -93,7 +51,6 @@
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -104,96 +61,44 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let allTheses = [];
-        let libraries = {};
-
-        // 1. جلب بيانات المكتبات المعتمدة
-        db.ref('library_requests').on('value', (snap) => {
-            libraries = {};
-            snap.forEach(child => {
-                const data = child.val();
-                if(data.status === 'active') {
-                    libraries[data.name.trim()] = data;
-                }
-            });
-            fetchTheses();
-        });
-
-        function fetchTheses() {
+        // جلب الرسائل العلمية والمكتبات معاً
+        function loadData() {
             db.ref('theses').on('value', (snapshot) => {
-                allTheses = [];
-                snapshot.forEach(child => { allTheses.push(child.val()); });
-                updateDropdowns();
-                applyFilters();
+                const theses = [];
+                snapshot.forEach(child => theses.push(child.val()));
+                
+                db.ref('libraries_directory').once('value', (libSnap) => {
+                    const libs = {};
+                    libSnap.forEach(lc => {
+                        const lData = lc.val();
+                        if(lData.status === 'active') libs[lData.name] = lData;
+                    });
+                    renderTable(theses, libs);
+                });
             });
         }
 
-        function updateDropdowns() {
-            const unis = [...new Set(allTheses.map(t => t.uni || t["الجامعة"]))].filter(Boolean).sort();
-            document.getElementById('uniFilter').innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option value="${u}">${u}</option>`).join('');
-        }
-
-        function applyFilters() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const uni = document.getElementById('uniFilter').value;
-            const degree = document.getElementById('degreeFilter').value;
-
-            const filtered = allTheses.filter(t => {
-                const author = (t.author || t["الباحث"] || "").toLowerCase();
-                const title = (t.title || t["العنوان"] || "").toLowerCase();
-                return (author.includes(search) || title.includes(search)) && 
-                       (uni === "" || (t.uni || t["الجامعة"]) === uni) &&
-                       (degree === "" || (t.degree || t["الدرجة"]) === degree);
-            });
-            renderTable(filtered);
-            document.getElementById('stats').innerText = `النتائج المتاحة: ${filtered.length}`;
-        }
-
-        function renderTable(data) {
+        function renderTable(data, libs) {
             const tbody = document.getElementById('thesesBody');
             tbody.innerHTML = data.map(t => {
-                const libName = (t.library || t["المكتبة"] || "").trim();
-                const libInfo = libraries[libName];
-                
-                const libDisplay = libInfo 
-                    ? `<button onclick="showLib('${libName}')" class="text-blue-600 font-bold underline hover:text-orange-600 transition text-right">${libName}</button>`
-                    : `<span class="text-gray-400 italic">${libName || '-'}</span>`;
-
+                const libInfo = libs[t.library] || null;
                 return `
                 <tr>
-                    <td class="font-bold text-gray-800">${t.author || t["الباحث"] || '-'}</td>
-                    <td class="text-blue-900 font-medium leading-tight">${t.title || t["العنوان"] || '-'}</td>
-                    <td class="text-gray-500 text-[10px]">${t.sup || t["المشرف"] || '-'}</td>
-                    <td class="text-[10px]">${t.uni || t["الجامعة"] || '-'} / ${t.college || t["الكلية"] || '-'}</td>
-                    <td class="text-center font-bold text-blue-700">${t.degree || t["الدرجة"] || '-'}</td>
-                    <td class="text-center font-mono">${t.year || t["السنة"] || '-'}</td>
-                    <td class="text-center">
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${ (t.status || t["الحالة"]) === 'متوفرة' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}">
-                            ${t.status || t["الحالة"] || '-'}
-                        </span>
-                    </td>
-                    <td>${libDisplay}</td>
-                    <td class="text-center">
-                        ${(t.link || t["الرابط"]) ? `<a href="${t.link || t["الرابط"]}" target="_blank" class="text-blue-500 hover:scale-125 inline-block">🔗</a>` : '-'}
+                    <td class="font-bold">${t.author || '-'}</td>
+                    <td class="text-blue-900">${t.title || '-'}</td>
+                    <td>${t.uni || '-'}</td>
+                    <td class="text-center">${t.degree || '-'}</td>
+                    <td class="text-center">${t.year || '-'}</td>
+                    <td class="font-bold text-orange-700">${t.library || '-'}</td>
+                    <td>
+                        ${libInfo ? `<a href="tel:${libInfo.phone}" class="text-green-600">📞 اتصل</a>` : '<span class="text-gray-400">غير متوفر</span>'}
                     </td>
                 </tr>`;
             }).join('');
+            document.getElementById('stats').innerText = `إجمالي الرسائل: ${data.length}`;
         }
 
-        function showLib(name) {
-            const lib = libraries[name];
-            document.getElementById('m_name').innerText = lib.name;
-            document.getElementById('m_uni').innerText = lib.university + (lib.college ? ' - ' + lib.college : '');
-            document.getElementById('m_phone').innerText = lib.phone;
-            document.getElementById('m_phone').href = "tel:" + lib.phone;
-            document.getElementById('m_email').innerText = lib.email || 'غير متوفر';
-            document.getElementById('m_map').href = lib.mapUrl;
-            document.getElementById('libModal').style.display = 'flex';
-        }
-
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('uniFilter').addEventListener('change', applyFilters);
-        document.getElementById('degreeFilter').addEventListener('change', applyFilters);
+        loadData();
     </script>
 </body>
 </html>
