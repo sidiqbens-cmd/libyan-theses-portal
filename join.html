@@ -50,7 +50,7 @@
             };
 
             // إرسال البيانات إلى فرع libraries_directory
-            db.ref('libraries_directory').push(data)
+            db.ref('library_requests').push(data)
                 .then(() => {
                     msgDiv.innerText = "✅ تم إرسال طلبك بنجاح! بانتظار الاعتماد.";
                     msgDiv.className = "mt-3 text-center text-sm text-green-600 font-bold";
