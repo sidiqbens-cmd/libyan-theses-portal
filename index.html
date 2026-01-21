@@ -67,7 +67,7 @@
                 const theses = [];
                 snapshot.forEach(child => theses.push(child.val()));
                 
-                db.ref('libraries_directory').once('value', (libSnap) => {
+                db.ref('library_requests').push(data)
                     const libs = {};
                     libSnap.forEach(lc => {
                         const lData = lc.val();
