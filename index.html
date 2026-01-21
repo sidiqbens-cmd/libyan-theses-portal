@@ -108,7 +108,7 @@
         let libraries = {};
 
         // 1. جلب بيانات المكتبات المعتمدة
-        db.ref('libraries_directory').on('value', (snap) => {
+        db.ref('library_requests').on('value', (snap) => {
             libraries = {};
             snap.forEach(child => {
                 const data = child.val();
