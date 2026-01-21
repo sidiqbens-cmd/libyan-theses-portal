@@ -2,54 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم بوابة الرسائل الجامعية الليبية</title>
+    <title>الفهرس الليبي الموحد | الإدارة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background-color: #f1f5f9; font-size: 12px; }
-        .nav-btn { cursor: pointer; padding: 8px 12px; border-radius: 6px; transition: 0.2s; display: flex; align-items: center; gap: 8px; color: #475569; }
-        .nav-btn:hover { background: #f1f5f9; color: #1e3a8a; }
-        .active-tab { background: #1e3a8a !important; color: white !important; font-weight: bold; }
-        iframe { width: 100%; height: calc(100vh - 70px); border: none; background: white; border-radius: 8px; shadow: sm; }
+        th { background: #1e3a8a; color: white; font-size: 11px; padding: 10px; }
+        td { font-size: 12px; padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
-
-    <div class="w-60 bg-white shadow-xl flex flex-col">
-        <div class="p-4 border-b bg-gray-50 text-center">
-            <h1 class="text-blue-900 font-bold text-sm leading-tight">بوابة الرسائل الجامعية الليبية</h1>
-            <p class="text-[10px] text-gray-500 mt-1">لوحة التحكم المركزية</p>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-4 rounded-lg shadow-sm mb-4 flex justify-between items-center border-r-4 border-blue-900">
+            <h1 class="text-xl font-bold text-blue-900">إدارة طلبات الانضمام</h1>
+            <span id="reqCount" class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs font-bold">0 طلبات</span>
         </div>
 
-        <nav class="p-3 flex flex-col gap-1">
-            <div onclick="loadPage('admin.html', this)" class="nav-btn active-tab">
-                <span>➕</span> إضافة رسائل جديدة
-            </div>
-            <div onclick="loadPage('requests.html', this)" class="nav-btn">
-                <span>🏢</span> مراجعة طلبات الانضمام
-            </div>
-            <div onclick="loadPage('index.html', this)" class="nav-btn">
-                <span>🔍</span> استعراض البوابة العام
-            </div>
-        </nav>
-
-        <div class="mt-auto m-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <div class="text-blue-900 font-bold text-[10px] mb-2 border-b border-blue-200 pb-1">الإحصائيات اللحظية:</div>
-            <div id="statTheses" class="text-[11px] text-blue-800 font-medium">إجمالي الرسائل: --</div>
-            <div id="statLibs" class="text-[11px] text-blue-800 font-medium">المكتبات المعتمدة: --</div>
-        </div>
-    </div>
-
-    <div class="flex-1 flex flex-col bg-gray-100">
-        <header class="h-12 bg-white border-b px-4 flex justify-between items-center shadow-sm">
-            <h2 id="pageTitle" class="text-blue-900 font-bold">إضافة رسائل جديدة</h2>
-            <div class="text-gray-400 text-[10px]">مرحباً بك، مدير النظام</div>
-        </header>
-        <main class="p-3 flex-1 overflow-hidden">
-            <iframe id="mainFrame" src="admin.html"></iframe>
-        </main>
+        <table class="w-full shadow-lg rounded-lg overflow-hidden">
+            <thead>
+                <tr>
+                    <th>المكتبة</th>
+                    <th>التبعية</th>
+                    <th>الهاتف</th>
+                    <th>الموقع</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="bg-white">
+                </tbody>
+        </table>
     </div>
 
     <script>
@@ -61,24 +42,48 @@
             appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
         };
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        function loadPage(page, element) {
-            document.getElementById('mainFrame').src = page;
-            document.getElementById('pageTitle').innerText = element.innerText.substring(3);
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab'));
-            element.classList.add('active-tab');
+        db.ref('join_requests').on('value', (snap) => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            let count = 0;
+            snap.forEach(child => {
+                const d = child.val();
+                const k = child.key;
+                count++;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${d.libraryName}</td>
+                        <td>${d.affiliation}</td>
+                        <td class="font-mono">${d.phone}</td>
+                        <td><a href="${d.location}" target="_blank" class="text-blue-500">📍 الخريطة</a></td>
+                        <td>
+                            <button onclick="approve('${k}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold">اعتماد</button>
+                            <button onclick="reject('${k}')" class="bg-red-100 text-red-600 px-2 py-1 rounded text-[10px]">حذف</button>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('reqCount').innerText = count + " طلبات";
+        });
+
+        function approve(key) {
+            if(confirm('اعتماد هذه المكتبة ونشرها؟')) {
+                db.ref('join_requests/' + key).once('value', (s) => {
+                    const data = s.val();
+                    data.status = 'active';
+                    // النقل للمجلد النهائي المعتمد
+                    db.ref('libraries_directory').push(data).then(() => {
+                        db.ref('join_requests/' + key).remove();
+                        alert('تم الاعتماد بنجاح');
+                    });
+                });
+            }
         }
 
-        // تحديث الأرقام مباشرة
-        database.ref('theses').on('value', snap => {
-            document.getElementById('statTheses').innerText = `إجمالي الرسائل: ${snap.numChildren()}`;
-        });
-        database.ref('join_requests').on('value', snap => {
-            let approved = 0;
-            snap.forEach(child => { if(child.val().status === 'approved') approved++; });
-            document.getElementById('statLibs').innerText = `المكتبات المعتمدة: ${approved}`;
-        });
+        function reject(key) {
+            if(confirm('هل تريد حذف هذا الطلب؟')) db.ref('join_requests/' + key).remove();
+        }
     </script>
 </body>
 </html>
