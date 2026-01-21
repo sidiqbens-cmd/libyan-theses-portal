@@ -2,129 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طلب انضمام مكتبة - بوابة الرسائل الجامعية الليبية</title>
+    <title>انضمام مكتبة | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
-        .form-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .input-group { margin-bottom: 12px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: #1e3a8a; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.2s; }
-        input:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f8fafc; }
+        .form-card { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid #1e3a8a; }
+        label { block; margin-bottom: 5px; font-weight: 600; color: #1e293b; font-size: 13px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: #1e3a8a; ring: 2px #bfdbfe; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-2xl mx-auto form-card p-6">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-blue-900">نموذج انضمام مكتبة</h1>
-            <p class="text-gray-500 text-sm mt-1">بوابة الرسائل الجامعية الليبية</p>
+<body class="p-4">
+
+    <div class="form-card shadow-xl">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-blue-900">طلب انضمام مكتبة</h1>
+            <p class="text-gray-500 text-sm">ساهم في بناء أكبر قاعدة بيانات للرسائل العلمية في ليبيا</p>
         </div>
 
         <form id="joinForm">
-            <div class="input-group">
-                <label>اسم المكتبة</label>
-                <input type="text" id="libName" required placeholder="مثال: المكتبة المركزية بجامعة بنغازي">
-            </div>
+            <label>الاسم الرسمي للمكتبة (كما سيظهر في الفهرس)</label>
+            <input type="text" id="libName" placeholder="مثلاً: مكتبة كلية الهندسة - جامعة طرابلس" required>
 
-            <div class="grid-layout">
-                <div class="input-group">
-                    <label>نوع المكتبة</label>
-                    <select id="libType" required>
-                        <option value="">اختر النوع...</option>
-                        <option value="جامعية">جامعية</option>
-                        <option value="عامة">عامة</option>
-                        <option value="متخصصة">متخصصة</option>
-                        <option value="وطنية">وطنية</option>
-                    </select>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label>الجامعة التابعة لها</label>
+                    <input type="text" id="libUni" placeholder="جامعة طرابلس" required>
                 </div>
-                <div class="input-group">
-                    <label>التبعية</label>
-                    <input type="text" id="affiliation" required placeholder="مثال: وزارة التعليم العالي">
+                <div>
+                    <label>الكلية (إن وجد)</label>
+                    <input type="text" id="libCollege" placeholder="كلية الآداب">
                 </div>
             </div>
 
-            <div class="grid-layout">
-                <div class="input-group">
-                    <label>الموقع الجغرافي (المدينة)</label>
-                    <input type="text" id="location" required placeholder="مثال: طرابلس">
-                </div>
-                <div class="input-group">
-                    <label>العنوان بالتفصيل</label>
-                    <input type="text" id="address" required placeholder="الحي / الشارع">
-                </div>
-            </div>
+            <hr class="my-4">
 
-            <div class="input-group">
-                <label>البريد الإلكتروني الرسمي</label>
-                <input type="email" id="officialEmail" required placeholder="library@university.edu.ly">
-            </div>
+            <label>رقم هاتف التواصل (واتساب)</label>
+            <input type="tel" id="libPhone" placeholder="09XXXXXXXX" required>
 
-            <div class="grid-layout">
-                <div class="input-group">
-                    <label>اسم المسؤول</label>
-                    <input type="text" id="adminName" required placeholder="الاسم الرباعي">
-                </div>
-                <div class="input-group">
-                    <label>رقم هاتف المسؤول</label>
-                    <input type="tel" id="adminPhone" required placeholder="09XXXXXXXX">
-                </div>
-            </div>
+            <label>البريد الإلكتروني الرسمي</label>
+            <input type="email" id="libEmail" placeholder="library@uni.edu.ly">
 
-            <button type="submit" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-colors mt-4">
-                إرسال طلب الانضمام
-            </button>
+            <hr class="my-4">
+
+            <label>رابط موقع المكتبة على خرائط جوجل (Google Maps)</label>
+            <div class="flex gap-2">
+                <input type="url" id="libMap" placeholder="صق الرابط هنا..." required>
+                <button type="button" onclick="window.open('https://www.google.com/maps', '_blank')" class="bg-gray-100 px-3 py-2 rounded text-[10px] border h-fit">افتح الخريطة</button>
+            </div>
+            <p class="text-[10px] text-gray-400 mb-4">* افتح الخرائط، حدد موقع مكتبتكم، ثم انسخ الرابط والصقه هنا.</p>
+
+            <button type="submit" class="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition shadow-lg">إرسال طلب الانضمام</button>
         </form>
-
-        <div id="responseMsg" class="hidden mt-4 p-4 text-center rounded-lg font-bold"></div>
     </div>
 
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
             projectId: "libyan-theses-portal",
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-            storageBucket: "libyan-theses-portal.appspot.com",
-            messagingSenderId: "80818219253",
             appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
         };
-
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        document.getElementById('joinForm').addEventListener('submit', function(e) {
+        document.getElementById('joinForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const msg = document.getElementById('responseMsg');
-
-            const joinRequest = {
-                libraryName: document.getElementById('libName').value,
-                libraryType: document.getElementById('libType').value,
-                affiliation: document.getElementById('affiliation').value,
-                location: document.getElementById('location').value,
-                address: document.getElementById('address').value,
-                email: document.getElementById('officialEmail').value,
-                adminName: document.getElementById('adminName').value,
-                phone: document.getElementById('adminPhone').value,
-                requestDate: new Date().toLocaleString('ar-LY'),
-                status: "pending"
+            const data = {
+                name: document.getElementById('libName').value,
+                university: document.getElementById('libUni').value,
+                college: document.getElementById('libCollege').value,
+                phone: document.getElementById('libPhone').value,
+                email: document.getElementById('libEmail').value,
+                mapUrl: document.getElementById('libMap').value,
+                status: "pending", // الطلبات تكون معلقة حتى توافق عليها
+                joinDate: new Date().toISOString()
             };
 
-            // تخزين الطلبات في فرع جديد باسم 'join_requests'
-            database.ref('join_requests').push(joinRequest)
-                .then(() => {
-                    msg.textContent = "✅ تم استلام طلبكم بنجاح. سنقوم بالتواصل معكم قريباً.";
-                    msg.className = "mt-4 p-4 bg-green-100 text-green-700 rounded-lg block";
-                    document.getElementById('joinForm').reset();
-                })
-                .catch((error) => {
-                    msg.textContent = "❌ حدث خطأ: " + error.message;
-                    msg.className = "mt-4 p-4 bg-red-100 text-red-700 rounded-lg block";
-                });
+            db.ref('libraries_directory').push(data).then(() => {
+                alert('شكراً لكم! تم إرسال طلب الانضمام بنجاح. سيقوم فريق الفهرس بمراجعة البيانات وتفعيلها قريباً.');
+                document.getElementById('joinForm').reset();
+            });
         });
     </script>
 </body>
