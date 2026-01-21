@@ -58,7 +58,7 @@
 
         function approve(id) {
             db.ref('join_requests').on('value', (snapshot) => {
-    const tbody = document.getElementById('tableBody'); // أوrequestsList حسب المسمى عندك
+    const tbody = document.getElementById('requestsList');حسب المسمى عندك
     tbody.innerHTML = '';
     
     snapshot.forEach((child) => {
