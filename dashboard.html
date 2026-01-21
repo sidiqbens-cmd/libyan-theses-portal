@@ -2,29 +2,54 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم | الفهرس الليبي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفهرس الليبي الموحد | لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background-color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
+        .data-table { border-collapse: separate; border-spacing: 0; width: 100%; }
+        .data-table th { background: #1e3a8a; color: white; position: sticky; top: 0; z-index: 10; font-size: 12px; padding: 10px; }
+        .data-table td { font-size: 12px; padding: 8px; border-bottom: 1px solid #e2e8f0; background: white; }
+        .table-wrapper { height: calc(100vh - 120px); overflow-y: auto; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </style>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-5">
-        <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b-2 border-blue-900 pb-2">طلبات الانضمام الواردة</h2>
-        <table class="w-full text-sm text-center border-collapse">
-            <thead>
-                <tr class="bg-blue-900 text-white">
-                    <th class="p-3">المكتبة</th>
-                    <th class="p-3">التبعية (الجامعة)</th>
-                    <th class="p-3">الهاتف</th>
-                    <th class="p-3">الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="requestsList">
+<body class="p-3">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm mb-3 border-r-4 border-blue-900">
+            <div>
+                <h1 class="text-xl font-black text-blue-900 leading-none">إدارة طلبات الانضمام</h1>
+                <p class="text-[10px] text-gray-500 mt-1">الفهرس الليبي الموحد - 2026</p>
+            </div>
+            <div class="flex gap-2">
+                <span id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">جاري المزامنة...</span>
+                <button onclick="location.reload()" class="bg-gray-200 p-1 rounded hover:bg-gray-300 transition">🔄</button>
+            </div>
+        </div>
+
+        <div class="table-wrapper border bg-white">
+            <table class="data-table text-center">
+                <thead>
+                    <tr>
+                        <th>اسم المكتبة</th>
+                        <th>الجامعة / التبعية</th>
+                        <th>بيانات التواصل</th>
+                        <th>الموقع الجغرافي</th>
+                        <th>تاريخ الطلب</th>
+                        <th>الإجراء المتخذ</th>
+                    </tr>
+                </thead>
+                <tbody id="requestsList">
+                    <tr><td colspan="6" class="p-10 text-gray-400">جاري فحص قاعدة البيانات...</td></tr>
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
     <script>
+        // إعدادات Firebase الخاصة بمشروعك
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -32,57 +57,86 @@
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
             appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
         };
-        firebase.initializeApp(firebaseConfig);
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.database();
 
-        // القراءة من مجلد join_requests الموضح في لقطة شاشتك
+        // الاستماع المباشر للتغييرات في مجلد join_requests
         db.ref('join_requests').on('value', (snapshot) => {
-            const list = document.getElementById('requestsList');
-            list.innerHTML = '';
+            const tbody = document.getElementById('requestsList');
+            const stats = document.getElementById('stats');
+            tbody.innerHTML = '';
             
+            if (!snapshot.exists()) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-gray-500 italic">لا توجد طلبات انضمام حالياً</td></tr>';
+                stats.innerText = "الطلبات: 0";
+                return;
+            }
+
+            let count = 0;
             snapshot.forEach((child) => {
                 const data = child.val();
                 const key = child.key;
+                count++;
 
-                list.innerHTML += `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3 font-bold text-blue-800">${data.libraryName || 'بدون اسم'}</td>
-                        <td class="p-3">${data.affiliation || '-'}</td>
-                        <td class="p-3 font-mono">${data.phone || '-'}</td>
-                        <td class="p-3">
-                            <button onclick="approve('${key}')" class="bg-green-600 text-white px-4 py-1 rounded shadow hover:bg-green-700">اعتماد</button>
+                // معالجة المسميات بذكاء (القديم والجديد)
+                const libName = data.libraryName || data.name || "غير مسمى";
+                const libAff = data.affiliation || data.university || "-";
+                const libPhone = data.phone || "-";
+                const libEmail = data.email || "-";
+                const libLoc = data.location || "#";
+                const reqDate = data.requestDate || "-";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-blue-50 transition-colors">
+                        <td class="font-bold text-blue-900 text-right pr-4">${libName}</td>
+                        <td class="text-gray-600">${libAff}</td>
+                        <td class="text-[10px] leading-tight text-right">
+                            <div class="font-mono text-green-700">📞 ${libPhone}</div>
+                            <div class="text-gray-400">✉️ ${libEmail}</div>
                         </td>
-                    </tr>`;
+                        <td>
+                            <a href="${libLoc}" target="_blank" class="text-blue-500 hover:underline text-[10px] font-bold">📍 عرض الخريطة</a>
+                        </td>
+                        <td class="text-gray-400 text-[10px]">${reqDate}</td>
+                        <td class="flex justify-center gap-1 p-2">
+                            <button onclick="approveLibrary('${key}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">اعتماد</button>
+                            <button onclick="rejectLibrary('${key}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded text-[10px]">حذف</button>
+                        </td>
+                    </tr>
+                `;
             });
+            stats.innerText = "إجمالي الطلبات: " + count;
         });
 
-        function approve(id) {
-            db.ref('join_requests').on('value', (snapshot) => {
-    const tbody = document.getElementById('requestsList');حسب المسمى عندك
-    tbody.innerHTML = '';
-    
-    snapshot.forEach((child) => {
-        const data = child.val();
-        const key = child.key;
+        // دالة الاعتماد: تنقل البيانات للمجلد العام libraries_directory وتفعلها
+        function approveLibrary(id) {
+            if (confirm('هل أنت متأكد من اعتماد هذه المكتبة ونشرها في الدليل العام؟')) {
+                db.ref('join_requests/' + id).once('value', (snapshot) => {
+                    const libraryData = snapshot.val();
+                    libraryData.status = "active"; // تغيير الحالة للنشر
+                    libraryData.approvalDate = new Date().toLocaleString('ar-LY');
 
-        // كود ذكي لاختيار المسمى المتاح (القديم أو الجديد)
-        const name = data.libraryName || data.name || "غير مسمى";
-        const aff = data.affiliation || data.university || data.uni || "-";
-        const phone = data.phone || "-";
+                    // 1. الإضافة للمجلد العام
+                    db.ref('libraries_directory').push(libraryData).then(() => {
+                        // 2. الحذف من طلبات الانتظار
+                        db.ref('join_requests/' + id).remove().then(() => {
+                            alert("تم اعتماد المكتبة بنجاح وتفعيلها في البحث العام.");
+                        });
+                    });
+                });
+            }
+        }
 
-        tbody.innerHTML += `
-            <tr class="border-b hover:bg-gray-50">
-                <td class="p-3 font-bold text-blue-900">${name}</td>
-                <td class="p-3">${aff}</td>
-                <td class="p-3 font-mono text-green-700">${phone}</td>
-                <td class="p-3">
-                    <button onclick="approve('${key}')" class="bg-green-600 text-white px-4 py-1 rounded text-xs font-bold hover:bg-green-700 shadow-sm">اعتماد</button>
-                    <button onclick="reject('${key}')" class="text-red-500 mr-2 text-xs">حذف</button>
-                </td>
-            </tr>
-        `;
-    });
-});
+        // دالة الرفض/الحذف
+        function rejectLibrary(id) {
+            if (confirm('هل تريد حذف هذا الطلب نهائياً؟')) {
+                db.ref('join_requests/' + id).remove().then(() => {
+                    alert("تم حذف الطلب.");
+                });
+            }
         }
     </script>
 </body>
