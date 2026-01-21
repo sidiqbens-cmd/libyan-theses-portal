@@ -57,16 +57,32 @@
         });
 
         function approve(id) {
-            db.ref('join_requests/' + id).once('value', (snap) => {
-                const data = snap.val();
-                data.status = 'active'; // تفعيلها للجمهور
-                
-                // نقلها إلى المجلد النهائي libraries_directory لتعمل في صفحة البحث
-                db.ref('libraries_directory').push(data).then(() => {
-                    db.ref('join_requests/' + id).remove(); // حذفها من الطلبات
-                    alert('تم الاعتماد ونشر المكتبة في الفهرس بنجاح!');
-                });
-            });
+            db.ref('join_requests').on('value', (snapshot) => {
+    const tbody = document.getElementById('tableBody'); // أوrequestsList حسب المسمى عندك
+    tbody.innerHTML = '';
+    
+    snapshot.forEach((child) => {
+        const data = child.val();
+        const key = child.key;
+
+        // كود ذكي لاختيار المسمى المتاح (القديم أو الجديد)
+        const name = data.libraryName || data.name || "غير مسمى";
+        const aff = data.affiliation || data.university || data.uni || "-";
+        const phone = data.phone || "-";
+
+        tbody.innerHTML += `
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-3 font-bold text-blue-900">${name}</td>
+                <td class="p-3">${aff}</td>
+                <td class="p-3 font-mono text-green-700">${phone}</td>
+                <td class="p-3">
+                    <button onclick="approve('${key}')" class="bg-green-600 text-white px-4 py-1 rounded text-xs font-bold hover:bg-green-700 shadow-sm">اعتماد</button>
+                    <button onclick="reject('${key}')" class="text-red-500 mr-2 text-xs">حذف</button>
+                </td>
+            </tr>
+        `;
+    });
+});
         }
     </script>
 </body>
