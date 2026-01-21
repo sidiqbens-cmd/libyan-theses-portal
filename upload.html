@@ -2,68 +2,92 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رفع البيانات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; font-size: 12px; }
-        .input-dense { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100%; outline: none; }
-        .input-dense:focus { border-color: #1e40af; ring: 1px #1e40af; }
-        label { display: block; margin-bottom: 2px; font-weight: bold; color: #334155; font-size: 11px; }
-        th { background: #1e40af; color: white; padding: 6px; border: 1px solid #1e3a8a; }
-        td { padding: 4px; border: 1px solid #e2e8f0; background: white; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f1f5f9; font-size: 11px; }
+        .input-field { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100%; outline: none; transition: 0.2s; }
+        .input-field:focus { border-color: #1e40af; box-shadow: 0 0 0 1px #1e40af; }
+        label { display: block; margin-bottom: 2px; font-weight: bold; color: #1e3a8a; font-size: 10px; }
+        th { background: #1e3a8a; color: white; padding: 6px; font-size: 11px; border: 1px solid #1e40af; position: sticky; top: 0; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; white-space: nowrap; }
+        .card { background: white; border-radius: 8px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body class="p-2">
 
-    <div class="max-w-[1400px] mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
-        <div class="bg-blue-900 text-white p-3 flex justify-between items-center">
-            <h1 class="text-sm font-bold">إضافة بيانات الرسائل - الفهرس الليبي الموحد</h1>
+    <div class="max-w-[1500px] mx-auto">
+        <div class="bg-white p-3 rounded-t-lg border-b-2 border-blue-900 flex justify-between items-center shadow-sm">
+            <div>
+                <h1 class="text-sm font-bold text-blue-900">لوحة تحكم المناديب - الفهرس الليبي الموحد</h1>
+                <p class="text-[10px] text-gray-500">إضافة الرسائل العلمية (فردي / جماعي)</p>
+            </div>
             <div class="flex gap-2">
-                <button onclick="downloadTemplate()" class="bg-green-600 px-3 py-1 rounded text-[11px] hover:bg-green-700">📥 قالب الإكسل</button>
+                <button onclick="downloadTemplate()" class="bg-green-700 hover:bg-green-800 text-white px-4 py-1.5 rounded flex items-center gap-1 font-bold transition">
+                    📥 تحميل قالب الإكسل (RTL)
+                </button>
                 <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls" onchange="handleExcel(event)">
-                <button onclick="document.getElementById('excelFile').click()" class="bg-yellow-500 text-blue-900 px-3 py-1 rounded text-[11px] font-bold">📤 رفع إكسل جماعي</button>
+                <button onclick="document.getElementById('excelFile').click()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded flex items-center gap-1 font-bold transition">
+                    📤 رفع ملف إكسل جاهز
+                </button>
             </div>
         </div>
 
-        <div class="p-3 border-b bg-blue-50">
-            <form id="uploadForm" class="grid grid-cols-6 gap-2">
-                <div><label>اسم الباحث</label><input type="text" id="author" class="input-dense" required></div>
-                <div class="col-span-2"><label>عنوان الرسالة</label><input type="text" id="title" class="input-dense" required></div>
-                <div><label>اسم المشرف</label><input type="text" id="sup" class="input-dense"></div>
-                <div><label>الجامعة</label><input type="text" id="uni" class="input-dense" required></div>
-                <div><label>الكلية</label><input type="text" id="college" class="input-dense"></div>
-                <div><label>القسم</label><input type="text" id="dept" class="input-dense"></div>
-                <div><label>السنة</label><input type="number" id="year" class="input-dense"></div>
-                <div><label>رقم الرسالة</label><input type="text" id="id" class="input-dense"></div>
+        <div class="bg-blue-50 p-3 border-x border-b border-gray-200">
+            <form id="uploadForm" class="grid grid-cols-6 gap-x-3 gap-y-2">
+                <div><label>اسم الباحث</label><input type="text" id="author" class="input-field" required></div>
+                <div class="col-span-2"><label>عنوان الرسالة</label><input type="text" id="title" class="input-field" required></div>
+                <div><label>المشرف</label><input type="text" id="sup" class="input-field"></div>
+                <div><label>الجامعة</label><input type="text" id="uni" class="input-field" required></div>
+                <div><label>الكلية</label><input type="text" id="college" class="input-field"></div>
+                
+                <div><label>القسم</label><input type="text" id="dept" class="input-field"></div>
+                <div>
+                    <label>الدرجة العلمية</label>
+                    <select id="degree" class="input-field">
+                        <option value="ماجستير">ماجستير</option>
+                        <option value="دكتوراه">دكتوراه</option>
+                        <option value="دبلوم عالي">دبلوم عالي</option>
+                    </select>
+                </div>
+                <div><label>السنة</label><input type="number" id="year" class="input-field"></div>
+                <div><label>رقم الرسالة</label><input type="text" id="id" class="input-field"></div>
                 <div>
                     <label>الحالة</label>
-                    <select id="status" class="input-dense">
+                    <select id="status" class="input-field">
                         <option value="متوفرة">✅ متوفرة</option>
                         <option value="غير متوفرة">❌ غير متوفرة</option>
                     </select>
                 </div>
-                <div><label>رابط الرسالة</label><input type="url" id="link" class="input-dense"></div>
-                <div><label>ملاحظات</label><input type="text" id="notes" class="input-dense"></div>
-                <div class="flex items-end"><button type="submit" class="bg-blue-800 text-white w-full py-1 rounded font-bold hover:bg-blue-900">حفظ فردي</button></div>
+                <div><label>رابط الرسالة (URL)</label><input type="url" id="link" class="input-field" placeholder="https://.."></div>
+                
+                <div class="col-span-5"><label>ملاحظات إضافية</label><input type="text" id="notes" class="input-field"></div>
+                <div class="flex items-end">
+                    <button type="submit" class="bg-blue-900 text-white w-full py-1.5 rounded font-bold hover:bg-black transition">حفظ البيانات</button>
+                </div>
             </form>
         </div>
 
-        <div class="overflow-x-auto max-h-[400px]">
+        <div class="bg-white mt-2 rounded-b-lg shadow-inner overflow-x-auto max-h-[450px]">
             <table class="w-full text-right border-collapse">
                 <thead>
                     <tr>
-                        <th>الباحث</th><th>العنوان</th><th>المشرف</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الرقم</th><th>الحالة</th><th>الرابط</th><th>ملاحظات</th>
+                        <th>الباحث</th><th>العنوان</th><th>المشرف</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>الدرجة</th><th>السنة</th><th>رقم الرسالة</th><th>الحالة</th><th>🔗</th><th>الملاحظات</th>
                     </tr>
                 </thead>
-                <tbody id="previewBody"></tbody>
+                <tbody id="previewBody">
+                    </tbody>
             </table>
         </div>
     </div>
 
     <script>
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -74,7 +98,21 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // حفظ فردي
+        // 1. وظيفة تحميل قالب الإكسل (RTL)
+        function downloadTemplate() {
+            const headers = [["الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "الدرجة", "السنة", "رقم الرسالة", "الحالة", "الرابط", "الملاحظات"]];
+            const ws = XLSX.utils.aoa_to_sheet(headers);
+            
+            // ضبط الاتجاه من اليمين إلى اليسار
+            if(!ws['!views']) ws['!views'] = [];
+            ws['!views'][0] = { RTL: true };
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "الفهرس الليبي الموحد");
+            XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
+        }
+
+        // 2. معالجة وحفظ الفورم الفردي
         document.getElementById('uploadForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const data = {
@@ -84,44 +122,69 @@
                 uni: document.getElementById('uni').value,
                 college: document.getElementById('college').value,
                 dept: document.getElementById('dept').value,
+                degree: document.getElementById('degree').value,
                 year: document.getElementById('year').value,
                 id: document.getElementById('id').value,
                 status: document.getElementById('status').value,
                 link: document.getElementById('link').value,
                 notes: document.getElementById('notes').value
             };
-            db.ref('theses').push(data).then(() => { alert('تم الحفظ!'); location.reload(); });
+            db.ref('theses').push(data).then(() => {
+                alert('تم حفظ البيانات بنجاح في الفهرس الموحد');
+                document.getElementById('uploadForm').reset();
+            });
         });
 
-        // تحميل القالب بالترتيب الجديد
-        function downloadTemplate() {
-            const headers = [["الباحث", "العنوان", "المشرف", "الجامعة", "الكلية", "القسم", "السنة", "رقم الرسالة", "الحالة", "الرابط", "الملاحظات"]];
-            const ws = XLSX.utils.aoa_to_sheet(headers);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Template");
-            XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
-        }
-
-        // معالجة الإكسل
+        // 3. رفع الإكسل الجماعي
         function handleExcel(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = (event) => {
-                const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
-                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                
+                let count = 0;
                 jsonData.forEach(row => {
                     db.ref('theses').push({
                         author: row["الباحث"], title: row["العنوان"], sup: row["المشرف"],
                         uni: row["الجامعة"], college: row["الكلية"], dept: row["القسم"],
-                        year: row["السنة"], id: row["رقم الرسالة"], status: row["الحالة"],
-                        link: row["الرابط"], notes: row["الملاحظات"]
+                        degree: row["الدرجة"], year: row["السنة"], id: row["رقم الرسالة"],
+                        status: row["الحالة"], link: row["الرابط"], notes: row["الملاحظات"]
                     });
+                    count++;
                 });
-                alert('تم رفع ' + jsonData.length + ' رسالة!');
+                alert('تم بنجاح رفع ' + count + ' رسالة إلى الفهرس.');
                 location.reload();
             };
             reader.readAsArrayBuffer(file);
         }
+
+        // 4. عرض آخر البيانات المرفوعة للمعاينة
+        db.ref('theses').limitToLast(10).on('value', (snap) => {
+            const tbody = document.getElementById('previewBody');
+            tbody.innerHTML = '';
+            snap.forEach(child => {
+                const val = child.val();
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${val.author || '-'}</td>
+                        <td class="text-blue-800">${val.title || '-'}</td>
+                        <td>${val.sup || '-'}</td>
+                        <td>${val.uni || '-'}</td>
+                        <td>${val.college || '-'}</td>
+                        <td>${val.dept || '-'}</td>
+                        <td class="text-center font-bold text-blue-600">${val.degree || '-'}</td>
+                        <td class="text-center font-mono">${val.year || '-'}</td>
+                        <td class="text-center text-gray-400 font-mono">${val.id || '-'}</td>
+                        <td class="text-center"><span class="px-1 py-0.5 rounded text-[9px] ${val.status==='متوفرة'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${val.status || '-'}</span></td>
+                        <td class="text-center">${val.link ? '🔗' : '-'}</td>
+                        <td class="text-[9px] italic text-gray-500">${val.notes || '-'}</td>
+                    </tr>
+                `;
+            });
+        });
     </script>
 </body>
 </html>
