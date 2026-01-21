@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة المكتبات | الفهرس الليبي الموحد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f1f5f9; font-size: 12px; }
+        th { background: #1e3a8a; color: white; padding: 8px; border: 1px solid #1e40af; }
+        td { padding: 6px; border-bottom: 1px solid #e2e8f0; background: white; }
+        .status-active { background: #dcfce7; color: #166534; padding: 2px 8px; rounded: 4px; font-weight: bold; }
+        .status-pending { background: #fef9c3; color: #854d0e; padding: 2px 8px; rounded: 4px; font-weight: bold; }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white p-4 rounded-t-lg border-b-4 border-blue-900 flex justify-between items-center shadow-md">
+            <h1 class="text-lg font-bold text-blue-900">إدارة دليل المكتبات المنضمة</h1>
+            <div id="adminStats" class="text-blue-700 font-bold">جاري جلب البيانات...</div>
+        </div>
+
+        <div class="bg-white shadow overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead>
+                    <tr>
+                        <th>اسم المكتبة</th>
+                        <th>الجامعة</th>
+                        <th>الهاتف</th>
+                        <th>الخريطة</th>
+                        <th>الحالة</th>
+                        <th class="text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="libAdminBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            projectId: "libyan-theses-portal",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // جلب وإدارة المكتبات
+        db.ref('libraries_directory').on('value', (snapshot) => {
+            const tbody = document.getElementById('libAdminBody');
+            tbody.innerHTML = '';
+            let count = 0;
+
+            snapshot.forEach(child => {
+                const lib = child.val();
+                const id = child.key;
+                count++;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold">${lib.name}</td>
+                        <td>${lib.university}</td>
+                        <td class="font-mono">${lib.phone}</td>
+                        <td>
+                            <a href="${lib.mapUrl}" target="_blank" class="text-blue-600 underline">📍 الموقع</a>
+                        </td>
+                        <td>
+                            <span class="${lib.status === 'active' ? 'status-active' : 'status-pending'}">
+                                ${lib.status === 'active' ? 'معتمدة' : 'قيد المراجعة'}
+                            </span>
+                        </td>
+                        <td class="text-center flex justify-center gap-2">
+                            ${lib.status !== 'active' ? 
+                                `<button onclick="approveLib('${id}')" class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">اعتماد</button>` : 
+                                `<button onclick="suspendLib('${id}')" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">تعليق</button>`
+                            }
+                            <button onclick="deleteLib('${id}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('adminStats').innerText = `إجمالي المكتبات: ${count}`;
+        });
+
+        function approveLib(id) {
+            db.ref('libraries_directory/' + id).update({ status: 'active' });
+        }
+
+        function suspendLib(id) {
+            db.ref('libraries_directory/' + id).update({ status: 'pending' });
+        }
+
+        function deleteLib(id) {
+            if(confirm('هل أنت متأكد من حذف هذه المكتبة نهائياً؟')) {
+                db.ref('libraries_directory/' + id).remove();
+            }
+        }
+    </script>
+</body>
+</html>
