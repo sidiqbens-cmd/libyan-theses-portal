@@ -2,31 +2,31 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:,"> <title>الفهرس الليبي الموحد - إدارة الطلبات</title>
+    <link rel="icon" href="data:,"> <title>إدارة طلبات الانضمام - الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 6px; font-weight: bold; border: 1px solid #e2e8f0; }
-        td { padding: 6px; border: 1px solid #e2e8f0; background: white; text-align: center; }
+        th { background: #1e3a8a; color: white; padding: 8px; font-weight: bold; border: 1px solid #e2e8f0; }
+        td { padding: 8px; border: 1px solid #e2e8f0; background: white; text-align: center; }
     </style>
 </head>
 <body class="p-2">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-3 bg-white p-3 rounded shadow-sm border">
-            <h1 class="text-sm font-bold text-blue-900">📋 طلبات الانضمام (بيانات المصدر: join.html)</h1>
-            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1 rounded text-[10px] hover:bg-black transition">🏠 لوحة التحكم</a>
+        <div class="flex justify-between items-center mb-4 bg-white p-3 rounded shadow-sm border">
+            <h1 class="text-sm font-bold text-blue-900">📋 طلبات الانضمام الجديدة</h1>
+            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1.5 rounded-lg text-[10px] hover:bg-black transition">🏠 العودة للوحة الإدارة</a>
         </div>
 
-        <div class="overflow-hidden rounded shadow-md">
+        <div class="overflow-x-auto rounded-xl shadow-lg border">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-right pr-4">اسم المكتبة</th>
-                        <th>التبعية (النوع)</th>
+                        <th class="text-right pr-4 italic">اسم المكتبة</th>
                         <th>المدينة / الموقع</th>
+                        <th>التبعية</th>
                         <th>الهاتف</th>
                         <th>البريد الإلكتروني</th>
                         <th>تاريخ الطلب</th>
@@ -37,7 +37,7 @@
                     </tbody>
             </table>
         </div>
-        <div id="loadingMsg" class="text-center py-10 text-slate-400 italic">جاري جلب البيانات من قاعدة البيانات...</div>
+        <div id="noData" class="hidden text-center py-20 text-slate-400 italic">لا توجد طلبات انتظار حالياً</div>
     </div>
 
 <script>
@@ -51,32 +51,33 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // جلب البيانات مع مطابقة الحقول التي أرسلتها من join.html
     db.ref('libraries_directory').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
-        const loadingMsg = document.getElementById('loadingMsg');
+        const noData = document.getElementById('noData');
         tableBody.innerHTML = '';
         
         if (snapshot.exists()) {
-            loadingMsg.classList.add('hidden');
+            noData.classList.add('hidden');
             snapshot.forEach((child) => {
                 const lib = child.val();
                 const id = child.key;
                 
-                // مطابقة المسميات مع كود join.html الذي أرسلته
+                // مطابقة دقيقة لمسميات الحقول التي وفرتها لي
                 const name = lib.libraryName || '---';
-                const aff = lib.affiliation || '---'; // التبعية
-                const loc = lib.location || '---';    // المدينة
-                const ph  = lib.phone || '---';       // الهاتف
-                const em  = lib.email || '---';       // البريد
-                const dt  = lib.requestDate || '---'; // التاريخ
+                const loc  = lib.location || 'غير محدد';
+                const aff  = lib.affiliation || '---';
+                const ph   = lib.phone || '---';
+                const em   = lib.email || '---';
+                const dt   = lib.requestDate || '---';
 
                 const row = `
                     <tr class="hover:bg-blue-50 transition">
-                        <td class="text-right font-bold text-blue-900 pr-4">${name}</td>
-                        <td class="text-slate-600">${aff}</td>
-                        <td class="font-medium">${loc}</td>
+                        <td class="text-right font-bold text-blue-900 pr-4 border-r-4 border-r-blue-900">${name}</td>
+                        <td class="font-medium text-slate-700">${loc}</td>
+                        <td><span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-100">${aff}</span></td>
                         <td class="text-slate-500">${ph}</td>
-                        <td class="text-blue-600 text-[10px] underline">${em}</td>
+                        <td class="text-blue-500 underline text-[10px]">${em}</td>
                         <td class="text-gray-400 text-[9px]">${dt}</td>
                         <td>
                             <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700 transition">اعتماد ✅</button>
@@ -86,24 +87,25 @@
                 tableBody.innerHTML += row;
             });
         } else {
-            loadingMsg.innerText = "لا توجد طلبات انتظار حالياً.";
-            loadingMsg.classList.remove('hidden');
+            noData.classList.remove('hidden');
         }
     });
 
     function approve(id, name) {
-        if(confirm(`هل تود نقل "${name}" إلى قائمة المكتبات المعتمدة؟`)) {
+        if(confirm(`هل تريد اعتماد مكتبة "${name}" ونشرها في الفهرس الموحد؟`)) {
             db.ref('libraries_directory/' + id).once('value').then(snap => {
                 const data = snap.val();
+                // نقل البيانات للمجلد الدائم
                 return db.ref('approved_libraries/' + id).set({
                     ...data,
-                    approvalStatus: "approved",
-                    finalDate: new Date().toLocaleString('ar-LY')
+                    approvalTimestamp: Date.now(),
+                    status: "approved"
                 });
             }).then(() => {
+                // حذف الطلب المؤقت
                 return db.ref('libraries_directory/' + id).remove();
             }).then(() => {
-                alert("تم الاعتماد بنجاح! سيتم إخطار المكتبة وتفعيل حسابها.");
+                alert("تم الاعتماد بنجاح! المكتبة الآن ضمن الفهرس العام.");
             });
         }
     }
