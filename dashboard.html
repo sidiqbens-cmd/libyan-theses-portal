@@ -85,7 +85,7 @@
                 const libName = data.name || data.libraryName || "غير مسمى";
                 const libAff = data.university || data.affiliation || "-";
                 const libPhone = data.phone || "-";
-                const libLoc = data.mapUrl || data.location || "#";
+                const libEmail = data.email || "-";
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50 transition-colors">
@@ -112,7 +112,7 @@
         // دالة الاعتماد: تنقل البيانات للمجلد العام libraries_directory وتفعلها
         function approveLibrary(id) {
             if (confirm('هل أنت متأكد من اعتماد هذه المكتبة ونشرها في الدليل العام؟')) {
-                db.ref('join_requests/' + id).once('value', (snapshot) => {
+                db.ref('libraries_directory/' + id).once('value', (snapshot) => {
                     const libraryData = snapshot.val();
                     libraryData.status = "active"; // تغيير الحالة للنشر
                     libraryData.approvalDate = new Date().toLocaleString('ar-LY');
