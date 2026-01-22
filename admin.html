@@ -3,57 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مركز قيادة الفهرس الليبي الموحد</title>
+    <title>الفهرس الليبي الموحد - لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
-        .nav-card { transition: all 0.3s ease; border-bottom: 4px solid transparent; }
-        .nav-card:hover { transform: translateY(-3px); border-bottom-width: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        input, select, textarea { border: 1px solid #cbd5e1 !important; padding: 4px 8px !important; outline: none; }
+        body { font-family: system-ui; background-color: #f1f5f9; font-size: 11px; }
+        .nav-card { transition: all 0.2s; border-bottom: 4px solid transparent; }
+        .nav-card:hover { transform: translateY(-3px); border-bottom-color: #1e3a8a; }
+        input, select { border: 1px solid #cbd5e1 !important; padding: 6px !important; outline: none; }
     </style>
 </head>
 <body class="p-4">
 
-<div class="max-w-5xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <a href="admin_libraries.html" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-green-500 flex flex-col items-center group text-center">
-            <span class="text-3xl mb-2 group-hover:scale-110 transition">🏢</span>
-            <span class="font-bold text-green-700 text-sm">إدارة طلبات الانضمام</span>
-            <div id="requestsCount" class="mt-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full font-bold text-[10px]">جاري التحقق...</div>
+<div class="max-w-4xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        
+        <a href="admin_libraries.html" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center group text-center border">
+            <span class="text-2xl mb-1">🏢</span>
+            <span class="font-bold text-slate-700 text-xs">إدارة طلبات المكتبات</span>
+            <div id="countDisplay" class="mt-1 text-blue-600 font-bold">جاري الفحص...</div>
         </a>
 
-        <a href="#thesisForm" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-blue-500 flex flex-col items-center group text-center">
-            <span class="text-3xl mb-2 group-hover:scale-110 transition">🎓</span>
-            <span class="font-bold text-blue-700 text-sm">إضافة رسالة علمية</span>
-            <span class="text-gray-400 mt-2 text-[10px]">إدخال البيانات يدوياً للفهرس</span>
+        <a href="#thesisForm" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center border">
+            <span class="text-2xl mb-1">🎓</span>
+            <span class="font-bold text-slate-700 text-xs">إضافة رسائل علمية</span>
+            <span class="text-[9px] text-slate-400">إدخال يدوي مباشر</span>
         </a>
 
-        <a href="index.html" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-purple-500 flex flex-col items-center group text-center">
-            <span class="text-3xl mb-2 group-hover:scale-110 transition">🔍</span>
-            <span class="font-bold text-purple-700 text-sm">واجهة البحث العامة</span>
-            <span class="text-gray-400 mt-2 text-[10px]">معاينة الموقع للجمهور</span>
+        <a href="index.html" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center border">
+            <span class="text-2xl mb-1">🔍</span>
+            <span class="font-bold text-slate-700 text-xs">واجهة البحث</span>
+            <span class="text-[9px] text-slate-400">معاينة الجمهور</span>
         </a>
     </div>
 
-    <hr class="mb-8 border-slate-300">
-
-    <div id="thesisForm" class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
-        <h2 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span class="w-1 h-5 bg-blue-700 rounded-full"></span> إدخال بيانات الرسالة
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <input type="text" id="researcher" placeholder="اسم الباحث" class="w-full rounded bg-slate-50">
-            <input type="text" id="title" placeholder="عنوان الرسالة" class="w-full rounded bg-slate-50 font-bold">
+    <div id="thesisForm" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-xs font-bold mb-4 border-r-4 border-blue-900 pr-2">إضافة بيانات رسالة جديدة</h2>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <input type="text" id="researcher" placeholder="اسم الباحث" class="rounded bg-slate-50">
+            <input type="text" id="title" placeholder="عنوان الرسالة" class="rounded bg-slate-50 font-bold">
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <input type="number" id="year" placeholder="السنة" class="w-full rounded bg-white border-blue-100">
-            <input type="text" id="university" placeholder="الجامعة" class="w-full rounded bg-white border-blue-100">
-            <select id="degree" class="w-full rounded bg-white font-bold"><option value="ماجستير">ماجستير</option><option value="دكتوراه">دكتوراه</option></select>
-            <select id="status" class="w-full rounded bg-white text-green-700 font-bold"><option value="متوفرة">متوفرة ✅</option><option value="غير متوفرة">غير متوفرة ❌</option></select>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <input type="text" id="university" placeholder="الجامعة" class="rounded">
+            <input type="number" id="year" placeholder="سنة التخرج" class="rounded">
+            <select id="degree" class="rounded font-bold"><option>ماجستير</option><option>دكتوراه</option></select>
+            <select id="status" class="rounded text-green-700 font-bold"><option>متوفرة ✅</option><option>غير متوفرة ❌</option></select>
         </div>
-        <button onclick="saveToDatabase()" class="w-full py-2 bg-blue-900 text-white rounded-lg font-bold text-xs shadow hover:bg-blue-800 transition-all">💾 حفظ في قاعدة البيانات</button>
+        <button onclick="saveData()" class="w-full py-2.5 bg-blue-900 text-white rounded-lg font-bold text-xs shadow-md hover:bg-blue-800 transition-all">
+            💾 حفظ في الفهرس الموحد
+        </button>
     </div>
 </div>
 
@@ -68,20 +67,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // إصلاح العداد لمنع خطأ Initialization
-    db.ref('libraries_directory').on('value', (snapshot) => {
-        let currentCount = snapshot.numChildren() || 0;
-        const countElement = document.getElementById('requestsCount');
-        if (currentCount > 0) {
-            countElement.innerHTML = `🔔 يوجد ${currentCount} طلبات جديدة`;
-            countElement.className = "mt-2 px-3 py-1 bg-red-600 text-white rounded-full font-bold text-[10px] animate-pulse shadow-sm";
+    // عداد الطلبات الحي (إصلاح مشكلة الـ Initialization)
+    db.ref('libraries_directory').on('value', (snap) => {
+        const count = snap.numChildren() || 0;
+        const display = document.getElementById('countDisplay');
+        if(count > 0) {
+            display.innerHTML = `<span class="bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] animate-pulse">يوجد ${count} طلبات</span>`;
         } else {
-            countElement.innerText = "لا توجد طلبات انتظار";
-            countElement.className = "mt-2 px-3 py-1 bg-green-50 text-green-600 rounded-full font-bold text-[10px] border border-green-200";
+            display.innerText = "لا توجد طلبات";
+            display.className = "mt-1 text-slate-400 font-bold";
         }
     });
 
-    function saveToDatabase() {
+    function saveData() {
         const data = {
             researcher: document.getElementById('researcher').value,
             title: document.getElementById('title').value,
@@ -91,10 +89,10 @@
             status: document.getElementById('status').value,
             timestamp: Date.now()
         };
-        if(!data.title || !data.researcher) return alert("⚠️ يرجى ملء البيانات الأساسية");
+        if(!data.title || !data.researcher) return alert("يرجى ملء البيانات");
         db.ref('theses').push(data).then(() => {
-            alert("✅ تم الحفظ بنجاح");
-            document.querySelectorAll('input').forEach(el => el.value = '');
+            alert("تم الحفظ ✅");
+            document.querySelectorAll('input').forEach(i => i.value = '');
         });
     }
 </script>
