@@ -2,115 +2,102 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:,"> <title>الفهرس الليبي الموحد - إدارة طلبات الانضمام</title>
+    <link rel="icon" href="data:,"> <title>إدارة طلبات الانضمام - الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 8px; font-weight: bold; border: 1px solid #cbd5e1; }
-        td { padding: 8px; border: 1px solid #e2e8f0; background: white; text-align: center; color: #334155; }
-        .approved-row { border-right: 4px solid #1e3a8a; }
+        body { font-family: system-ui; background-color: #f8fafc; font-size: 11px; }
+        th { background: #1e3a8a; color: white; padding: 6px; font-weight: bold; border: 1px solid #cbd5e1; }
+        td { padding: 6px; border: 1px solid #e2e8f0; background: white; text-align: center; }
     </style>
 </head>
 <body class="p-2">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-4 bg-white p-3 rounded shadow-sm border">
-            <h1 class="text-sm font-bold text-blue-900">📋 طلبات الانضمام للفهرس الليبي الموحد</h1>
-            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1.5 rounded text-[10px] hover:bg-black transition">🏠 العودة للوحة الإدارة</a>
+        <div class="flex justify-between items-center mb-4 bg-white p-2 rounded shadow-sm border">
+            <h1 class="text-sm font-bold text-blue-900">📋 طلبات الانضمام (join_requests)</h1>
+            <a href="admin.html" class="bg-slate-700 text-white px-3 py-1 rounded text-[10px]">🏠 العودة</a>
         </div>
 
-        <div class="overflow-x-auto rounded shadow-lg border">
+        <div class="overflow-hidden rounded border shadow-lg">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-right pr-4">اسم المكتبة</th>
-                        <th>المدينة / الموقع</th>
+                        <th class="text-right pr-4 italic">اسم المكتبة</th>
                         <th>الجامعة / التبعية</th>
-                        <th>الهاتف</th>
-                        <th>البريد الإلكتروني</th>
+                        <th>الموقع / المدينة</th>
+                        <th>بيانات التواصل</th>
                         <th>تاريخ الطلب</th>
-                        <th>الإجراء</th>
+                        <th>الإجراء المتخذ</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     </tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-20 text-slate-400 italic font-bold">جاري فحص طلبات الانضمام...</div>
+        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic font-bold">جاري الاتصال بقاعدة البيانات...</div>
     </div>
 
 <script>
-    // إعدادات Firebase
-    // إعدادات Firebase صحيحة كما في صورتك
     const firebaseConfig = {
-    apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-    authDomain: "libyan-theses-portal.firebaseapp.com",
-    projectId: "libyan-theses-portal",
-    databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-    appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-};
+        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+        authDomain: "libyan-theses-portal.firebaseapp.com",
+        projectId: "libyan-theses-portal",
+        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+    };
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-// تأكد من استخدام 'join_requests' كما هو في ملف join.html
-db.ref('join_requests').on('value', (snapshot) => {
-    const tableBody = document.getElementById('tableBody');
-    const loadingStatus = document.getElementById('loadingStatus');
-    
-    if (tableBody) tableBody.innerHTML = '';
-    
-    if (snapshot.exists()) {
-        if (loadingStatus) loadingStatus.style.display = 'none';
+    // المسار الصحيح المأخوذ من ملف join.html هو join_requests
+    db.ref('join_requests').on('value', (snapshot) => {
+        const tableBody = document.getElementById('tableBody');
+        const loadingStatus = document.getElementById('loadingStatus');
         
-        snapshot.forEach((child) => {
-            const lib = child.val();
-            const id = child.key;
+        if (tableBody) tableBody.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            if (loadingStatus) loadingStatus.style.display = 'none';
+            snapshot.forEach((child) => {
+                const lib = child.val();
+                const id = child.key;
+                
+                // مطابقة دقيقة للحقول من صورة كود join.html الخاص بك
+                const name = lib.libraryName || '---';
+                const aff  = lib.affiliation || '---';
+                const loc  = lib.location || '---';
+                const cont = (lib.phone || '') + ' ' + (lib.email || '');
+                const dt   = lib.requestDate || '---';
 
-            // مطابقة دقيقة للحقول من ملف join.html الخاص بك
-            const name = lib.libraryName || '---';
-            const loc  = lib.location || 'غير محدد';
-            const aff  = lib.affiliation || '---';
-            const ph   = lib.phone || '---';
-            const em   = lib.email || '---';
-            const dt   = lib.requestDate || '---';
-
-            const row = `
-                <tr class="hover:bg-blue-50 border-b">
-                    <td class="text-right font-bold text-blue-900 pr-4 p-2">${name}</td>
-                    <td class="p-2">${loc}</td>
-                    <td class="p-2">${aff}</td>
-                    <td class="p-2">${ph}</td>
-                    <td class="p-2 text-blue-600 text-[10px]">${em}</td>
-                    <td class="p-2 text-gray-400 text-[9px]">${dt}</td>
-                    <td class="p-2">
-                        <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
-                    </td>
-                </tr>
-            `;
-            if (tableBody) tableBody.innerHTML += row;
-        });
-    } else {
-        if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
-    }
-});
+                const row = `
+                    <tr class="hover:bg-blue-50 border-b transition">
+                        <td class="text-right font-bold text-blue-900 pr-4 border-r-4 border-blue-900">${name}</td>
+                        <td>${aff}</td>
+                        <td class="font-medium text-slate-700">${loc}</td>
+                        <td class="text-blue-600 text-[10px] italic">${cont}</td>
+                        <td class="text-slate-400 text-[9px] font-mono">${dt}</td>
+                        <td>
+                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-2 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700 transition">اعتماد ✅</button>
+                        </td>
+                    </tr>
+                `;
+                if (tableBody) tableBody.innerHTML += row;
+            });
+        } else {
+            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة في الانتظار.";
+        }
+    });
 
     function approve(id, name) {
-        if(confirm(`هل تود اعتماد مكتبة "${name}" ونقلها للفهرس المعتمد؟`)) {
+        if(confirm(`هل تود اعتماد مكتبة "${name}"؟`)) {
             db.ref('join_requests/' + id).once('value').then(snap => {
                 const data = snap.val();
-                return db.ref('approved_libraries/' + id).set({
-                    ...data,
-                    approvalStatus: "approved",
-                    finalDate: new Date().toLocaleString('ar-LY')
-                });
+                return db.ref('approved_libraries/' + id).set({...data, status: 'approved'});
             }).then(() => {
                 return db.ref('join_requests/' + id).remove();
-            }).then(() => {
-                alert("تم الاعتماد بنجاح! سيتم إخطار المكتبة وتفعيل حسابها.");
-            });
+            }).then(() => alert("تم الاعتماد بنجاح!"));
         }
     }
 </script>
