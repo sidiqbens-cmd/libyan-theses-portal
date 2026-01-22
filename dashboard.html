@@ -112,28 +112,30 @@
 
         // دالة الاعتماد: تنقل البيانات للمجلد العام libraries_directory وتفعلها
         function approveLibrary(id) {
-            if (confirm('هل أنت متأكد من اعتماد هذه المكتبة ونشرها في الدليل العام؟')) {
-                db.ref('libraries_directory/' + id).once('value', (snapshot) => {
-                    const requestRef = db.ref('libraries_directory/' + id);
-                    libraryData.status = "active"; // تغيير الحالة للنشر
-                    libraryData.approvalDate = new Date().toLocaleString('ar-LY');
-
-                    // 1. الإضافة للمجلد العام
-                    db.ref('libraries_directory').push(libraryData).then(() => {
-                        // 2. الحذف من طلبات الانتظار
-                        db.ref('libraries_directory/' + id).remove().then(() => {
-                            alert("تم اعتماد المكتبة بنجاح وتفعيلها في البحث العام.");
+            if (confirm('هل أنت متأكد من اعتماد هذه المكتبة؟')) {
+                // الوصول للمكتبة في المجلد الحالي
+                const requestRef = db.ref('libraries_directory/' + id);
+        
+                requestRef.once('value', (snapshot) => {
+                    const libraryData = snapshot.val();
+                    if (libraryData) {
+                        // نقل البيانات للمجلد المعتمد النهائي (libraries)
+                        db.ref('libraries/' + id).set(libraryData).then(() => {
+                            // حذفها من المجلد المؤقت بعد النجاح
+                            return requestRef.remove();
+                        }).then(() => {
+                            alert('تم الاعتماد بنجاح!');
                         });
-                    });
+                    }
                 });
             }
         }
 
         // دالة الرفض/الحذف
         function rejectLibrary(id) {
-            if (confirm('هل تريد حذف هذا الطلب نهائياً؟')) {
+            if (confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) {
                 db.ref('libraries_directory/' + id).remove().then(() => {
-                    alert("تم حذف الطلب.");
+                    alert('تم حذف الطلب بنجاح');
                 });
             }
         }
