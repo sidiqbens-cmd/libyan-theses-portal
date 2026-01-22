@@ -3,38 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="data:,">
-    <title>إدارة الفهرس الليبي الموحد</title>
+    <title>إدارة الفهرس الليبي الموحد - الفرز المفصل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; margin: 0; }
-        th { background: #1e3a8a; color: white; padding: 6px 4px; border: 1px solid #cbd5e1; font-weight: bold; }
-        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; }
-        .city-tag { background-color: #fef3c7; color: #92400e; padding: 1px 4px; rounded: 3px; border: 1px solid #fde68a; font-weight: bold; }
-        .aff-tag { background-color: #dbeafe; color: #1e40af; padding: 1px 4px; rounded: 3px; border: 1px solid #bfdbfe; }
+        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 10px; margin: 0; }
+        th { background: #0f172a; color: white; padding: 4px; border: 1px solid #334155; font-weight: bold; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; color: #1e293b; }
+        .tag { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: 600; display: inline-block; }
+        .tag-city { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .tag-univ { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .tag-aff { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
     </style>
 </head>
-<body class="p-2">
+<body class="p-1">
 
     <div class="max-w-full mx-auto">
-        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border border-blue-100">
-            <h1 class="text-xs font-bold text-blue-900 flex items-center gap-2">
-                <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
-                الفهرس الليبي الموحد - طلبات الانتظار
+        <div class="flex justify-between items-center mb-1 bg-white p-2 rounded shadow-sm border border-slate-200">
+            <h1 class="text-[11px] font-bold text-blue-900 flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span> إدارة الطلبات - التبويب المفصل
             </h1>
-            <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px] hover:bg-black transition">🏠 الرئيسية</a>
+            <div class="flex gap-2 items-center">
+                <span id="counter" class="text-blue-700 font-bold px-2 border-l border-slate-300">0 طلب</span>
+                <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[9px] hover:bg-black transition">🏠 الرئيسية</a>
+            </div>
         </div>
 
-        <div class="overflow-hidden rounded border border-slate-300 shadow-md">
+        <div class="overflow-x-auto rounded border border-slate-300 shadow-sm">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-right pr-3">اسم المكتبة</th>
-                        <th>المدينة / الموقع</th>
-                        <th>التبعية / الجامعة</th>
+                        <th class="text-right pr-2">اسم المكتبة</th>
+                        <th>المدينة</th>
+                        <th>الموقع التفصيلي</th>
+                        <th>الجامعة</th>
+                        <th>التبعية</th>
                         <th>الهاتف</th>
-                        <th>البريد الإلكتروني</th>
                         <th>التاريخ</th>
                         <th>الإجراء</th>
                     </tr>
@@ -42,7 +47,7 @@
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-6 text-slate-400 italic">جاري تنظيم البيانات...</div>
+        <div id="loadingStatus" class="text-center py-6 text-slate-400 italic font-bold">جاري ترتيب البيانات في الأعمدة الجديدة...</div>
     </div>
 
 <script>
@@ -50,4 +55,68 @@
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
         projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-
+        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    db.ref('libraries_directory').on('value', (snapshot) => {
+        const tableBody = document.getElementById('tableBody');
+        const counter = document.getElementById('counter');
+        const loadingStatus = document.getElementById('loadingStatus');
+        
+        if (tableBody) tableBody.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            if (loadingStatus) loadingStatus.style.display = 'none';
+            let count = 0;
+            
+            snapshot.forEach((child) => {
+                const item = child.val();
+                const id = child.key;
+                count++;
+
+                // فصل البيانات بناءً على الحقول المتاحة في قاعدة بياناتك
+                const name = item.libraryName || item.name || '---';
+                const city = item.city || item.location || '---';
+                const map  = item.mapUrl || item.libLoc || '---';
+                const univ = item.university || '---';
+                const aff  = item.affiliation || item.libAff || item.type || 'عامة';
+                const ph   = item.phone || item.libPhone || '---';
+                const dt   = item.requestDate || item.date || '---';
+
+                const row = `
+                    <tr class="hover:bg-slate-50 transition border-b">
+                        <td class="text-right font-bold text-blue-900 pr-2 border-r-2 border-blue-900">${name}</td>
+                        <td><span class="tag tag-city">${city}</span></td>
+                        <td class="text-[9px] text-slate-500 max-w-[120px] truncate">${map}</td>
+                        <td><span class="tag tag-univ">${univ}</span></td>
+                        <td><span class="tag tag-aff">${aff}</span></td>
+                        <td class="font-mono">${ph}</td>
+                        <td class="text-slate-400 text-[8px]">${dt}</td>
+                        <td>
+                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[8px] font-bold hover:bg-green-700">اعتماد</button>
+                        </td>
+                    </tr>`;
+                if (tableBody) tableBody.innerHTML += row;
+            });
+            if (counter) counter.innerText = count + " طلب";
+        } else {
+            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات انتظار.";
+        }
+    });
+
+    function approve(id, name) {
+        if(confirm(`اعتماد مكتبة "${name}"؟`)) {
+            db.ref('libraries_directory/' + id).once('value').then(snap => {
+                return db.ref('approved_libraries/' + id).set({...snap.val(), status: 'approved'});
+            }).then(() => {
+                return db.ref('libraries_directory/' + id).remove();
+            }).then(() => alert("تم الاعتماد"));
+        }
+    }
+</script>
+</body>
+</html>
