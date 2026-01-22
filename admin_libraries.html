@@ -2,16 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة طلبات الفهرس الليبي الموحد</title>
+    <title>إدارة الفهرس الليبي الموحد - طلبات الانضمام</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; margin: 0; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
         td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; }
-        .city-tag { background-color: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; border: 1px solid #fde68a; font-weight: bold; }
-        .date-text { color: #64748b; font-family: monospace; font-size: 10px; }
+        .city-tag { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #fde68a; }
+        .date-col { color: #64748b; font-family: monospace; font-size: 10px; }
     </style>
 </head>
 <body class="p-2">
@@ -19,8 +19,8 @@
     <div class="max-w-full mx-auto">
         <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border border-blue-100">
             <h1 class="text-xs font-bold text-blue-900 flex items-center gap-2">
-                <span class="w-2 h-2 bg-blue-600 rounded-full"></span>
-                إدارة طلبات الانضمام - العرض المحدث
+                <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+                إدارة طلبات الانضمام (العرض المنظم)
             </h1>
             <div class="flex gap-2">
                 <span id="counter" class="bg-blue-900 text-white px-2 py-1 rounded text-[10px] font-bold">0 طلب</span>
@@ -43,11 +43,11 @@
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-6 text-slate-400 italic">جاري جلب الطلبات...</div>
+        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic">جاري تحميل البيانات من السحابة...</div>
     </div>
 
 <script>
-    // تم إضافة databaseURL لحل مشكلة الخطأ الظاهر في الـ Console
+    // تم إصلاح databaseURL هنا لحل مشكلة FATAL ERROR
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -59,7 +59,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // القراءة من مسار join_requests كما هو محدد في كود Join.html
+    // الاستماع لمسار join_requests كما هو محدد في ملفاتك
     db.ref('join_requests').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
         const loadingStatus = document.getElementById('loadingStatus');
@@ -76,20 +76,20 @@
                 const id = child.key;
                 count++;
 
-                // معالجة ذكية للمدينة: إذا كانت "location" فارغة، نبحث في "city" أو "university"
-                // وذلك لحل مشكلة "غير محدد" الظاهرة في صورك
-                let city = item.location || item.city || item.university || 'غير محدد';
-                let aff  = item.affiliation || 'عامة';
-                let date = item.requestDate || item.date || '---';
+                // منطق معالجة المدينة والتبعية بناءً على طلبك
+                // نأخذ المدينة من خانة 'location' أو 'university' إذا كانت الخانة الأولى فارغة
+                const cityName = item.location || item.city || item.university || 'غير محدد';
+                const affName  = item.affiliation || item.libAff || 'عامة';
+                const reqDate  = item.requestDate || item.date || '---';
 
                 const row = `
                     <tr class="hover:bg-blue-50 transition border-b">
                         <td class="text-right font-bold text-blue-900 pr-3 border-r-4 border-blue-900">${item.libraryName || '---'}</td>
-                        <td><span class="city-tag">${city}</span></td>
-                        <td class="text-slate-600">${aff}</td>
+                        <td><span class="city-tag">${cityName}</span></td>
+                        <td class="text-slate-600">${affName}</td>
                         <td class="font-mono text-slate-600">${item.phone || '---'}</td>
                         <td class="text-blue-600 italic">${item.email || '---'}</td>
-                        <td class="date-text">${date}</td>
+                        <td class="date-col">${reqDate}</td>
                         <td>
                             <button onclick="approve('${id}', '${item.libraryName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
                         </td>
@@ -98,14 +98,22 @@
             });
             if (counter) counter.innerText = count + " طلب انتظار";
         } else {
-            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة.";
+            if (loadingStatus) {
+                loadingStatus.style.display = 'block';
+                loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
+            }
         }
     });
 
     function approve(id, name) {
         if(confirm(`هل تود اعتماد مكتبة "${name}"؟`)) {
             db.ref('join_requests/' + id).once('value').then(snap => {
-                return db.ref('approved_libraries/' + id).set({...snap.val(), status: 'approved'});
+                const data = snap.val();
+                return db.ref('approved_libraries/' + id).set({
+                    ...data,
+                    status: 'approved',
+                    approvalDate: new Date().toLocaleString('ar-LY')
+                });
             }).then(() => {
                 return db.ref('join_requests/' + id).remove();
             }).then(() => alert("تم الاعتماد بنجاح!"));
