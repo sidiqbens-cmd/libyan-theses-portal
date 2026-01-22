@@ -10,8 +10,8 @@
     <style>
         body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
         .nav-card { transition: all 0.3s ease; border-bottom: 4px solid transparent; }
-        .nav-card:hover { transform: translateY(-3px); border-bottom-width: 6px; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        input, select, textarea { border: 1px solid #cbd5e1 !important; padding: 4px 8px !important; outline: none; transition: border 0.2s; }
+        .nav-card:hover { transform: translateY(-3px); border-bottom-width: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        input, select, textarea { border: 1px solid #cbd5e1 !important; padding: 4px 8px !important; outline: none; }
         input:focus { border-color: #1e3a8a !important; background-color: #fff; }
     </style>
 </head>
@@ -35,7 +35,7 @@
         <a href="index.html" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-purple-500 flex flex-col items-center group">
             <span class="text-3xl mb-2 group-hover:scale-110 transition">🔍</span>
             <span class="font-bold text-purple-700 text-sm">واجهة البحث العامة</span>
-            <span class="text-gray-400 mt-2 text-[10px]">معاينة الموقع كما يراه الجمهور</span>
+            <span class="text-gray-400 mt-2 text-[10px]">معاينة الموقع للجمهور</span>
         </a>
     </div>
 
@@ -48,19 +48,19 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-                <label class="block font-bold text-slate-600 mb-1 italic">اسم الباحث</label>
-                <input type="text" id="researcher" placeholder="مثال: د. محمد علي" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-slate-600 mb-1">اسم الباحث</label>
+                <input type="text" id="researcher" placeholder="الاسم الثلاثي" class="w-full rounded-lg bg-slate-50">
             </div>
             <div>
-                <label class="block font-bold text-slate-600 mb-1 italic">عنوان الرسالة</label>
-                <input type="text" id="title" placeholder="اكتب العنوان الكامل هنا" class="w-full rounded-lg bg-slate-50 font-bold">
+                <label class="block font-bold text-slate-600 mb-1">عنوان الرسالة</label>
+                <input type="text" id="title" placeholder="اكتب العنوان الكامل" class="w-full rounded-lg bg-slate-50 font-bold">
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-                <label class="block font-bold text-slate-600 mb-1">الجامعة / الجهة التعليمية</label>
-                <input type="text" id="university" placeholder="مثال: جامعة طرابلس" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-slate-600 mb-1">الجامعة</label>
+                <input type="text" id="university" placeholder="جامعة طرابلس" class="w-full rounded-lg bg-slate-50">
             </div>
             <div>
                 <label class="block font-bold text-slate-600 mb-1">الكلية</label>
@@ -72,24 +72,24 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 italic">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
-                <label class="block font-bold text-blue-900 mb-1 underline">سنة الإنجاز</label>
+                <label class="block font-bold text-blue-900 mb-1">سنة الإنجاز</label>
                 <input type="number" id="year" placeholder="2026" class="w-full rounded-lg bg-white border-blue-200 shadow-sm">
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1 underline">رقم الرسالة (ID)</label>
+                <label class="block font-bold text-blue-900 mb-1">رقم الرسالة (ID)</label>
                 <input type="text" id="thesisId" placeholder="ID-000" class="w-full rounded-lg bg-white border-blue-200 shadow-sm">
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1 underline">الدرجة</label>
+                <label class="block font-bold text-blue-900 mb-1">الدرجة العلمية</label>
                 <select id="degree" class="w-full rounded-lg bg-white font-bold cursor-pointer">
                     <option value="ماجستير">ماجستير</option>
                     <option value="دكتوراه">دكتوراه</option>
                 </select>
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1 underline">حالة التوفر</label>
+                <label class="block font-bold text-blue-900 mb-1">حالة التوفر</label>
                 <select id="status" class="w-full rounded-lg bg-white font-bold text-green-700 cursor-pointer">
                     <option value="متوفرة">متوفرة ✅</option>
                     <option value="غير متوفرة">غير متوفرة ❌</option>
@@ -104,7 +104,7 @@
 </div>
 
 <script>
-    // تهيئة Firebase
+    // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -115,9 +115,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // إصلاح مشكلة العداد الحي (ReferenceError Fix)
+    // إصلاح العداد الحي لطلبات المكتبات
     db.ref('libraries_directory').on('value', (snapshot) => {
-        let currentCount = 0; // تعريف المتغير قبل الاستخدام
+        let currentCount = 0; 
         if (snapshot.exists()) {
             currentCount = snapshot.numChildren();
         }
@@ -148,7 +148,7 @@
         };
 
         if(!data.title || !data.researcher) {
-            alert("⚠️ تنبيه: يرجى إدخال اسم الباحث وعنوان الرسالة على الأقل.");
+            alert("⚠️ تنبيه: يرجى إدخال اسم الباحث وعنوان الرسالة.");
             return;
         }
 
