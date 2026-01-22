@@ -7,41 +7,47 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
-        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; }
-        .tag-blue { background: #dbeafe; color: #1e40af; padding: 2px 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
-        .tag-amber { background: #fef3c7; color: #92400e; padding: 2px 5px; border-radius: 4px; border: 1px solid #fde68a; font-weight: bold; }
+        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; margin: 0; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; font-weight: bold; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; }
+        .city-tag { background-color: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; border: 1px solid #fde68a; font-weight: bold; }
+        .date-text { color: #64748b; font-family: monospace; font-size: 10px; }
     </style>
 </head>
 <body class="p-2">
 
     <div class="max-w-full mx-auto">
-        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border">
-            <h1 class="text-xs font-bold text-blue-900">📋 طلبات الانضمام (مطابق لبيانات Join.html)</h1>
-            <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px]">🏠 العودة</a>
+        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border border-blue-100">
+            <h1 class="text-xs font-bold text-blue-900 flex items-center gap-2">
+                <span class="w-2 h-2 bg-blue-600 rounded-full"></span>
+                إدارة طلبات الانضمام - العرض المحدث
+            </h1>
+            <div class="flex gap-2">
+                <span id="counter" class="bg-blue-900 text-white px-2 py-1 rounded text-[10px] font-bold">0 طلب</span>
+                <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px] hover:bg-black transition">🏠 الرئيسية</a>
+            </div>
         </div>
 
-        <div class="overflow-hidden rounded border border-slate-300 shadow">
+        <div class="overflow-hidden rounded border border-slate-300 shadow-md">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
                         <th class="text-right pr-3">اسم المكتبة</th>
-                        <th>المدينة / الموقع (Location)</th>
-                        <th>التبعية (Affiliation)</th>
+                        <th>المدينة</th>
+                        <th>التبعية</th>
                         <th>الهاتف</th>
                         <th>البريد الإلكتروني</th>
-                        <th>التاريخ</th>
-                        <th>الإجراء</th>
+                        <th>تاريخ التقديم</th> <th>الإجراء</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic">جاري جلب البيانات من مسار join_requests...</div>
+        <div id="loadingStatus" class="text-center py-6 text-slate-400 italic">جاري جلب الطلبات...</div>
     </div>
 
 <script>
+    // تم إضافة databaseURL لحل مشكلة الخطأ الظاهر في الـ Console
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -53,51 +59,56 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // نستخدم المسار 'join_requests' لأنه المسار الذي يرسل إليه ملف join.html البيانات
+    // القراءة من مسار join_requests كما هو محدد في كود Join.html
     db.ref('join_requests').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
         const loadingStatus = document.getElementById('loadingStatus');
+        const counter = document.getElementById('counter');
+        
         if (tableBody) tableBody.innerHTML = '';
         
         if (snapshot.exists()) {
             if (loadingStatus) loadingStatus.style.display = 'none';
+            let count = 0;
+            
             snapshot.forEach((child) => {
                 const item = child.val();
                 const id = child.key;
+                count++;
 
-                // مطابقة دقيقة للحقول كما هي في صورة كود join.html (image_72cad2)
-                const libName = item.libraryName || "---"; 
-                const libLoc  = item.location || "---"; 
-                const libAff  = item.affiliation || "---";
-                const libPh   = item.phone || "---";
-                const libEm   = item.email || "---";
-                const reqDate = item.requestDate || "---";
+                // معالجة ذكية للمدينة: إذا كانت "location" فارغة، نبحث في "city" أو "university"
+                // وذلك لحل مشكلة "غير محدد" الظاهرة في صورك
+                let city = item.location || item.city || item.university || 'غير محدد';
+                let aff  = item.affiliation || 'عامة';
+                let date = item.requestDate || item.date || '---';
 
                 const row = `
-                    <tr class="hover:bg-blue-50 border-b">
-                        <td class="text-right font-bold text-blue-900 pr-3 border-r-4 border-blue-900">${libName}</td>
-                        <td><span class="tag-amber">${libLoc}</span></td>
-                        <td><span class="tag-blue">${libAff}</span></td>
-                        <td class="font-mono">${libPh}</td>
-                        <td class="text-blue-600">${libEm}</td>
-                        <td class="text-slate-400 text-[9px]">${reqDate}</td>
+                    <tr class="hover:bg-blue-50 transition border-b">
+                        <td class="text-right font-bold text-blue-900 pr-3 border-r-4 border-blue-900">${item.libraryName || '---'}</td>
+                        <td><span class="city-tag">${city}</span></td>
+                        <td class="text-slate-600">${aff}</td>
+                        <td class="font-mono text-slate-600">${item.phone || '---'}</td>
+                        <td class="text-blue-600 italic">${item.email || '---'}</td>
+                        <td class="date-text">${date}</td>
                         <td>
-                            <button onclick="approve('${id}', '${libName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
+                            <button onclick="approve('${id}', '${item.libraryName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
                         </td>
                     </tr>`;
                 if (tableBody) tableBody.innerHTML += row;
             });
+            if (counter) counter.innerText = count + " طلب انتظار";
         } else {
-            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
+            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة.";
         }
     });
 
     function approve(id, name) {
-        if(confirm(`اعتماد مكتبة "${name}"؟`)) {
+        if(confirm(`هل تود اعتماد مكتبة "${name}"؟`)) {
             db.ref('join_requests/' + id).once('value').then(snap => {
                 return db.ref('approved_libraries/' + id).set({...snap.val(), status: 'approved'});
-            }).then(() => db.ref('join_requests/' + id).remove())
-              .then(() => alert("تم الاعتماد بنجاح!"));
+            }).then(() => {
+                return db.ref('join_requests/' + id).remove();
+            }).then(() => alert("تم الاعتماد بنجاح!"));
         }
     }
 </script>
