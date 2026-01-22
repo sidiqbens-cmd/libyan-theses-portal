@@ -2,33 +2,37 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:,"> <title>طلبات انضمام المكتبات الجديدة</title>
+    <link rel="icon" href="data:,"> <title>إدارة طلبات الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background-color: #f1f5f9; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 8px; font-weight: bold; }
-        td { padding: 8px; border-bottom: 1px solid #e2e8f0; background: white; text-align: center; }
+        body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
+        th { background: #1e3a8a; color: white; padding: 6px; font-weight: bold; border: 1px solid #e2e8f0; }
+        td { padding: 6px; border: 1px solid #e2e8f0; background: white; text-align: center; }
+        .btn-action { transition: all 0.2s; cursor: pointer; }
+        .btn-action:hover { transform: scale(1.05); filter: brightness(1.1); }
     </style>
 </head>
-<body class="p-4">
+<body class="p-2">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-lg font-bold text-blue-900">📋 طلبات الانضمام للفهرس الليبي الموحد</h1>
-            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1.5 rounded-lg text-xs shadow hover:bg-black transition">🏠 العودة للوحة التحكم</a>
+        <div class="flex justify-between items-center mb-3 bg-white p-2 rounded shadow-sm border">
+            <h1 class="text-sm font-bold text-blue-900 flex items-center gap-2">
+                <span class="w-2 h-4 bg-blue-900 rounded-sm"></span> طلبات انضمام المكتبات الجديدة
+            </h1>
+            <a href="admin.html" class="bg-slate-700 text-white px-3 py-1 rounded text-[10px] hover:bg-black">🏠 العودة للرئيسية</a>
         </div>
 
-        <div class="overflow-hidden rounded-xl shadow-lg border border-slate-200">
+        <div class="overflow-hidden rounded shadow-md">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-right">اسم المكتبة</th>
-                        <th>المدينة</th>
+                        <th class="text-right pr-4">اسم المكتبة</th>
+                        <th>المدينة / الموقع</th>
                         <th>نوع المكتبة</th>
                         <th>البريد الإلكتروني</th>
-                        <th>الحالة</th>
+                        <th>التاريخ</th>
                         <th>الإجراء</th>
                     </tr>
                 </thead>
@@ -36,6 +40,7 @@
                     </tbody>
             </table>
         </div>
+        <div id="statusMsg" class="text-center py-10 text-slate-400 italic">جاري فحص طلبات الانضمام...</div>
     </div>
 
 <script>
@@ -51,44 +56,56 @@
 
     db.ref('libraries_directory').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
+        const statusMsg = document.getElementById('statusMsg');
         tableBody.innerHTML = '';
         
-        snapshot.forEach((child) => {
-            const lib = child.val();
-            const id = child.key;
-            
-            // إصلاح جلب البيانات عبر فحص كل المسميات المحتملة في قاعدة البيانات
-            const row = `
-                <tr class="hover:bg-blue-50 transition">
-                    <td class="text-right font-bold text-blue-900 pr-4">${lib.libraryName || lib.name || '---'}</td>
-                    <td class="text-slate-600">${lib.city || lib.location || 'غير محدد'}</td>
-                    <td><span class="bg-slate-100 px-2 py-0.5 rounded text-[10px]">${lib.libraryType || lib.type || '---'}</span></td>
-                    <td class="text-blue-600 italic">${lib.email || lib.contact || '---'}</td>
-                    <td><span class="text-orange-500 font-bold">قيد الانتظار</span></td>
-                    <td>
-                        <button onclick="approve('${id}')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">اعتماد ✅</button>
-                    </td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
+        if (snapshot.exists()) {
+            statusMsg.classList.add('hidden');
+            snapshot.forEach((child) => {
+                const lib = child.val();
+                const id = child.key;
+                
+                // فحص كل الاحتمالات لأسماء الحقول في Firebase
+                const libName = lib.libraryName || lib.name || '---';
+                const libCity = lib.city || lib.location || lib.address || 'غير محدد';
+                const libType = lib.libraryType || lib.type || 'عامة';
+                const libEmail = lib.email || lib.contact || '---';
+                const libDate = lib.date || (lib.timestamp ? new Date(lib.timestamp).toLocaleDateString('ar-LY') : '---');
+
+                const row = `
+                    <tr class="hover:bg-blue-50">
+                        <td class="text-right font-bold text-blue-900 pr-4">${libName}</td>
+                        <td class="text-slate-600">${libCity}</td>
+                        <td><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-[9px] border border-blue-100">${libType}</span></td>
+                        <td class="text-blue-500 underline text-[10px]">${libEmail}</td>
+                        <td class="text-gray-400">${libDate}</td>
+                        <td>
+                            <button onclick="approve('${id}', '${libName}')" class="btn-action bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow-sm">اعتماد ✅</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        } else {
+            statusMsg.innerText = "لا توجد طلبات جديدة حالياً.";
+            statusMsg.classList.remove('hidden');
+        }
     });
 
-    function approve(id) {
-        if(confirm("هل أنت متأكد من اعتماد هذه المكتبة؟")) {
+    function approve(id, name) {
+        if(confirm(`هل تود اعتماد مكتبة "${name}" ونقلها للفهرس المعتمد؟`)) {
             db.ref('libraries_directory/' + id).once('value').then(snap => {
                 const data = snap.val();
-                // نقل إلى المكتبات المعتمدة
+                // نقل البيانات للمجلد الدائم مع إضافة تاريخ الاعتماد
                 return db.ref('approved_libraries/' + id).set({
                     ...data,
-                    approvalDate: Date.now(),
-                    status: 'approved'
+                    approvedAt: Date.now()
                 });
             }).then(() => {
-                // الحذف من الطلبات المؤقتة
+                // الحذف من قائمة الانتظار
                 return db.ref('libraries_directory/' + id).remove();
             }).then(() => {
-                alert("تم الاعتماد بنجاح! المكتبة الآن جزء من الفهرس الموحد.");
+                alert("تم الاعتماد بنجاح! ستظهر المكتبة الآن في الفهرس الموحد.");
             });
         }
     }
