@@ -2,30 +2,24 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الفهرس الليبي الموحد - طلبات الانضمام</title>
+    <link rel="icon" href="data:,">
+    <title>إدارة طلبات الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; margin: 0; }
+        body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
         th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
-        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; }
         .city-tag { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #fde68a; }
-        .date-col { color: #64748b; font-family: monospace; font-size: 10px; }
     </style>
 </head>
 <body class="p-2">
 
     <div class="max-w-full mx-auto">
-        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border border-blue-100">
-            <h1 class="text-xs font-bold text-blue-900 flex items-center gap-2">
-                <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
-                إدارة طلبات الانضمام (العرض المنظم)
-            </h1>
-            <div class="flex gap-2">
-                <span id="counter" class="bg-blue-900 text-white px-2 py-1 rounded text-[10px] font-bold">0 طلب</span>
-                <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px] hover:bg-black transition">🏠 الرئيسية</a>
-            </div>
+        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow border border-blue-100">
+            <h1 class="text-xs font-bold text-blue-900">📋 طلبات قادمة من "نموذج الانضمام"</h1>
+            <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px]">🏠 الرئيسية</a>
         </div>
 
         <div class="overflow-hidden rounded border border-slate-300 shadow-md">
@@ -36,18 +30,17 @@
                         <th>المدينة</th>
                         <th>التبعية</th>
                         <th>الهاتف</th>
-                        <th>البريد الإلكتروني</th>
-                        <th>تاريخ التقديم</th> <th>الإجراء</th>
+                        <th>تاريخ الطلب</th>
+                        <th>الإجراء</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic">جاري تحميل البيانات من السحابة...</div>
+        <div id="status" class="text-center py-10 text-slate-400 italic">بانتظار وصول بيانات من نموذج الانضمام...</div>
     </div>
 
 <script>
-    // تم إصلاح databaseURL هنا لحل مشكلة FATAL ERROR
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -59,64 +52,43 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // الاستماع لمسار join_requests كما هو محدد في ملفاتك
+    // نستخدم المسار 'join_requests' ليتطابق مع نموذج الانضمام (join.html)
     db.ref('join_requests').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
-        const loadingStatus = document.getElementById('loadingStatus');
-        const counter = document.getElementById('counter');
-        
+        const status = document.getElementById('status');
         if (tableBody) tableBody.innerHTML = '';
         
         if (snapshot.exists()) {
-            if (loadingStatus) loadingStatus.style.display = 'none';
-            let count = 0;
-            
+            if (status) status.style.display = 'none';
             snapshot.forEach((child) => {
                 const item = child.val();
                 const id = child.key;
-                count++;
 
-                // منطق معالجة المدينة والتبعية بناءً على طلبك
-                // نأخذ المدينة من خانة 'location' أو 'university' إذا كانت الخانة الأولى فارغة
-                const cityName = item.location || item.city || item.university || 'غير محدد';
-                const affName  = item.affiliation || item.libAff || 'عامة';
-                const reqDate  = item.requestDate || item.date || '---';
-
+                // تنفيذ طلبك: المدينة من خانة 'location' والتاريخ موجود
                 const row = `
-                    <tr class="hover:bg-blue-50 transition border-b">
+                    <tr class="hover:bg-blue-50 border-b">
                         <td class="text-right font-bold text-blue-900 pr-3 border-r-4 border-blue-900">${item.libraryName || '---'}</td>
-                        <td><span class="city-tag">${cityName}</span></td>
-                        <td class="text-slate-600">${affName}</td>
-                        <td class="font-mono text-slate-600">${item.phone || '---'}</td>
-                        <td class="text-blue-600 italic">${item.email || '---'}</td>
-                        <td class="date-col">${reqDate}</td>
+                        <td><span class="city-tag">${item.location || 'غير محدد'}</span></td>
+                        <td>${item.affiliation || '---'}</td>
+                        <td class="font-mono">${item.phone || '---'}</td>
+                        <td class="text-slate-500 text-[10px]">${item.requestDate || '---'}</td>
                         <td>
-                            <button onclick="approve('${id}', '${item.libraryName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
+                            <button onclick="approve('${id}', '${item.libraryName}')" class="bg-green-600 text-white px-3 py-0.5 rounded text-[10px] font-bold">اعتماد</button>
                         </td>
                     </tr>`;
-                if (tableBody) tableBody.innerHTML += row;
+                tableBody.innerHTML += row;
             });
-            if (counter) counter.innerText = count + " طلب انتظار";
         } else {
-            if (loadingStatus) {
-                loadingStatus.style.display = 'block';
-                loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
-            }
+            status.innerText = "لا توجد طلبات في مسار join_requests (الجدول فارغ في قاعدة البيانات).";
         }
     });
 
     function approve(id, name) {
-        if(confirm(`هل تود اعتماد مكتبة "${name}"؟`)) {
+        if(confirm(`اعتماد "${name}"؟`)) {
             db.ref('join_requests/' + id).once('value').then(snap => {
-                const data = snap.val();
-                return db.ref('approved_libraries/' + id).set({
-                    ...data,
-                    status: 'approved',
-                    approvalDate: new Date().toLocaleString('ar-LY')
-                });
-            }).then(() => {
-                return db.ref('join_requests/' + id).remove();
-            }).then(() => alert("تم الاعتماد بنجاح!"));
+                return db.ref('approved_libraries/' + id).set({...snap.val(), status: 'approved'});
+            }).then(() => db.ref('join_requests/' + id).remove())
+              .then(() => alert("تم الاعتماد بنجاح!"));
         }
     }
 </script>
