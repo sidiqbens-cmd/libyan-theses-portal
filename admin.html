@@ -8,100 +8,103 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background-color: #f8fafc; font-size: 11px; }
-        .card-btn { transition: all 0.2s ease; border-bottom: 4px solid transparent; }
-        .card-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        input, select, textarea { border: 1px solid #e2e8f0 !important; padding: 4px 8px !important; }
+        body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; }
+        .nav-card { transition: all 0.3s ease; border-bottom: 4px solid transparent; }
+        .nav-card:hover { transform: translateY(-3px); border-bottom-width: 6px; shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        input, select, textarea { border: 1px solid #cbd5e1 !important; padding: 4px 8px !important; outline: none; transition: border 0.2s; }
+        input:focus { border-color: #1e3a8a !important; background-color: #fff; }
     </style>
 </head>
 <body class="p-4">
 
 <div class="max-w-5xl mx-auto">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <a href="dashboard.html" class="card-btn bg-white p-4 rounded-xl shadow-sm border-b-green-500 flex flex-col items-center group">
+        
+        <a href="dashboard.html" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-green-500 flex flex-col items-center group">
             <span class="text-3xl mb-2 group-hover:scale-110 transition">🏢</span>
-            <span class="font-bold text-green-700 text-sm">إدارة المكتبات</span>
-            <div id="requestsCount" class="mt-2 px-3 py-1 bg-green-50 text-green-600 rounded-full font-bold text-[10px]">جاري الفحص...</div>
+            <span class="font-bold text-green-700 text-sm">إدارة طلبات الانضمام</span>
+            <div id="requestsCount" class="mt-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full font-bold text-[10px]">جاري التحقق...</div>
         </a>
 
-        <a href="#thesisForm" class="card-btn bg-white p-4 rounded-xl shadow-sm border-b-blue-500 flex flex-col items-center group">
+        <a href="#thesisForm" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-blue-500 flex flex-col items-center group text-center">
             <span class="text-3xl mb-2 group-hover:scale-110 transition">🎓</span>
             <span class="font-bold text-blue-700 text-sm">إضافة رسالة علمية</span>
-            <span class="text-gray-400 mt-2 text-[10px]">إدخال يدوي للفهرس</span>
+            <span class="text-gray-400 mt-2 text-[10px]">إدخال البيانات يدوياً للفهرس</span>
         </a>
 
-        <a href="index.html" class="card-btn bg-white p-4 rounded-xl shadow-sm border-b-purple-500 flex flex-col items-center group">
+        <a href="index.html" class="nav-card bg-white p-5 rounded-xl shadow-sm border-b-purple-500 flex flex-col items-center group">
             <span class="text-3xl mb-2 group-hover:scale-110 transition">🔍</span>
             <span class="font-bold text-purple-700 text-sm">واجهة البحث العامة</span>
-            <span class="text-gray-400 mt-2 text-[10px]">معاينة الموقع للجمهور</span>
+            <span class="text-gray-400 mt-2 text-[10px]">معاينة الموقع كما يراه الجمهور</span>
         </a>
     </div>
 
-    <hr class="mb-8 border-slate-200">
+    <hr class="mb-8 border-slate-300">
 
-    <div id="thesisForm" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+    <div id="thesisForm" class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
         <h2 class="text-base font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span class="w-2 h-6 bg-blue-600 rounded-full"></span> إدخال بيانات الرسالة العلمية
+            <span class="w-1.5 h-6 bg-blue-700 rounded-full"></span> نموذج إدخال بيانات الرسالة
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-                <label class="block font-bold text-slate-600 mb-1">اسم الباحث</label>
-                <input type="text" id="researcher" placeholder="الاسم الثلاثي" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-slate-600 mb-1 italic">اسم الباحث</label>
+                <input type="text" id="researcher" placeholder="مثال: د. محمد علي" class="w-full rounded-lg bg-slate-50">
             </div>
             <div>
-                <label class="block font-bold text-slate-600 mb-1">عنوان الرسالة</label>
-                <input type="text" id="title" placeholder="العنوان الكامل للرسالة" class="w-full rounded-lg bg-slate-50 font-bold">
+                <label class="block font-bold text-slate-600 mb-1 italic">عنوان الرسالة</label>
+                <input type="text" id="title" placeholder="اكتب العنوان الكامل هنا" class="w-full rounded-lg bg-slate-50 font-bold">
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-                <label class="block font-bold text-slate-600 mb-1">الجامعة</label>
-                <input type="text" id="university" placeholder="جامعة طرابلس" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-slate-600 mb-1">الجامعة / الجهة التعليمية</label>
+                <input type="text" id="university" placeholder="مثال: جامعة طرابلس" class="w-full rounded-lg bg-slate-50">
             </div>
             <div>
                 <label class="block font-bold text-slate-600 mb-1">الكلية</label>
                 <input type="text" id="faculty" class="w-full rounded-lg bg-slate-50">
             </div>
             <div>
-                <label class="block font-bold text-slate-600 mb-1">القسم</label>
+                <label class="block font-bold text-slate-600 mb-1">القسم / التخصص</label>
                 <input type="text" id="department" class="w-full rounded-lg bg-slate-50">
             </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 italic">
             <div>
-                <label class="block font-bold text-blue-900 mb-1">السنة</label>
-                <input type="number" id="year" placeholder="2026" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-blue-900 mb-1 underline">سنة الإنجاز</label>
+                <input type="number" id="year" placeholder="2026" class="w-full rounded-lg bg-white border-blue-200 shadow-sm">
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1">رقم الرسالة (ID)</label>
-                <input type="text" id="thesisId" placeholder="ID-001" class="w-full rounded-lg bg-slate-50">
+                <label class="block font-bold text-blue-900 mb-1 underline">رقم الرسالة (ID)</label>
+                <input type="text" id="thesisId" placeholder="ID-000" class="w-full rounded-lg bg-white border-blue-200 shadow-sm">
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1">الدرجة</label>
-                <select id="degree" class="w-full rounded-lg bg-slate-50 font-bold">
+                <label class="block font-bold text-blue-900 mb-1 underline">الدرجة</label>
+                <select id="degree" class="w-full rounded-lg bg-white font-bold cursor-pointer">
                     <option value="ماجستير">ماجستير</option>
                     <option value="دكتوراه">دكتوراه</option>
                 </select>
             </div>
             <div>
-                <label class="block font-bold text-blue-900 mb-1">الحالة</label>
-                <select id="status" class="w-full rounded-lg bg-slate-50 font-bold text-green-600">
+                <label class="block font-bold text-blue-900 mb-1 underline">حالة التوفر</label>
+                <select id="status" class="w-full rounded-lg bg-white font-bold text-green-700 cursor-pointer">
                     <option value="متوفرة">متوفرة ✅</option>
                     <option value="غير متوفرة">غير متوفرة ❌</option>
                 </select>
             </div>
         </div>
 
-        <button onclick="saveToDatabase()" class="w-full py-3 bg-blue-900 text-white rounded-xl font-bold hover:bg-blue-800 transition-all shadow-lg flex items-center justify-center gap-2">
-            <span>💾 حفظ في الفهرس الموحد</span>
+        <button onclick="saveToDatabase()" class="w-full py-3.5 bg-blue-900 text-white rounded-xl font-bold text-xs hover:bg-blue-800 transition-all shadow-lg flex items-center justify-center gap-2">
+            <span>💾 تأكيد وحفظ في قاعدة البيانات</span>
         </button>
     </div>
 </div>
 
 <script>
+    // تهيئة Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -112,20 +115,24 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 1. نظام العداد الحي (تم تصحيح ترتيب المتغيرات لمنع خطأ Initialization)
+    // إصلاح مشكلة العداد الحي (ReferenceError Fix)
     db.ref('libraries_directory').on('value', (snapshot) => {
-        const count = snapshot.numChildren();
+        let currentCount = 0; // تعريف المتغير قبل الاستخدام
+        if (snapshot.exists()) {
+            currentCount = snapshot.numChildren();
+        }
+        
         const countElement = document.getElementById('requestsCount');
-        if (count > 0) {
-            countElement.innerHTML = `⚠️ يوجد ${count} طلبات انتظار`;
-            countElement.className = "mt-2 px-3 py-1 bg-red-100 text-red-600 rounded-full font-bold text-[10px] animate-pulse";
+        if (currentCount > 0) {
+            countElement.innerHTML = `🔔 يوجد ${currentCount} طلبات جديدة`;
+            countElement.className = "mt-2 px-3 py-1 bg-red-600 text-white rounded-full font-bold text-[10px] animate-pulse shadow-sm";
         } else {
-            countElement.innerText = "لا توجد طلبات جديدة";
-            countElement.className = "mt-2 px-3 py-1 bg-green-50 text-green-600 rounded-full font-bold text-[10px]";
+            countElement.innerText = "لا توجد طلبات انتظار";
+            countElement.className = "mt-2 px-3 py-1 bg-green-50 text-green-600 rounded-full font-bold text-[10px] border border-green-200";
         }
     });
 
-    // 2. دالة حفظ البيانات
+    // دالة حفظ الرسالة العلمية
     function saveToDatabase() {
         const data = {
             researcher: document.getElementById('researcher').value,
@@ -141,14 +148,14 @@
         };
 
         if(!data.title || !data.researcher) {
-            alert("⚠️ يرجى تعبئة الحقول الأساسية (الباحث والعنوان)");
+            alert("⚠️ تنبيه: يرجى إدخال اسم الباحث وعنوان الرسالة على الأقل.");
             return;
         }
 
         db.ref('theses').push(data).then(() => {
-            alert("✅ تم الحفظ بنجاح في الفهرس الموحد");
+            alert("✅ تم الحفظ بنجاح في الفهرس الموحد.");
             document.querySelectorAll('input').forEach(el => el.value = '');
-        }).catch(err => alert("❌ خطأ: " + err));
+        }).catch(err => alert("❌ فشل الحفظ: " + err));
     }
 </script>
 </body>
