@@ -12,27 +12,39 @@ db.ref('libraries_directory').on('value', (snapshot) => {
             const id = child.key;
 
             // استخدام نظام "البدائل" لضمان ظهور البيانات مهما كان مسماها في الـ 11 طلباً
+           // استدعاء البيانات من المسار الذي يحتوي على الـ 11 طلباً
+db.ref('libraries_directory').on('value', (snapshot) => {
+    const tableBody = document.getElementById('tableBody');
+    if (tableBody) tableBody.innerHTML = '';
+    
+    if (snapshot.exists()) {
+        snapshot.forEach((child) => {
+            const lib = child.val();
+            const id = child.key;
+
+            // استخراج البيانات مع ضمان عدم الخطأ في المسميات
             const name = lib.libraryName || lib.name || '---';
             const loc  = lib.location || lib.city || lib.libLoc || 'غير محدد';
-            const aff  = lib.affiliation || lib.type || lib.libAff || '---';
-            const ph   = lib.phone || lib.libPhone || '---';
-            const em   = lib.email || lib.libEmail || '---';
-            const dt   = lib.requestDate || lib.date || '---';
+            const aff  = lib.affiliation || lib.type || '---';
+            const ph   = lib.phone || '---';
+            const em   = lib.email || '---';
+            const dt   = lib.requestDate || '---';
 
             const row = `
-                <tr class="hover:bg-blue-50 border-b">
+                <tr class="hover:bg-blue-50 border-b transition">
                     <td class="text-right font-bold text-blue-900 pr-4 p-2">${name}</td>
                     <td class="p-2">${loc}</td>
                     <td class="p-2">${aff}</td>
-                    <td class="p-2">${ph}</td>
+                    <td class="p-2 font-mono text-[10px]">${ph}</td>
                     <td class="p-2 text-blue-600 text-[10px]">${em}</td>
                     <td class="p-2 text-gray-400 text-[9px]">${dt}</td>
                     <td class="p-2">
-                        <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">اعتماد ✅</button>
+                        <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-2 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
                     </td>
-                </tr>
-            `;
+                </tr>`;
             if (tableBody) tableBody.innerHTML += row;
         });
+    } else {
+        console.log("لا توجد بيانات في libraries_directory");
     }
 });
