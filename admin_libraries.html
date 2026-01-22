@@ -2,23 +2,23 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:,"> 
-    <title>إدارة طلبات الفهرس الليبي الموحد</title>
+    <link rel="icon" href="data:,"> <title>الفهرس الليبي الموحد - إدارة طلبات الانضمام</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background-color: #f1f5f9; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 6px; font-weight: bold; border: 1px solid #cbd5e1; }
-        td { padding: 6px; border: 1px solid #e2e8f0; background: white; text-align: center; }
+        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; }
+        th { background: #1e3a8a; color: white; padding: 8px; font-weight: bold; border: 1px solid #cbd5e1; }
+        td { padding: 8px; border: 1px solid #e2e8f0; background: white; text-align: center; color: #334155; }
+        .approved-row { border-right: 4px solid #1e3a8a; }
     </style>
 </head>
 <body class="p-2">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-3 bg-white p-2 rounded shadow-sm border">
-            <h1 class="text-sm font-bold text-blue-900">📋 طلبات انضمام المكتبات الجديدة</h1>
-            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1 rounded text-[10px] hover:bg-black">🏠 العودة للوحة الإدارة</a>
+        <div class="flex justify-between items-center mb-4 bg-white p-3 rounded shadow-sm border">
+            <h1 class="text-sm font-bold text-blue-900">📋 طلبات الانضمام للفهرس الليبي الموحد</h1>
+            <a href="admin.html" class="bg-slate-700 text-white px-4 py-1.5 rounded text-[10px] hover:bg-black transition">🏠 العودة للوحة الإدارة</a>
         </div>
 
         <div class="overflow-x-auto rounded shadow-lg border">
@@ -27,7 +27,7 @@
                     <tr>
                         <th class="text-right pr-4">اسم المكتبة</th>
                         <th>المدينة / الموقع</th>
-                        <th>التبعية</th>
+                        <th>الجامعة / التبعية</th>
                         <th>الهاتف</th>
                         <th>البريد الإلكتروني</th>
                         <th>تاريخ الطلب</th>
@@ -38,10 +38,11 @@
                     </tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic">جاري جلب الطلبات...</div>
+        <div id="loadingStatus" class="text-center py-20 text-slate-400 italic font-bold">جاري فحص طلبات الانضمام...</div>
     </div>
 
 <script>
+    // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
         authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -52,7 +53,8 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    db.ref('libraries_directory').on('value', (snapshot) => {
+    // الانتباه للمسار الصحيح: join_requests كما في ملف join.html
+    db.ref('join_requests').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
         const loadingStatus = document.getElementById('loadingStatus');
         tableBody.innerHTML = '';
@@ -63,48 +65,48 @@
                 const lib = child.val();
                 const id = child.key;
                 
-                // مطابقة الحقول مع كود الإرسال الذي وفرته:
+                // مطابقة دقيقة للحقول من كود join.html الخاص بك
                 const name = lib.libraryName || '---';
-                const loc  = lib.location || lib.libLoc || 'غير محدد'; // تم تعديلها لتشمل libLoc
-                const aff  = lib.affiliation || lib.libAff || '---';  // تم تعديلها لتشمل libAff
-                const ph   = lib.phone || lib.libPhone || '---';
-                const em   = lib.email || lib.libEmail || '---';
-                const dt   = lib.requestDate || '---'; 
+                const loc  = lib.location || 'غير محدد';
+                const aff  = lib.affiliation || 'غير محدد';
+                const ph   = lib.phone || '---';
+                const em   = lib.email || '---';
+                const dt   = lib.requestDate || '---';
 
                 const row = `
-                    <tr class="hover:bg-blue-50 transition">
-                        <td class="text-right font-bold text-blue-900 pr-4 border-r-4 border-blue-900">${name}</td>
+                    <tr class="hover:bg-blue-50 transition border-b">
+                        <td class="text-right font-bold text-blue-900 pr-4 approved-row">${name}</td>
                         <td class="font-medium">${loc}</td>
-                        <td><span class="bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-100">${aff}</span></td>
-                        <td class="text-slate-600">${ph}</td>
-                        <td class="text-blue-500 underline text-[10px]">${em}</td>
-                        <td class="text-gray-400 text-[9px]">${dt}</td>
+                        <td><span class="bg-slate-100 px-2 py-0.5 rounded text-blue-800">${aff}</span></td>
+                        <td>${ph}</td>
+                        <td class="text-blue-500 text-[10px]">${em}</td>
+                        <td class="text-slate-400 text-[9px] font-mono">${dt}</td>
                         <td>
-                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700 transition">اعتماد ✅</button>
+                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
                         </td>
                     </tr>
                 `;
                 tableBody.innerHTML += row;
             });
         } else {
-            loadingStatus.innerText = "لا توجد طلبات انتظار حالياً.";
+            loadingStatus.innerText = "لم يتم العثور على طلبات جديدة في قاعدة البيانات.";
             loadingStatus.classList.remove('hidden');
         }
     });
 
     function approve(id, name) {
         if(confirm(`هل تود اعتماد مكتبة "${name}" ونقلها للفهرس المعتمد؟`)) {
-            db.ref('libraries_directory/' + id).once('value').then(snap => {
+            db.ref('join_requests/' + id).once('value').then(snap => {
                 const data = snap.val();
                 return db.ref('approved_libraries/' + id).set({
                     ...data,
-                    approvalDate: new Date().toLocaleString('ar-LY'),
-                    status: "approved"
+                    approvalStatus: "approved",
+                    finalDate: new Date().toLocaleString('ar-LY')
                 });
             }).then(() => {
-                return db.ref('libraries_directory/' + id).remove();
+                return db.ref('join_requests/' + id).remove();
             }).then(() => {
-                alert("تم الاعتماد بنجاح!");
+                alert("تم الاعتماد بنجاح! سيتم إخطار المكتبة وتفعيل حسابها.");
             });
         }
     }
