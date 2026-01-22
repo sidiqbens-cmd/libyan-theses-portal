@@ -68,7 +68,10 @@
             const tbody = document.getElementById('requestsList');
             const stats = document.getElementById('stats');
             tbody.innerHTML = '';
-            
+            if (snapshot.numChildren() > count) {
+                new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play();
+                console.log("%c تنبيه: وصل طلب انضمام جديد!", "background: red; color: white;");
+            }
             if (!snapshot.exists()) {
                 tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-gray-500 italic">لا توجد طلبات انضمام حالياً</td></tr>';
                 stats.innerText = "الطلبات: 0";
@@ -112,25 +115,31 @@
 
         // دالة الاعتماد: تنقل البيانات للمجلد العام libraries_directory وتفعلها
         function approveLibrary(id) {
-            if (confirm('هل أنت متأكد من اعتماد هذه المكتبة؟')) {
-                // الوصول للمكتبة في المجلد الحالي
+            if (confirm('هل أنت متأكد من اعتماد هذه المكتبة ونشرها في الدليل العام؟')) {
+                // 1. الإشارة لمكان البيانات الحالي
                 const requestRef = db.ref('libraries_directory/' + id);
         
                 requestRef.once('value', (snapshot) => {
-                    const libraryData = snapshot.val();
+                    const libraryData = snapshot.val(); // هنا قمنا بتعريف البيانات التي كانت ناقصة وتسببت في الخطأ
+            
                     if (libraryData) {
-                        // نقل البيانات للمجلد المعتمد النهائي (libraries)
+                        // 2. إضافة بيانات الحالة والتاريخ
+                        libraryData.status = "active";
+                        libraryData.approvalDate = new Date().toLocaleString('ar-LY');
+
+                        // 3. النقل للمجلد النهائي (libraries)
                         db.ref('libraries/' + id).set(libraryData).then(() => {
-                            // حذفها من المجلد المؤقت بعد النجاح
+                            // 4. الحذف من قائمة الانتظار (libraries_directory)
                             return requestRef.remove();
                         }).then(() => {
-                            alert('تم الاعتماد بنجاح!');
+                            alert("تم اعتماد المكتبة بنجاح وتفعيلها في البحث العام!");
+                        }).catch((error) => {
+                            console.error("خطأ في العملية:", error);
                         });
                     }
                 });
             }
         }
-
         // دالة الرفض/الحذف
         function rejectLibrary(id) {
             if (confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) {
