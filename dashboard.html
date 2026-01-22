@@ -82,13 +82,12 @@
                 count++;
 
                 // معالجة المسميات بذكاء (القديم والجديد)
-               const libName = data.name || data.libraryName || "غير مسمى";
-               const libAff = data.university || data.affiliation || "-";
-               const libPhone = data.phone || "-";
-               const libEmail = data.email || "-";
-               const libLoc = data.mapUrl || data.location || "#"; // تعريف الموقع الجغرافي
-               const reqDate = data.requestDate || "-"; // تعريف تاريخ الطلب الناقصهذا هو المتغير الناقص الذي سبب المشكلة
-
+                const libName = data.name || data.libraryName || "غير مسمى";
+                const libAff = data.university || data.affiliation || "-";
+                const libPhone = data.phone || "-";
+                const libEmail = data.email || "-";
+                const libLoc = data.mapUrl || data.location || "#"; // تعريف الموقع الجغرافي
+                const reqDate = data.requestDate || "-"; // تعريف تاريخ الطلب الناقص
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50 transition-colors">
                         <td class="font-bold text-blue-900 text-right pr-4">${libName}</td>
