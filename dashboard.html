@@ -64,13 +64,20 @@
         const db = firebase.database();
 
         // الاستماع المباشر للتغييرات في مجلد join_requests
+        let count = 0; // تعريف متغير العداد خارج الدالة للمقارنة
+
         db.ref('libraries_directory').on('value', (snapshot) => {
             const tbody = document.getElementById('requestsList');
             const stats = document.getElementById('stats');
             tbody.innerHTML = '';
-            if (snapshot.numChildren() > count) {
+    
+            const currentCount = snapshot.numChildren();
+    
+            // نظام إشعار المدراء: تنبيه صوتي عند وصول طلب جديد
+            if (currentCount > count && count !== 0) {
                 new Audio('https://www.soundjay.com/buttons/beep-07a.mp3').play();
-                console.log("%c تنبيه: وصل طلب انضمام جديد!", "background: red; color: white;");
+                console.log("%c تنبيه: وصل طلب انضمام جديد!", "background: red; color: white; padding: 5px;");
+                alert("يوجد طلب انضمام جديد للفهرس!");
             }
             if (!snapshot.exists()) {
                 tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-gray-500 italic">لا توجد طلبات انضمام حالياً</td></tr>';
