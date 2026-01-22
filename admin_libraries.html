@@ -43,56 +43,59 @@
 
 <script>
     // إعدادات Firebase
+    // إعدادات Firebase صحيحة كما في صورتك
     const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+    authDomain: "libyan-theses-portal.firebaseapp.com",
+    projectId: "libyan-theses-portal",
+    databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+    appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+};
 
-    // الانتباه للمسار الصحيح: join_requests كما في ملف join.html
-    db.ref('join_requests').on('value', (snapshot) => {
-        const tableBody = document.getElementById('tableBody');
-        const loadingStatus = document.getElementById('loadingStatus');
-        tableBody.innerHTML = '';
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// تأكد من استخدام 'join_requests' كما هو في ملف join.html
+db.ref('join_requests').on('value', (snapshot) => {
+    const tableBody = document.getElementById('tableBody');
+    const loadingStatus = document.getElementById('loadingStatus');
+    
+    if (tableBody) tableBody.innerHTML = '';
+    
+    if (snapshot.exists()) {
+        if (loadingStatus) loadingStatus.style.display = 'none';
         
-        if (snapshot.exists()) {
-            loadingStatus.classList.add('hidden');
-            snapshot.forEach((child) => {
-                const lib = child.val();
-                const id = child.key;
-                
-                // مطابقة دقيقة للحقول من كود join.html الخاص بك
-                const name = lib.libraryName || '---';
-                const loc  = lib.location || 'غير محدد';
-                const aff  = lib.affiliation || 'غير محدد';
-                const ph   = lib.phone || '---';
-                const em   = lib.email || '---';
-                const dt   = lib.requestDate || '---';
+        snapshot.forEach((child) => {
+            const lib = child.val();
+            const id = child.key;
 
-                const row = `
-                    <tr class="hover:bg-blue-50 transition border-b">
-                        <td class="text-right font-bold text-blue-900 pr-4 approved-row">${name}</td>
-                        <td class="font-medium">${loc}</td>
-                        <td><span class="bg-slate-100 px-2 py-0.5 rounded text-blue-800">${aff}</span></td>
-                        <td>${ph}</td>
-                        <td class="text-blue-500 text-[10px]">${em}</td>
-                        <td class="text-slate-400 text-[9px] font-mono">${dt}</td>
-                        <td>
-                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
-                        </td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-        } else {
-            loadingStatus.innerText = "لم يتم العثور على طلبات جديدة في قاعدة البيانات.";
-            loadingStatus.classList.remove('hidden');
-        }
-    });
+            // مطابقة دقيقة للحقول من ملف join.html الخاص بك
+            const name = lib.libraryName || '---';
+            const loc  = lib.location || 'غير محدد';
+            const aff  = lib.affiliation || '---';
+            const ph   = lib.phone || '---';
+            const em   = lib.email || '---';
+            const dt   = lib.requestDate || '---';
+
+            const row = `
+                <tr class="hover:bg-blue-50 border-b">
+                    <td class="text-right font-bold text-blue-900 pr-4 p-2">${name}</td>
+                    <td class="p-2">${loc}</td>
+                    <td class="p-2">${aff}</td>
+                    <td class="p-2">${ph}</td>
+                    <td class="p-2 text-blue-600 text-[10px]">${em}</td>
+                    <td class="p-2 text-gray-400 text-[9px]">${dt}</td>
+                    <td class="p-2">
+                        <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
+                    </td>
+                </tr>
+            `;
+            if (tableBody) tableBody.innerHTML += row;
+        });
+    } else {
+        if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
+    }
+});
 
     function approve(id, name) {
         if(confirm(`هل تود اعتماد مكتبة "${name}" ونقلها للفهرس المعتمد؟`)) {
