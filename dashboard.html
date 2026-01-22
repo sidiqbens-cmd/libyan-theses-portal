@@ -113,14 +113,14 @@
         function approveLibrary(id) {
             if (confirm('هل أنت متأكد من اعتماد هذه المكتبة ونشرها في الدليل العام؟')) {
                 db.ref('libraries_directory/' + id).once('value', (snapshot) => {
-                    const libraryData = snapshot.val();
+                    const requestRef = db.ref('libraries_directory/' + id);
                     libraryData.status = "active"; // تغيير الحالة للنشر
                     libraryData.approvalDate = new Date().toLocaleString('ar-LY');
 
                     // 1. الإضافة للمجلد العام
                     db.ref('libraries_directory').push(libraryData).then(() => {
                         // 2. الحذف من طلبات الانتظار
-                        db.ref('join_requests/' + id).remove().then(() => {
+                        db.ref('libraries_directory/' + id).remove().then(() => {
                             alert("تم اعتماد المكتبة بنجاح وتفعيلها في البحث العام.");
                         });
                     });
@@ -131,7 +131,7 @@
         // دالة الرفض/الحذف
         function rejectLibrary(id) {
             if (confirm('هل تريد حذف هذا الطلب نهائياً؟')) {
-                db.ref('join_requests/' + id).remove().then(() => {
+                db.ref('libraries_directory/' + id).remove().then(() => {
                     alert("تم حذف الطلب.");
                 });
             }
