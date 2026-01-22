@@ -82,10 +82,11 @@
                 count++;
 
                 // معالجة المسميات بذكاء (القديم والجديد)
-                const libName = data.name || data.libraryName || "غير مسمى";
-                const libAff = data.university || data.affiliation || "-";
-                const libPhone = data.phone || "-";
-                const libEmail = data.email || "-";
+               const libName = data.name || data.libraryName || "غير مسمى";
+               const libAff = data.university || data.affiliation || "-";
+               const libPhone = data.phone || "-";
+               const libEmail = data.email || "-";
+               const libLoc = data.mapUrl || data.location || "#"; // هذا هو المتغير الناقص الذي سبب المشكلة
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50 transition-colors">
