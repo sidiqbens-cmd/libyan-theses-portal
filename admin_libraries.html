@@ -2,44 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:,">
-    <title>إدارة الفهرس الليبي الموحد - الفرز المفصل</title>
+    <title>إدارة طلبات الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 10px; margin: 0; }
-        th { background: #0f172a; color: white; padding: 4px; border: 1px solid #334155; font-weight: bold; }
-        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; color: #1e293b; }
-        .tag { padding: 1px 4px; border-radius: 3px; font-size: 9px; font-weight: 600; display: inline-block; }
-        .tag-city { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .tag-univ { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-        .tag-aff { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
+        td { padding: 4px; border: 1px solid #e2e8f0; background: white; text-align: center; }
+        .tag-blue { background: #dbeafe; color: #1e40af; padding: 2px 5px; border-radius: 4px; border: 1px solid #bfdbfe; }
+        .tag-amber { background: #fef3c7; color: #92400e; padding: 2px 5px; border-radius: 4px; border: 1px solid #fde68a; font-weight: bold; }
     </style>
 </head>
-<body class="p-1">
+<body class="p-2">
 
     <div class="max-w-full mx-auto">
-        <div class="flex justify-between items-center mb-1 bg-white p-2 rounded shadow-sm border border-slate-200">
-            <h1 class="text-[11px] font-bold text-blue-900 flex items-center gap-1">
-                <span class="w-2 h-2 bg-green-500 rounded-full"></span> إدارة الطلبات - التبويب المفصل
-            </h1>
-            <div class="flex gap-2 items-center">
-                <span id="counter" class="text-blue-700 font-bold px-2 border-l border-slate-300">0 طلب</span>
-                <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[9px] hover:bg-black transition">🏠 الرئيسية</a>
-            </div>
+        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border">
+            <h1 class="text-xs font-bold text-blue-900">📋 طلبات الانضمام (مطابق لبيانات Join.html)</h1>
+            <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px]">🏠 العودة</a>
         </div>
 
-        <div class="overflow-x-auto rounded border border-slate-300 shadow-sm">
+        <div class="overflow-hidden rounded border border-slate-300 shadow">
             <table class="w-full border-collapse">
                 <thead>
                     <tr>
-                        <th class="text-right pr-2">اسم المكتبة</th>
-                        <th>المدينة</th>
-                        <th>الموقع التفصيلي</th>
-                        <th>الجامعة</th>
-                        <th>التبعية</th>
+                        <th class="text-right pr-3">اسم المكتبة</th>
+                        <th>المدينة / الموقع (Location)</th>
+                        <th>التبعية (Affiliation)</th>
                         <th>الهاتف</th>
+                        <th>البريد الإلكتروني</th>
                         <th>التاريخ</th>
                         <th>الإجراء</th>
                     </tr>
@@ -47,7 +38,7 @@
                 <tbody id="tableBody"></tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-6 text-slate-400 italic font-bold">جاري ترتيب البيانات في الأعمدة الجديدة...</div>
+        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic">جاري جلب البيانات من مسار join_requests...</div>
     </div>
 
 <script>
@@ -62,59 +53,51 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    db.ref('libraries_directory').on('value', (snapshot) => {
+    // نستخدم المسار 'join_requests' لأنه المسار الذي يرسل إليه ملف join.html البيانات
+    db.ref('join_requests').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
-        const counter = document.getElementById('counter');
         const loadingStatus = document.getElementById('loadingStatus');
-        
         if (tableBody) tableBody.innerHTML = '';
         
         if (snapshot.exists()) {
             if (loadingStatus) loadingStatus.style.display = 'none';
-            let count = 0;
-            
             snapshot.forEach((child) => {
                 const item = child.val();
                 const id = child.key;
-                count++;
 
-                // فصل البيانات بناءً على الحقول المتاحة في قاعدة بياناتك
-                const name = item.libraryName || item.name || '---';
-                const city = item.city || item.location || '---';
-                const map  = item.mapUrl || item.libLoc || '---';
-                const univ = item.university || '---';
-                const aff  = item.affiliation || item.libAff || item.type || 'عامة';
-                const ph   = item.phone || item.libPhone || '---';
-                const dt   = item.requestDate || item.date || '---';
+                // مطابقة دقيقة للحقول كما هي في صورة كود join.html (image_72cad2)
+                const libName = item.libraryName || "---"; 
+                const libLoc  = item.location || "---"; 
+                const libAff  = item.affiliation || "---";
+                const libPh   = item.phone || "---";
+                const libEm   = item.email || "---";
+                const reqDate = item.requestDate || "---";
 
                 const row = `
-                    <tr class="hover:bg-slate-50 transition border-b">
-                        <td class="text-right font-bold text-blue-900 pr-2 border-r-2 border-blue-900">${name}</td>
-                        <td><span class="tag tag-city">${city}</span></td>
-                        <td class="text-[9px] text-slate-500 max-w-[120px] truncate">${map}</td>
-                        <td><span class="tag tag-univ">${univ}</span></td>
-                        <td><span class="tag tag-aff">${aff}</span></td>
-                        <td class="font-mono">${ph}</td>
-                        <td class="text-slate-400 text-[8px]">${dt}</td>
+                    <tr class="hover:bg-blue-50 border-b">
+                        <td class="text-right font-bold text-blue-900 pr-3 border-r-4 border-blue-900">${libName}</td>
+                        <td><span class="tag-amber">${libLoc}</span></td>
+                        <td><span class="tag-blue">${libAff}</span></td>
+                        <td class="font-mono">${libPh}</td>
+                        <td class="text-blue-600">${libEm}</td>
+                        <td class="text-slate-400 text-[9px]">${reqDate}</td>
                         <td>
-                            <button onclick="approve('${id}', '${name}')" class="bg-green-600 text-white px-2 py-0.5 rounded text-[8px] font-bold hover:bg-green-700">اعتماد</button>
+                            <button onclick="approve('${id}', '${libName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[9px] font-bold shadow hover:bg-green-700">اعتماد ✅</button>
                         </td>
                     </tr>`;
                 if (tableBody) tableBody.innerHTML += row;
             });
-            if (counter) counter.innerText = count + " طلب";
         } else {
-            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات انتظار.";
+            if (loadingStatus) loadingStatus.innerText = "لا توجد طلبات جديدة حالياً.";
         }
     });
 
     function approve(id, name) {
         if(confirm(`اعتماد مكتبة "${name}"؟`)) {
-            db.ref('libraries_directory/' + id).once('value').then(snap => {
+            db.ref('join_requests/' + id).once('value').then(snap => {
                 return db.ref('approved_libraries/' + id).set({...snap.val(), status: 'approved'});
-            }).then(() => {
-                return db.ref('libraries_directory/' + id).remove();
-            }).then(() => alert("تم الاعتماد"));
+            }).then(() => db.ref('join_requests/' + id).remove())
+              .then(() => alert("تم الاعتماد بنجاح!"));
         }
     }
 </script>
