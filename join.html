@@ -16,7 +16,6 @@
             <input type="text" id="libCity" placeholder="المدينة" class="w-full p-2 border rounded text-sm" required>
             
             <input type="text" id="libAff" placeholder="الجامعة التابعة لها" class="w-full p-2 border rounded text-sm" required>
-            
             <input type="text" id="libPhone" placeholder="رقم هاتف التواصل" class="w-full p-2 border rounded text-sm" required>
             <input type="email" id="libEmail" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded text-sm" required>
             <input type="url" id="libLoc" placeholder="رابط موقع المكتبة (Google Maps)" class="w-full p-2 border rounded text-sm" required>
@@ -47,7 +46,7 @@
 
             const data = {
                 libraryName: document.getElementById('libName').value,
-                city: document.getElementById('libCity').value, // القيمة الجديدة للمدينة
+                city: document.getElementById('libCity').value,
                 affiliation: document.getElementById('libAff').value,
                 phone: document.getElementById('libPhone').value,
                 email: document.getElementById('libEmail').value,
@@ -56,16 +55,15 @@
                 requestDate: new Date().toLocaleString('ar-LY')
             };
 
-            db.ref('join_requests').push(data)
+            // الإرسال إلى المسار الذي تستخدمه حالياً في صورك
+            db.ref('libraries_directory').push(data)
                 .then(() => {
-                    alert("✅ تم استلام طلبك بنجاح!");
+                    alert("✅ تم الإرسال بنجاح!");
                     msg.innerText = "تم الإرسال بنجاح";
                     msg.className = "mt-3 text-center text-xs font-bold text-green-600";
                     document.getElementById('joinForm').reset();
                 })
-                .catch((err) => {
-                    alert("❌ فشل الاتصال: " + err.message);
-                })
+                .catch((err) => alert("❌ خطأ: " + err.message))
                 .finally(() => {
                     btn.disabled = false;
                     btn.innerText = "إرسال الطلب";
