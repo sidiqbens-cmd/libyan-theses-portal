@@ -7,22 +7,22 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f8fafc; font-family: sans-serif; padding: 8px; }
+        body { font-size: 11px; background-color: #f8fafc; font-family: sans-serif; padding: 10px; }
         .compact-table th { background-color: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; text-align: center; }
         .compact-table td { padding: 4px; border: 1px solid #e2e8f0; text-align: center; background: white; }
-        .btn-approve { background-color: #15803d; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .btn-approve { background-color: #15803d; color: white; padding: 2px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; border: none; }
         .btn-approve:hover { background-color: #000; }
-        .city-badge { background-color: #dcfce7; color: #166534; font-weight: bold; padding: 1px 4px; border-radius: 3px; }
+        .badge { background-color: #dcfce7; color: #166534; font-weight: bold; padding: 1px 4px; border-radius: 3px; }
     </style>
 </head>
 <body>
 
     <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border-r-4 border-blue-900">
-        <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
+        <h1 class="text-blue-900 font-bold text-sm">إدارة طلبات الانضمام (تحديث مباشر)</h1>
         <div id="counter" class="bg-blue-100 text-blue-800 px-3 py-0.5 rounded-full font-bold">جاري المزامنة...</div>
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+    <div class="overflow-hidden rounded border border-gray-200 shadow-sm">
         <table class="w-full compact-table">
             <thead>
                 <tr>
@@ -31,7 +31,7 @@
                     <th>التبعية</th>
                     <th>الهاتف</th>
                     <th>الموقع</th>
-                    <th>تاريخ الطلب</th>
+                    <th>التاريخ</th>
                     <th>الإجراء</th>
                 </tr>
             </thead>
@@ -51,66 +51,46 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // دالة الاعتماد التي تدعم البحث في المسارين
     function approve(id, currentPath) {
-        const sourceRef = db.ref(currentPath).child(id);
-        sourceRef.once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (confirm(`هل أنت متأكد من اعتماد: ${data.libraryName || data.name}؟`)) {
-                db.ref('approved_libraries').child(id).set({
-                    ...data,
-                    status: 'approved',
-                    approvalDate: new Date().toLocaleString('ar-LY')
-                }).then(() => {
-                    return sourceRef.remove();
-                }).then(() => {
-                    alert("تم اعتماد المكتبة بنجاح ✅");
-                }).catch(err => alert("حدث خطأ: " + err.message));
+        db.ref(currentPath).child(id).once('value', (snap) => {
+            const data = snap.val();
+            if (confirm(`هل تود اعتماد: ${data.libraryName || data.name}؟`)) {
+                db.ref('approved_libraries').child(id).set({...data, status: 'approved'})
+                .then(() => db.ref(currentPath).child(id).remove())
+                .then(() => alert("تم الاعتماد بنجاح ✅"));
             }
         });
     }
 
-    // دالة موحدة لجلب البيانات من أي مسار
-    function fetchAllRequests() {
+    // مراقبة المسارين معاً لضمان عدم ضياع أي طلب
+    db.ref('/').on('value', (snapshot) => {
         const tbody = document.getElementById('tableBody');
-        const counterDiv = document.getElementById('counter');
-        
-        // مراقبة المسار الرئيسي لضمان جلب كل شيء
-        db.ref('/').on('value', (snapshot) => {
-            tbody.innerHTML = '';
-            let count = 0;
-            const root = snapshot.val();
-            if (!root) return;
+        tbody.innerHTML = '';
+        let count = 0;
+        const root = snapshot.val();
+        if (!root) return;
 
-            // تجميع البيانات من المسارين المحتملين
-            const paths = ['libraries_directory', 'join_requests'];
-            
-            paths.forEach(path => {
-                if (root[path]) {
-                    Object.keys(root[path]).forEach(id => {
-                        const data = root[path][id];
-                        count++;
-                        const row = `
-                            <tr class="hover:bg-blue-50">
-                                <td class="font-bold text-blue-900 text-right pr-4 border-r-2 border-blue-900">${data.libraryName || data.name || '-'}</td>
-                                <td><span class="city-badge">${data.city || data.college || '-'}</span></td>
-                                <td class="text-gray-600">${data.affiliation || data.university || '-'}</td>
-                                <td class="font-mono">${data.phone || '-'}</td>
-                                <td><a href="${data.location || data.mapUrl}" target="_blank" class="text-blue-500 underline">خرائط</a></td>
-                                <td class="text-gray-400 text-[10px]">${data.requestDate || data.joinDate || '-'}</td>
-                                <td><button onclick="approve('${id}', '${path}')" class="btn-approve">اعتماد ✅</button></td>
-                            </tr>`;
-                        tbody.innerHTML += row;
-                    });
-                }
-            });
-
-            counterDiv.innerText = count + " طلبات مكتشفة";
-            if (count === 0) tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-gray-400 italic">لا توجد طلبات انتظار حالياً</td></tr>';
+        ['libraries_directory', 'join_requests'].forEach(path => {
+            if (root[path]) {
+                Object.keys(root[path]).forEach(id => {
+                    const data = root[path][id];
+                    count++;
+                    const row = `
+                        <tr>
+                            <td class="font-bold text-blue-900 text-right pr-4 border-r-2 border-blue-900">${data.libraryName || data.name || '-'}</td>
+                            <td><span class="badge">${data.city || data.college || '-'}</span></td>
+                            <td>${data.affiliation || data.university || '-'}</td>
+                            <td class="font-mono text-gray-600">${data.phone || '-'}</td>
+                            <td><a href="${data.location || data.mapUrl}" target="_blank" class="text-blue-500 underline text-[10px]">عرض</a></td>
+                            <td class="text-gray-400 text-[10px]">${data.requestDate || data.joinDate || '-'}</td>
+                            <td><button onclick="approve('${id}', '${path}')" class="btn-approve">اعتماد ✅</button></td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
         });
-    }
-
-    fetchAllRequests();
+        document.getElementById('counter').innerText = count + " طلبات انتظار";
+    });
 </script>
 </body>
 </html>
