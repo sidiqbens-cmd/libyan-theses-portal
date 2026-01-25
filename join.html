@@ -13,14 +13,16 @@
         <form id="joinForm" class="space-y-3">
             <input type="text" id="libName" placeholder="الاسم الرسمي للمكتبة" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
             
-            <input type="text" id="libCity" placeholder="المدينة (مثال: نالوت، طرابلس، بنغازي)" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="libCity" placeholder="المدينة" class="p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+                
+                <input type="text" id="libAff" placeholder="التبعية" class="p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+            </div>
             
-            <input type="text" id="libAff" placeholder="الجامعة أو الجهة التابعة لها" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+            <input type="text" id="libPhone" placeholder="رقم هاتف التواصل (واتساب)" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+            <input type="email" id="libEmail" placeholder="البريد الإلكتروني الرسمي" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
             
-            <input type="text" id="libPhone" placeholder="رقم هاتف التواصل" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
-            <input type="email" id="libEmail" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
-            
-            <input type="url" id="libLoc" placeholder="رابط موقع المكتبة (Google Maps)" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
+            <input type="url" id="libLoc" placeholder="رابط موقع المكتبة على خرائط جوجل" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" required>
             
             <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white py-2 rounded font-bold hover:bg-black transition shadow-md">إرسال طلب الانضمام</button>
         </form>
@@ -28,7 +30,6 @@
     </div>
 
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -48,29 +49,27 @@
             btn.disabled = true;
             btn.innerText = "جاري الإرسال...";
 
-            // تجميع البيانات مع الحقل الجديد (city)
             const data = {
                 libraryName: document.getElementById('libName').value,
-                city: document.getElementById('libCity').value, // الحقل المضاف
+                city: document.getElementById('libCity').value, // البيانات الجديدة للمدينة
                 affiliation: document.getElementById('libAff').value,
                 phone: document.getElementById('libPhone').value,
                 email: document.getElementById('libEmail').value,
                 location: document.getElementById('libLoc').value,
                 status: "pending",
-                requestDate: new Date().toLocaleString('ar-LY')
+                requestDate: new Date().toLocaleString('ar-LY') //
             };
 
-            // إرسال البيانات لمسار join_requests
+            // الإرسال لمسار join_requests لضمان الفصل عن الدليل المعتمد
             db.ref('join_requests').push(data)
                 .then(() => {
-                    alert("✅ تم استلام طلبك بنجاح في الفهرس الليبي الموحد!");
-                    msg.innerText = "تم الإرسال بنجاح";
+                    alert("✅ تم استلام طلبك بنجاح!");
+                    msg.innerText = "شكراً لكم! تم إرسال الطلب بنجاح.";
                     msg.className = "mt-3 text-center text-xs font-bold text-green-600";
                     document.getElementById('joinForm').reset();
                 })
                 .catch((err) => {
                     alert("❌ فشل الاتصال: " + err.message);
-                    console.error(err);
                 })
                 .finally(() => {
                     btn.disabled = false;
