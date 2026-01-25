@@ -2,72 +2,87 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
+    <title>إدارة المكتبات - الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        /* واجهة كثيفة جداً لتقليل الحاجة للتمرير */
+        body { font-family: system-ui, sans-serif; background-color: #f1f5f9; font-size: 11px; margin: 0; padding: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
+        td { padding: 4px 8px; border: 1px solid #e2e8f0; text-align: center; }
+        .btn-approve { background: #15803d; color: white; padding: 2px 8px; rounded: 4px; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans text-xs">
-    <div class="p-2">
-        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border-r-4 border-blue-900">
-            <h1 class="font-bold text-blue-900">إدارة طلبات الانضمام (مباشر)</h1>
-            <a href="dashboard.html" class="bg-blue-900 text-white px-3 py-1 rounded">الرئيسية</a>
-        </div>
+<body>
 
-        <div class="overflow-x-auto bg-white rounded shadow">
-            <table class="w-full text-right border-collapse">
-                <thead>
-                    <tr class="bg-blue-900 text-white">
-                        <th class="p-2 border">اسم المكتبة</th>
-                        <th class="p-2 border">المدينة</th>
-                        <th class="p-2 border">التبعية</th>
-                        <th class="p-2 border">الهاتف</th>
-                        <th class="p-2 border text-center">الموقع</th>
-                        <th class="p-2 border">التاريخ</th>
-                        <th class="p-2 border text-center">الإجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="requestsTable">
-                    </tbody>
-            </table>
-        </div>
+    <div class="bg-white p-2 rounded shadow mb-2 flex justify-between items-center border-r-4 border-blue-900">
+        <h2 class="font-bold text-blue-900 text-sm">📋 طلبات انضمام المكتبات الجديدة</h2>
+        <span id="count" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">0 طلب</span>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-            authDomain: "libyan-theses-portal.firebaseapp.com",
-            projectId: "libyan-theses-portal",
-            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-        };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+    <div class="overflow-x-auto shadow-lg rounded">
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم المكتبة</th>
+                    <th>المدينة</th>
+                    <th>الجامعة/التبعية</th>
+                    <th>الهاتف</th>
+                    <th>الموقع</th>
+                    <th>التاريخ</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
 
-        // مراقبة مسار الطلبات
-        db.ref('join_requests').on('value', (snapshot) => {
-            const tbody = document.getElementById('requestsTable');
-            tbody.innerHTML = '';
-            
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+        authDomain: "libyan-theses-portal.firebaseapp.com",
+        projectId: "libyan-theses-portal",
+        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // جلب البيانات من المسار الذي رأيناه في صورك الأخيرة
+    db.ref('join_requests').on('value', (snapshot) => {
+        const tbody = document.getElementById('tableBody');
+        const countSpan = document.getElementById('count');
+        tbody.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            let counter = 0;
             snapshot.forEach((child) => {
                 const data = child.val();
+                counter++;
                 const row = `
-                    <tr class="hover:bg-gray-50 border-b">
-                        <td class="p-2 font-bold">${data.libraryName || '-'}</td>
-                        <td class="p-2 text-blue-700">${data.city || '-'}</td>
-                        <td class="p-2 text-gray-600">${data.affiliation || '-'}</td>
-                        <td class="p-2">${data.phone || '-'}</td>
-                        <td class="p-2 text-center">
-                            <a href="${data.location}" target="_blank" class="text-blue-500 underline">خرائط</a>
-                        </td>
-                        <td class="p-2 text-gray-500">${data.requestDate || '-'}</td>
-                        <td class="p-2 text-center">
-                            <button class="bg-green-600 text-white px-2 py-1 rounded text-[10px]">اعتماد</button>
+                    <tr class="hover:bg-blue-50">
+                        <td class="font-bold text-blue-900 text-right">${data.libraryName || '-'}</td>
+                        <td class="font-bold text-green-700">${data.city || '-'}</td>
+                        <td>${data.affiliation || '-'}</td>
+                        <td class="font-mono">${data.phone || '-'}</td>
+                        <td><a href="${data.location}" target="_blank" class="text-blue-600 underline">الخريطة</a></td>
+                        <td class="text-gray-500">${data.requestDate || '-'}</td>
+                        <td>
+                            <button class="btn-approve hover:bg-black transition">اعتماد ✅</button>
                         </td>
                     </tr>`;
                 tbody.innerHTML += row;
             });
-        });
-    </script>
+            countSpan.innerText = counter + " طلب انتظار";
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-gray-400 font-bold italic text-lg">لا توجد طلبات جديدة حالياً</td></tr>';
+            countSpan.innerText = "0 طلب";
+        }
+    });
+</script>
 </body>
 </html>
