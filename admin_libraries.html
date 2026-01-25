@@ -2,134 +2,72 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة الفهرس الليبي الموحد - طلبات الانضمام</title>
+    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        body { font-family: system-ui, sans-serif; background-color: #f8fafc; font-size: 11px; margin: 0; }
-        th { background: #1e3a8a; color: white; padding: 8px; border: 1px solid #cbd5e1; font-weight: bold; }
-        td { padding: 6px; border: 1px solid #e2e8f0; background: white; text-align: center; vertical-align: middle; }
-        .city-tag { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #fde68a; }
-        .date-text { color: #64748b; font-family: monospace; font-size: 10px; }
-        /* واجهة كثيفة بدون سكرول */
-        .container-custom { max-width: 100%; padding: 10px; }
-    </style>
 </head>
-<body class="p-2">
-
-    <div class="container-custom mx-auto">
-        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border border-blue-100">
-            <h1 class="text-xs font-bold text-blue-900 flex items-center gap-2">
-                <span class="w-2.5 h-2.5 bg-blue-600 rounded-full animate-pulse"></span>
-                إدارة طلبات الانضمام (مباشر من Firebase)
-            </h1>
-            <div class="flex gap-2">
-                <span id="counter" class="bg-blue-900 text-white px-2 py-1 rounded text-[10px] font-bold">0 طلب</span>
-                <a href="admin.html" class="bg-slate-800 text-white px-3 py-1 rounded text-[10px] hover:bg-black transition">🏠 الرئيسية</a>
-            </div>
+<body class="bg-gray-100 font-sans text-xs">
+    <div class="p-2">
+        <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow-sm border-r-4 border-blue-900">
+            <h1 class="font-bold text-blue-900">إدارة طلبات الانضمام (مباشر)</h1>
+            <a href="dashboard.html" class="bg-blue-900 text-white px-3 py-1 rounded">الرئيسية</a>
         </div>
 
-        <div class="overflow-hidden rounded border border-slate-300 shadow-md">
-            <table class="w-full border-collapse">
+        <div class="overflow-x-auto bg-white rounded shadow">
+            <table class="w-full text-right border-collapse">
                 <thead>
-                    <tr>
-                        <th class="text-right pr-4">اسم المكتبة</th>
-                        <th>المدينة</th>
-                        <th>التبعية</th>
-                        <th>الهاتف</th>
-                        <th>تاريخ التقديم</th>
-                        <th>الإجراء</th>
+                    <tr class="bg-blue-900 text-white">
+                        <th class="p-2 border">اسم المكتبة</th>
+                        <th class="p-2 border">المدينة</th>
+                        <th class="p-2 border">التبعية</th>
+                        <th class="p-2 border">الهاتف</th>
+                        <th class="p-2 border text-center">الموقع</th>
+                        <th class="p-2 border">التاريخ</th>
+                        <th class="p-2 border text-center">الإجراء</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
+                <tbody id="requestsTable">
                     </tbody>
             </table>
         </div>
-        <div id="loadingStatus" class="text-center py-10 text-slate-400 italic font-bold">جاري الاتصال بـ Firebase...</div>
     </div>
 
-<script>
-    // إعدادات Firebase الخاصة بك (تأكد من مطابقتها لملف join.html)
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            projectId: "libyan-theses-portal",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    // بدء الاتصال
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // جلب البيانات من مسار join_requests (وهو المسار الذي يرسل إليه نموذج الانضمام بياناته)
-    db.ref('join_requests').on('value', (snapshot) => {
-        const tableBody = document.getElementById('tableBody');
-        const loadingStatus = document.getElementById('loadingStatus');
-        const counter = document.getElementById('counter');
-        
-        if (tableBody) tableBody.innerHTML = '';
-        
-        if (snapshot.exists()) {
-            if (loadingStatus) loadingStatus.style.display = 'none';
-            let count = 0;
+        // مراقبة مسار الطلبات
+        db.ref('join_requests').on('value', (snapshot) => {
+            const tbody = document.getElementById('requestsTable');
+            tbody.innerHTML = '';
             
             snapshot.forEach((child) => {
-                const item = child.val();
-                const id = child.key;
-                count++;
-
-                // المدينة نأخذها من حقل location كما في نموذج الانضمام
-                const cityName = item.location || 'غير محدد';
-                const affName  = item.affiliation || '---';
-                const reqDate  = item.requestDate || item.date || '---';
-
+                const data = child.val();
                 const row = `
-                    <tr class="hover:bg-blue-50 transition border-b">
-                        <td class="text-right font-bold text-blue-900 pr-4 border-r-4 border-blue-900">${item.libraryName || '---'}</td>
-                        <td><span class="city-tag">${cityName}</span></td>
-                        <td class="text-slate-600">${affName}</td>
-                        <td class="font-mono text-slate-600">${item.phone || '---'}</td>
-                        <td class="date-text">${reqDate}</td>
-                        <td>
-                            <button onclick="approve('${id}', '${item.libraryName}')" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold shadow hover:bg-green-700 transition">اعتماد ✅</button>
+                    <tr class="hover:bg-gray-50 border-b">
+                        <td class="p-2 font-bold">${data.libraryName || '-'}</td>
+                        <td class="p-2 text-blue-700">${data.city || '-'}</td>
+                        <td class="p-2 text-gray-600">${data.affiliation || '-'}</td>
+                        <td class="p-2">${data.phone || '-'}</td>
+                        <td class="p-2 text-center">
+                            <a href="${data.location}" target="_blank" class="text-blue-500 underline">خرائط</a>
+                        </td>
+                        <td class="p-2 text-gray-500">${data.requestDate || '-'}</td>
+                        <td class="p-2 text-center">
+                            <button class="bg-green-600 text-white px-2 py-1 rounded text-[10px]">اعتماد</button>
                         </td>
                     </tr>`;
-                tableBody.innerHTML += row;
+                tbody.innerHTML += row;
             });
-            if (counter) counter.innerText = count + " طلب انتظار";
-        } else {
-            if (loadingStatus) {
-                loadingStatus.style.display = 'block';
-                loadingStatus.innerText = "لا توجد طلبات معلقة حالياً في Firebase.";
-            }
-            if (counter) counter.innerText = "0 طلب";
-        }
-    });
-
-    // دالة الاعتماد ونقل البيانات للمكتبات المعتمدة
-    function approve(id, name) {
-        if(confirm(`هل أنت متأكد من اعتماد مكتبة "${name}"؟`)) {
-            db.ref('join_requests/' + id).once('value').then(snap => {
-                const data = snap.val();
-                // نقل إلى approved_libraries
-                return db.ref('approved_libraries/' + id).set({
-                    ...data,
-                    status: 'approved',
-                    approvalDate: new Date().toLocaleString('ar-LY')
-                });
-            }).then(() => {
-                // الحذف من قائمة الانتظار
-                return db.ref('join_requests/' + id).remove();
-            }).then(() => {
-                alert("تم الاعتماد بنجاح! تم نقل المكتبة للقائمة المعتمدة.");
-            }).catch(err => {
-                alert("حدث خطأ: " + err.message);
-            });
-        }
-    }
-</script>
+        });
+    </script>
 </body>
 </html>
