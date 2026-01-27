@@ -2,135 +2,75 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>البحث في الرسائل الجامعية | الفهرس الليبي الموحد</title>
+    <title>البحث | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 12px; background-color: #f8fafc; font-family: sans-serif; padding: 10px; }
-        .search-card { background: white; border-radius: 8px; shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid #1e3a8a; margin-bottom: 10px; padding: 15px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none; font-size: 12px; }
-        input:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30,58,138,0.1); }
-        th { background: #1e3a8a; color: white; padding: 8px; border: 1px solid #cbd5e1; position: sticky; top: 0; }
-        td { padding: 6px; border: 1px solid #e2e8f0; text-align: center; background: white; }
-        tr:nth-child(even) td { background: #f1f5f9; }
-        .status-badge { padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        body { font-size: 11px; background-color: #f8fafc; padding: 10px; }
+        .filter-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
+        input, select { width: 100%; padding: 5px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
+        td { padding: 4px; border: 1px solid #e2e8f0; text-align: center; background: white; }
     </style>
 </head>
 <body>
-
     <div class="text-center mb-4">
-        <h1 class="text-2xl font-bold text-blue-900">الفهرس الليبي الموحد</h1>
-        <p class="text-gray-600 text-xs">المستودع الرقمي للرسائل العلمية الجامعية</p>
+        <h1 class="text-xl font-bold text-blue-900">الفهرس الليبي الموحد</h1>
+        <p class="text-gray-600 text-[10px]">منظومة البحث في الرسائل العلمية الجامعية</p>
     </div>
 
-    <div class="search-card">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div class="md:col-span-2">
-                <input type="text" id="mainSearch" placeholder="🔍 ابحث بالباحث، العنوان، أو الكلمات المفتاحية..." onkeyup="searchTheses()">
-            </div>
-            <div>
-                <select id="filterUni" onchange="searchTheses()">
-                    <option value="">جميع الجامعات</option>
-                    </select>
-            </div>
-            <div>
-                <select id="filterDeg" onchange="searchTheses()">
-                    <option value="">كل الدرجات</option>
-                    <option>ماجستير</option>
-                    <option>دكتوراة</option>
-                </select>
-            </div>
-        </div>
-        <div class="text-left mt-2 text-[10px] text-gray-500" id="resultCount">جاري تحميل البيانات...</div>
+    <div class="filter-card grid grid-cols-6 gap-2 bg-blue-50">
+        <input type="text" id="pSearch" placeholder="🔍 بحث شامل..." onkeyup="publicSearch()">
+        <input type="text" id="pUni" placeholder="تصفية بالجامعة" onkeyup="publicSearch()">
+        <input type="text" id="pColl" placeholder="تصفية بالكلية" onkeyup="publicSearch()">
+        <input type="text" id="pDept" placeholder="تصفية بالقسم" onkeyup="publicSearch()">
+        <input type="text" id="pYear" placeholder="تصفية بالسنة" onkeyup="publicSearch()">
+        <select id="pDeg" onchange="publicSearch()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
     </div>
 
     <div class="bg-white rounded shadow overflow-hidden">
         <table class="w-full border-collapse">
             <thead>
                 <tr>
-                    <th class="w-1/4 text-right pr-4">عنوان الرسالة</th>
-                    <th>الباحث</th>
-                    <th>الجامعة</th>
-                    <th>السنة</th>
-                    <th>الدرجة</th>
-                    <th>رقم الرسالة</th>
-                    <th>المستند</th>
+                    <th class="w-1/4">العنوان</th><th>الباحث</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>المستند</th>
                 </tr>
             </thead>
-            <tbody id="publicTableBody">
-                </tbody>
+            <tbody id="publicBody"></tbody>
         </table>
     </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let allData = [];
-
-    // جلب البيانات مرة واحدة للبحث السريع
-    db.ref('theses_data').on('value', (snap) => {
-        allData = [];
-        const unis = new Set();
+    db.ref('theses_data').on('value', snap => {
+        const tbody = document.getElementById('publicBody');
+        tbody.innerHTML = '';
         snap.forEach(child => {
             const v = child.val();
-            allData.push(v);
-            if(v.university) unis.add(v.university);
+            tbody.innerHTML += `<tr>
+                <td class="text-right font-bold text-blue-900">${v.title}</td><td>${v.author}</td><td>${v.university}</td><td>${v.college}</td><td>${v.department}</td><td>${v.year}</td><td>${v.degree}</td><td>${v.serialNum}</td>
+                <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold">عرض</a>` : '-'}</td>
+            </tr>`;
         });
-        
-        // ملء قائمة الجامعات
-        const uniSelect = document.getElementById('filterUni');
-        unis.forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = opt.text = u;
-            uniSelect.add(opt);
-        });
-        
-        displayData(allData);
     });
 
-    function displayData(data) {
-        const tbody = document.getElementById('publicTableBody');
-        tbody.innerHTML = '';
-        data.forEach(v => {
-            tbody.innerHTML += `
-                <tr>
-                    <td class="text-right pr-4 font-bold text-blue-900">${v.title || '-'}</td>
-                    <td class="text-blue-700">${v.author || '-'}</td>
-                    <td>${v.university || '-'}</td>
-                    <td>${v.year || '-'}</td>
-                    <td>${v.degree || '-'}</td>
-                    <td class="font-mono text-gray-500">${v.serialNum || '-'}</td>
-                    <td>
-                        ${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 underline font-bold">عرض</a>` : '<span class="text-gray-400">غير متوفر</span>'}
-                    </td>
-                </tr>
-            `;
+    function publicSearch() {
+        const gs = document.getElementById('pSearch').value.toLowerCase();
+        const u = document.getElementById('pUni').value.toLowerCase();
+        const c = document.getElementById('pColl').value.toLowerCase();
+        const d = document.getElementById('pDept').value.toLowerCase();
+        const y = document.getElementById('pYear').value.toLowerCase();
+        const deg = document.getElementById('pDeg').value;
+        
+        document.querySelectorAll('#publicBody tr').forEach(row => {
+            const t = row.innerText.toLowerCase();
+            const cells = row.getElementsByTagName('td');
+            const match = t.includes(gs) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText==deg);
+            row.style.display = match ? "" : "none";
         });
-        document.getElementById('resultCount').innerText = `تم العثور على ${data.length} رسالة علمية`;
-    }
-
-    function searchTheses() {
-        const query = document.getElementById('mainSearch').value.toLowerCase();
-        const uni = document.getElementById('filterUni').value;
-        const deg = document.getElementById('filterDeg').value;
-
-        const filtered = allData.filter(v => {
-            const textMatch = (v.title + v.author + v.supervisor + v.serialNum).toLowerCase().includes(query);
-            const uniMatch = uni === "" || v.university === uni;
-            const degMatch = deg === "" || v.degree === deg;
-            return textMatch && uniMatch && degMatch;
-        });
-
-        displayData(filtered);
     }
 </script>
 </body>
