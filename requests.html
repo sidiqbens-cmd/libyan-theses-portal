@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; padding: 5px; }
+        .main-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid #1e3a8a; }
+        th { background-color: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; font-weight: bold; }
+        td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
+        .btn-approve { background: #15803d; color: white; padding: 1px 8px; border-radius: 3px; font-weight: bold; font-size: 10px; cursor: pointer; }
+        .btn-approve:hover { background: #000; }
+        .tag-city { background: #dcfce7; color: #166534; font-weight: bold; padding: 0 4px; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="main-card p-2 mb-2 flex justify-between items-center">
+        <h1 class="text-blue-900 font-bold text-xs">الفهرس الليبي الموحد | إدارة طلبات الانضمام (المسار: libraries_directory)</h1>
+        <div id="counter" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold italic">جاري جلب البيانات...</div>
+    </div>
+
+    <div class="main-card overflow-hidden">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr>
+                    <th class="w-1/4">اسم المكتبة</th>
+                    <th>المدينة</th>
+                    <th>التبعية</th>
+                    <th>الهاتف</th>
+                    <th>الموقع</th>
+                    <th>التاريخ</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+        authDomain: "libyan-theses-portal.firebaseapp.com",
+        projectId: "libyan-theses-portal",
+        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // جلب البيانات مع الغوص داخل المعرفات العشوائية
+    db.ref('libraries_directory').on('value', (snapshot) => {
+        const tbody = document.getElementById('tableBody');
+        const counterDiv = document.getElementById('counter');
+        tbody.innerHTML = '';
+        let count = 0;
+
+        if (snapshot.exists()) {
+            snapshot.forEach((child) => {
+                const data = child.val();
+                const id = child.key;
+                count++;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-bold text-blue-900 text-right pr-2 border-r-2 border-blue-900">${data.libraryName || '-'}</td>
+                        <td><span class="tag-city">${data.city || '-'}</span></td>
+                        <td>${data.affiliation || '-'}</td>
+                        <td class="font-mono text-[10px]">${data.phone || '-'}</td>
+                        <td><a href="${data.location}" target="_blank" class="text-blue-600 underline">الخريطة</a></td>
+                        <td class="text-gray-400 text-[9px]">${data.requestDate || '-'}</td>
+                        <td><button onclick="approve('${id}')" class="btn-approve">اعتماد ✅</button></td>
+                    </tr>`;
+            });
+            counterDiv.innerText = count + " طلبات انتظار";
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-gray-400 italic">لا توجد طلبات جديدة حالياً</td></tr>';
+            counterDiv.innerText = "0 طلبات";
+        }
+    });
+
+    function approve(id) {
+        db.ref('libraries_directory').child(id).once('value', (snap) => {
+            const data = snap.val();
+            if (confirm(`اعتماد مكتبة: ${data.libraryName}؟`)) {
+                db.ref('approved_libraries').child(id).set({
+                    ...data,
+                    status: 'approved',
+                    approvalDate: new Date().toLocaleString('ar-LY')
+                }).then(() => {
+                    return db.ref('libraries_directory').child(id).remove();
+                }).then(() => alert("تم الاعتماد بنجاح ✅"));
+            }
+        });
+    }
+</script>
+</body>
+</html>
