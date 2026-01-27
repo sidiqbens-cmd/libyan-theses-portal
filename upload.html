@@ -6,30 +6,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; padding: 5px; }
         .main-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid #1e3a8a; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; outline: none; background: #fff; font-size: 11px; }
+        input, select, textarea { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; }
         label { font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 2px; }
         .btn { padding: 4px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; border: none; font-size: 11px; }
         .btn-save { background: #1e3a8a; }
         .btn-excel { background: #15803d; }
         .btn-upload { background: #ea580c; }
-        th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; }
-        td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
     </style>
 </head>
 <body>
 
     <div class="flex justify-between items-center mb-2 px-2">
         <div class="flex gap-2">
-            <button class="btn btn-excel">📥 تحميل قالب الإكسل (RTL)</button>
-            <button class="btn btn-upload">📤 رفع ملف إكسل جاهز</button>
+            <button onclick="downloadTemplate()" class="btn btn-excel">📥 تحميل قالب الإكسل (RTL)</button>
+            <button onclick="document.getElementById('excelUpload').click()" class="btn btn-upload">📤 رفع ملف إكسل جاهز</button>
+            <input type="file" id="excelUpload" class="hidden" accept=".xlsx, .xls">
         </div>
-        <h1 class="text-blue-900 font-bold text-xs">لوحة تحكم المناديب - الفهرس الليبي الموحد</h1>
+        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد - لوحة المناديب</h1>
     </div>
 
-    <div class="main-card p-3">
+    <div class="main-card p-3 border">
         <form id="thesisForm">
             <div class="grid grid-cols-4 gap-3 mb-2">
                 <div><label>اسم الباحث</label><input type="text" id="author" required></div>
@@ -37,70 +37,38 @@
                 <div><label>المشرف</label><input type="text" id="supervisor"></div>
                 <div><label>رقم الرسالة</label><input type="text" id="serialNum"></div>
             </div>
-
             <div class="grid grid-cols-3 gap-3 mb-2">
                 <div><label>الجامعة</label><input type="text" id="university" required></div>
                 <div><label>الكلية</label><input type="text" id="college" required></div>
                 <div><label>القسم</label><input type="text" id="department" required></div>
             </div>
-
             <div class="grid grid-cols-4 gap-3 mb-2">
-                <div><label>الدرجة العلمية</label>
-                    <select id="degree">
-                        <option>ماجستير</option>
-                        <option>دكتوراة</option>
-                    </select>
-                </div>
-                <div><label>الحالة</label>
-                    <select id="status">
-                        <option>متوفرة</option>
-                        <option>غير متوفرة</option>
-                        <option>تحت المناقشة</option>
-                    </select>
-                </div>
+                <div><label>الدرجة العلمية</label><select id="degree"><option>ماجستير</option><option>دكتوراة</option></select></div>
+                <div><label>الحالة</label><select id="status"><option>متوفرة</option><option>غير متوفرة</option><option>تحت المناقشة</option></select></div>
                 <div><label>السنة</label><input type="number" id="year"></div>
-                <div><label>الرابط (URL)</label><input type="url" id="link" placeholder="http://.."></div>
+                <div><label>الرابط (URL)</label><input type="url" id="link"></div>
             </div>
-
             <div class="mb-2">
                 <label>ملاحظات إضافية</label>
                 <textarea id="notes" rows="1"></textarea>
             </div>
-
-            <div class="text-left mt-2 border-t pt-2">
-                <button type="submit" class="btn btn-save px-10">حفظ البيانات</button>
+            <div class="text-left mt-1 border-t pt-2">
+                <button type="submit" class="btn btn-save px-10">حفظ البيانات ✅</button>
             </div>
         </form>
     </div>
 
-    <div class="main-card p-2 grid grid-cols-5 gap-2 bg-blue-50">
-        <select id="filterUni" class="text-[10px]"><option value="">كل الجامعات</option></select>
-        <select id="filterCollege" class="text-[10px]"><option value="">كل الكليات</option></select>
-        <select id="filterDept" class="text-[10px]"><option value="">كل الأقسام</option></select>
-        <select id="filterYear" class="text-[10px]"><option value="">كل السنوات</option></select>
-        <select id="filterDegree" class="text-[10px]"><option value="">كل الدرجات</option></select>
-    </div>
-
-    <div class="main-card overflow-hidden">
-        <table class="w-full border-collapse">
-            <thead>
-                <tr>
-                    <th>الباحث</th>
-                    <th>العنوان</th>
-                    <th>المشرف</th>
-                    <th>الجامعة</th>
-                    <th>الكلية</th>
-                    <th>السنة</th>
-                    <th>الدرجة</th>
-                    <th>الحالة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="thesesTableBody"></tbody>
-        </table>
-    </div>
-
 <script>
+    // دالة توليد القالب وتحميله فوراً
+    function downloadTemplate() {
+        const header = [["اسم الباحث", "عنوان الرسالة", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة العلمية", "السنة", "الحالة", "الرابط", "ملاحظات"]];
+        const ws = XLSX.utils.aoa_to_sheet(header);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template");
+        // تحميل الملف باسم محدد
+        XLSX.writeFile(wb, "Libyan_Unified_Index_Template.xlsx");
+    }
+
     // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
@@ -113,46 +81,21 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // حفظ البيانات
+    // حفظ البيانات يدوياً
     document.getElementById('thesisForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const data = {
             author: document.getElementById('author').value,
             title: document.getElementById('title').value,
-            supervisor: document.getElementById('supervisor').value,
-            serialNum: document.getElementById('serialNum').value,
             university: document.getElementById('university').value,
             college: document.getElementById('college').value,
-            department: document.getElementById('department').value,
-            degree: document.getElementById('degree').value,
-            status: document.getElementById('status').value,
             year: document.getElementById('year').value,
-            link: document.getElementById('link').value,
-            notes: document.getElementById('notes').value
+            degree: document.getElementById('degree').value,
+            status: document.getElementById('status').value
         };
         db.ref('theses_data').push(data).then(() => {
-            alert("تم الحفظ بنجاح");
+            alert("تم الحفظ!");
             document.getElementById('thesisForm').reset();
-        });
-    });
-
-    // جلب البيانات (عرض تجريبي)
-    db.ref('theses_data').on('value', (snap) => {
-        const tbody = document.getElementById('thesesTableBody');
-        tbody.innerHTML = '';
-        snap.forEach(child => {
-            const v = child.val();
-            tbody.innerHTML += `<tr>
-                <td class="font-bold">${v.author}</td>
-                <td class="text-blue-800">${v.title}</td>
-                <td>${v.supervisor || '-'}</td>
-                <td>${v.university}</td>
-                <td>${v.college}</td>
-                <td>${v.year}</td>
-                <td>${v.degree}</td>
-                <td><span class="px-1 rounded bg-green-100 text-green-800">${v.status}</span></td>
-                <td><button class="text-red-600">حذف</button></td>
-            </tr>`;
         });
     });
 </script>
