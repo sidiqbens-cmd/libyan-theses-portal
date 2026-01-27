@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الرسائل العلمية | الفهرس الليبي الموحد</title>
+    <title>إدارة الرسائل | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -12,21 +12,22 @@
         .main-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid #1e3a8a; margin-bottom: 5px; }
         input, select, textarea { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; }
         label { font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 2px; }
-        .btn { padding: 4px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; border: none; font-size: 11px; }
+        .btn { padding: 4px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; border: none; font-size: 11px; transition: 0.2s; }
+        .btn-excel { background: #15803d; } .btn-excel:hover { background: #065f46; }
+        .btn-upload { background: #ea580c; } .btn-upload:hover { background: #9a3412; }
         .btn-save { background: #1e3a8a; }
-        .btn-excel { background: #15803d; }
-        .btn-upload { background: #ea580c; }
     </style>
 </head>
 <body>
 
     <div class="flex justify-between items-center mb-2 px-2">
         <div class="flex gap-2">
-            <button onclick="downloadTemplate()" class="btn btn-excel">📥 تحميل قالب الإكسل (RTL)</button>
-            <button onclick="document.getElementById('excelUpload').click()" class="btn btn-upload">📤 رفع ملف إكسل جاهز</button>
-            <input type="file" id="excelUpload" class="hidden" accept=".xlsx, .xls">
+            <button onclick="generateExcelTemplate()" class="btn btn-excel">📥 تحميل قالب الإكسل (RTL)</button>
+            
+            <button onclick="document.getElementById('fileInput').click()" class="btn btn-upload">📤 رفع ملف إكسل جاهز</button>
+            <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls" onchange="handleFileUpload(event)">
         </div>
-        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد - لوحة المناديب</h1>
+        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | نظام إدخال الرسائل العلمية</h1>
     </div>
 
     <div class="main-card p-3 border">
@@ -59,14 +60,40 @@
     </div>
 
 <script>
-    // دالة توليد القالب وتحميله فوراً
-    function downloadTemplate() {
-        const header = [["اسم الباحث", "عنوان الرسالة", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة العلمية", "السنة", "الحالة", "الرابط", "ملاحظات"]];
-        const ws = XLSX.utils.aoa_to_sheet(header);
+    // 1. وظيفة تحميل القالب (تصنع ملف إكسل في ثانية)
+    function generateExcelTemplate() {
+        const headers = [["اسم الباحث", "عنوان الرسالة", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة العلمية", "السنة", "الحالة", "الرابط", "ملاحظات"]];
+        const ws = XLSX.utils.aoa_to_sheet(headers);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Template");
-        // تحميل الملف باسم محدد
-        XLSX.writeFile(wb, "Libyan_Unified_Index_Template.xlsx");
+        XLSX.writeFile(wb, "قالب_الفهرس_الليبي_الموحد.xlsx");
+    }
+
+    // 2. وظيفة قراءة ملف الإكسل المرفوع
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+            
+            if(confirm(`تم العثور على (${json.length}) سجل. هل تريد رفعهم الآن؟`)) {
+                json.forEach(row => {
+                    db.ref('theses_data').push({
+                        author: row["اسم الباحث"] || "",
+                        title: row["عنوان الرسالة"] || "",
+                        university: row["الجامعة"] || "",
+                        college: row["الكلية"] || "",
+                        year: row["السنة"] || "",
+                        status: row["الحالة"] || "متوفرة"
+                    });
+                });
+                alert("تمت عملية الرفع بنجاح!");
+            }
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     // إعدادات Firebase
@@ -77,11 +104,10 @@
         databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
         appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
     };
-
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // حفظ البيانات يدوياً
+    // حفظ النموذج اليدوي
     document.getElementById('thesisForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const data = {
@@ -94,7 +120,7 @@
             status: document.getElementById('status').value
         };
         db.ref('theses_data').push(data).then(() => {
-            alert("تم الحفظ!");
+            alert("تم الحفظ بنجاح ✅");
             document.getElementById('thesisForm').reset();
         });
     });
