@@ -2,68 +2,107 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الفهرس الليبي الموحد | بحث</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل المكتبات المعتمدة | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { font-size: 12px; background-color: #f1f5f9; font-family: sans-serif; padding: 10px; }
+        .main-container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); overflow: hidden; }
+        .header-band { background: #1e3a8a; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #facc15; }
+        th { background-color: #f8fafc; color: #1e3a8a; padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; }
+        td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; }
+        .search-box { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; outline: none; }
+        .search-box:focus { border-color: #1e3a8a; }
+        .city-tag { background: #eff6ff; color: #1e40af; font-weight: bold; padding: 2px 8px; border-radius: 12px; border: 1px solid #bfdbfe; }
+        .map-link { color: #2563eb; text-decoration: underline; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-slate-100 overflow-hidden h-screen flex flex-col p-2">
-    <div class="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center mb-2 border-b-2 border-orange-500">
-        <h1 class="text-lg font-black text-blue-900">الفهرس الليبي الموحد</h1>
-        <input type="text" id="q" placeholder="ابحث بالعنوان أو الباحث..." class="border p-1 text-sm rounded w-1/3">
-        <a href="join.html" class="bg-orange-500 text-white px-3 py-1 rounded text-xs">انضمام مكتبة</a>
+<body>
+
+    <div class="main-container">
+        <div class="header-band">
+            <h1 class="text-xl font-bold">الفهرس الليبي الموحد</h1>
+            <p class="text-sm opacity-90 mt-1">دليل المكتبات الجامعية والبحثية المعتمدة</p>
+        </div>
+
+        <div class="p-4">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 ابحث باسم المكتبة، المدينة، أو التبعية..." class="search-box text-sm">
+
+            <div class="flex justify-between items-center mb-2">
+                <span id="stats" class="text-blue-900 font-bold italic">جاري تحميل البيانات...</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse" id="libTable">
+                    <thead>
+                        <tr>
+                            <th class="w-1/3">اسم المكتبة</th>
+                            <th>المدينة</th>
+                            <th>التبعية</th>
+                            <th>الموقع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <div class="flex-grow overflow-auto bg-white rounded shadow">
-        <table class="w-full text-sm">
-            <thead class="sticky top-0 bg-blue-900 text-white text-[11px]">
-                <tr>
-                    <th class="p-2">الباحث</th>
-                    <th class="p-2">العنوان</th>
-                    <th class="p-2">المكتبة</th>
-                    <th class="p-2">التواصل</th>
-                </tr>
-            </thead>
-            <tbody id="results" class="text-center">
-                </tbody>
-        </table>
-    </div>
+    <footer class="text-center mt-6 text-gray-500 text-[10px]">
+        &copy; 2026 الفهرس الليبي الموحد - جميع الحقوق محفوظة
+    </footer>
 
-    <script>
-        const firebaseConfig = { /* ... نفس الإعدادات ... */ };
-        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<script>
+    // إعدادات Firebase الخاصة بك
+    const firebaseConfig = {
+        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
+        authDomain: "libyan-theses-portal.firebaseapp.com",
+        projectId: "libyan-theses-portal",
+        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
+    };
 
-        // تحميل المكتبات المعتمدة أولاً للربط
-        let approvedLibs = {};
-        db.ref('libraries_directory').on('value', snap => {
-            approvedLibs = {};
-            snap.forEach(c => {
-                const d = c.val();
-                if(d.status === 'active') approvedLibs[d.libraryName] = d;
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // جلب المكتبات المعتمدة فقط من مسار approved_libraries
+    db.ref('approved_libraries').on('value', (snapshot) => {
+        const tbody = document.getElementById('tableBody');
+        const stats = document.getElementById('stats');
+        tbody.innerHTML = '';
+        let count = 0;
+
+        if (snapshot.exists()) {
+            snapshot.forEach((child) => {
+                const data = child.val();
+                count++;
+                
+                const row = `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="font-bold text-blue-900 text-right pr-4">${data.libraryName || 'اسم غير مسمى'}</td>
+                        <td><span class="city-tag">${data.city || '-'}</span></td>
+                        <td>${data.affiliation || '-'}</td>
+                        <td>
+                            <a href="${data.location}" target="_blank" class="map-link">📍 عرض</a>
+                        </td>
+                    </tr>`;
+                tbody.innerHTML += row;
             });
-            loadTheses();
-        });
-
-        function loadTheses() {
-            db.ref('theses').on('value', snap => {
-                const res = document.getElementById('results');
-                res.innerHTML = '';
-                snap.forEach(c => {
-                    const t = c.val();
-                    const lib = approvedLibs[t.library] || null;
-                    res.innerHTML += `
-                        <tr class="border-b">
-                            <td class="p-2 font-bold">${t.author}</td>
-                            <td class="p-2 text-blue-800 text-right">${t.title}</td>
-                            <td class="p-2 text-orange-700 font-bold">${t.library}</td>
-                            <td class="p-2">
-                                ${lib ? `<a href="tel:${lib.phone}" class="bg-green-100 p-1 rounded text-green-700 text-[10px]">📞 اتصل</a>` : '---'}
-                            </td>
-                        </tr>`;
-                });
-            });
+            stats.innerText = "إجمالي المكتبات المعتمدة: " + count;
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-gray-400 italic">لا توجد مكتبات معتمدة في الدليل حالياً.</td></tr>';
+            stats.innerText = "لا توجد بيانات";
         }
-    </script>
-</body>
-</html>
+    });
+
+    // دالة البحث الفوري داخل الجدول
+    function filterTable() {
+        const input = document.getElementById("searchInput");
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById("libTable");
+        const tr = table.getElementsByTagName("tr");
+
+        for (let i =
