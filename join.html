@@ -2,43 +2,41 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة طلبات الانضمام - الفهرس الليبي الموحد</title>
+    <title>طلب انضمام | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; margin: 0; padding: 10px; font-family: sans-serif; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-        th { background: #1e3a8a; color: white; padding: 8px; border: 1px solid #cbd5e1; }
-        td { padding: 6px; border: 1px solid #e2e8f0; text-align: center; }
-        .btn-approve { background: #15803d; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; border: none; }
-        .btn-approve:hover { background: #000; }
-        .city-text { color: #166534; font-weight: bold; background: #dcfce7; padding: 2px 4px; border-radius: 3px; }
+        body { background-color: #f8fafc; font-family: sans-serif; font-size: 12px; }
+        .form-card { background: white; max-width: 500px; margin: 20px auto; padding: 20px; border-radius: 8px; shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 6px solid #1e3a8a; }
+        input, select { width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 4px; display: block; }
+        label { font-weight: bold; color: #1e3a8a; }
+        .btn-submit { background-color: #1e3a8a; color: white; width: 100%; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-submit:hover { background-color: #000; }
     </style>
 </head>
 <body>
 
-    <div class="flex justify-between items-center mb-2 bg-white p-2 rounded shadow border-r-4 border-blue-900">
-        <h1 class="text-blue-900 font-bold text-sm italic">لوحة التحكم الشاملة (البحث في كافة المسارات)</h1>
-        <div id="counter" class="bg-blue-100 text-blue-800 px-3 py-0.5 rounded-full font-bold">جاري المزامنة...</div>
-    </div>
+    <div class="form-card">
+        <h2 class="text-center text-lg font-bold text-blue-900 mb-4 border-b pb-2">نموذج طلب انضمام مكتبة</h2>
+        <form id="joinForm">
+            <label>اسم المكتبة الكامل</label>
+            <input type="text" id="libraryName" placeholder="مثلاً: مكتبة كلية الزراعة" required>
 
-    <div class="overflow-x-auto shadow-md">
-        <table>
-            <thead>
-                <tr>
-                    <th>اسم المكتبة</th>
-                    <th>المدينة</th>
-                    <th>التبعية</th>
-                    <th>الهاتف</th>
-                    <th>الموقع</th>
-                    <th>التاريخ</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                </tbody>
-        </table>
+            <label>المدينة</label>
+            <input type="text" id="city" placeholder="مثلاً: طرابلس" required>
+
+            <label>التبعية (الجامعة / المركز)</label>
+            <input type="text" id="affiliation" placeholder="مثلاً: جامعة طرابلس" required>
+
+            <label>رقم هاتف للتواصل</label>
+            <input type="tel" id="phone" placeholder="09XXXXXXXX" required>
+
+            <label>رابط الموقع على الخريطة (Google Maps)</label>
+            <input type="url" id="location" placeholder="https://goo.gl/maps/..." required>
+
+            <button type="submit" class="btn-submit">إرسال طلب الانضمام</button>
+        </form>
     </div>
 
 <script>
@@ -53,62 +51,29 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // دالة الاعتماد: تبحث عن البيانات في أي مسار كانت فيه
-    function approve(id) {
-        if (confirm("هل تود اعتماد هذه المكتبة؟")) {
-            // سنبحث عن المعرف في كل مكان
-            const paths = ['join_requests', 'libraries_directory'];
-            paths.forEach(path => {
-                db.ref(path).child(id).once('value', (snap) => {
-                    if (snap.exists()) {
-                        const data = snap.val();
-                        // 1. نقل للمعتمدة
-                        db.ref('approved_libraries').child(id).set({...data, status: 'approved'})
-                        .then(() => {
-                            // 2. حذف من المصدر
-                            db.ref(path).child(id).remove();
-                            alert("تم الاعتماد بنجاح ✅");
-                        });
-                    }
-                });
+    document.getElementById('joinForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newLibrary = {
+            libraryName: document.getElementById('libraryName').value,
+            city: document.getElementById('city').value,
+            affiliation: document.getElementById('affiliation').value,
+            phone: document.getElementById('phone').value,
+            location: document.getElementById('location').value,
+            requestDate: new Date().toLocaleString('ar-LY'),
+            status: 'pending'
+        };
+
+        // الإرسال إلى المسار الموحد libraries_directory
+        const newRef = db.ref('libraries_directory').push();
+        newRef.set(newLibrary)
+            .then(() => {
+                alert("تم إرسال طلبك بنجاح! سيتم مراجعته من قبل الإدارة.");
+                document.getElementById('joinForm').reset();
+            })
+            .catch((error) => {
+                alert("حدث خطأ أثناء الإرسال: " + error.message);
             });
-        }
-    }
-
-    // جلب البيانات: "المسح الشامل" لكل قاعدة البيانات لضمان الظهور
-    db.ref('/').on('value', (snapshot) => {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        let count = 0;
-        const root = snapshot.val();
-
-        if (root) {
-            // دمج كافة البيانات من المسارين المحتملين
-            const allData = { ...(root.join_requests || {}), ...(root.libraries_directory || {}) };
-
-            Object.keys(allData).forEach(id => {
-                const data = allData[id];
-                // التأكد من أنها بيانات مكتبة وليست شيئاً آخر
-                if (data.libraryName || data.name) {
-                    count++;
-                    const row = `
-                        <tr class="hover:bg-blue-50">
-                            <td class="font-bold text-blue-900">${data.libraryName || data.name || '-'}</td>
-                            <td><span class="city-text">${data.city || data.college || '-'}</span></td>
-                            <td>${data.affiliation || data.university || '-'}</td>
-                            <td class="font-mono text-gray-600">${data.phone || '-'}</td>
-                            <td><a href="${data.location || data.mapUrl}" target="_blank" class="text-blue-500 underline text-[10px]">الخريطة</a></td>
-                            <td class="text-gray-400 text-[10px]">${data.requestDate || data.joinDate || '-'}</td>
-                            <td>
-                                <button onclick="approve('${id}')" class="btn-approve">اعتماد ✅</button>
-                            </td>
-                        </tr>`;
-                    tbody.innerHTML += row;
-                }
-            });
-        }
-        document.getElementById('counter').innerText = count + " طلبات مكتشفة";
-        if (count === 0) tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-gray-400">لا توجد بيانات في المسارات المحددة</td></tr>';
     });
 </script>
 </body>
