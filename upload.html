@@ -8,27 +8,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
-        .main-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid #1e3a8a; margin-bottom: 5px; }
+        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; }
+        .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border-right:1px solid #ddd; border-left:1px solid #ddd; border-bottom:1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; position: sticky; top: 0; }
         td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
         .edit-mode { background: #fffde7 !important; border: 1px solid #fbc02d !important; font-weight: bold; }
-        .btn { padding: 2px 8px; border-radius: 3px; font-weight: bold; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
-
     <div class="flex justify-between items-center mb-2 px-2">
         <div class="flex gap-2">
             <button onclick="downloadTemplate()" class="bg-green-700 text-white px-3 py-1 rounded">📥 قالب إكسل</button>
             <button onclick="document.getElementById('xlFile').click()" class="bg-orange-600 text-white px-3 py-1 rounded">📤 رفع إكسل</button>
             <input type="file" id="xlFile" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)">
         </div>
-        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | إدارة المستودع الرقمي</h1>
+        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
     </div>
 
-    <div class="main-card p-3 border">
+    <div class="main-card p-3">
         <form id="thesisForm">
             <div class="grid grid-cols-4 gap-2 mb-2">
                 <input type="text" id="author" placeholder="اسم الباحث" required>
@@ -49,33 +47,25 @@
             </div>
             <div class="flex gap-2">
                 <input type="text" id="notes" placeholder="ملاحظات">
-                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
+                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ ✅</button>
             </div>
         </form>
     </div>
 
-    <div class="main-card p-2 bg-blue-50 border-blue-200 border">
-        <div class="grid grid-cols-6 gap-2 mb-1">
-            <input type="text" id="globalSearch" placeholder="🔍 بحث شامل (باحث، عنوان، مشرف...)" onkeyup="applyFilters()" class="col-span-2 border-blue-400 bg-white font-bold">
-            <input type="text" id="filterUni" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
-            <input type="text" id="filterColl" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
-            <input type="text" id="filterYear" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
-            <select id="filterDeg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
-        </div>
+    <div class="main-card p-2 bg-blue-50 grid grid-cols-6 gap-2 border-blue-200 border">
+        <input type="text" id="gSearch" placeholder="🔍 بحث شامل..." onkeyup="applyFilters()" class="border-blue-300">
+        <input type="text" id="fUni" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
+        <input type="text" id="fColl" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
+        <input type="text" id="fDept" placeholder="تصفية بالقسم" onkeyup="applyFilters()">
+        <input type="text" id="fYear" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
+        <select id="fDeg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
     </div>
 
-    <div class="main-card overflow-hidden">
+    <div class="main-card overflow-hidden h-[400px] overflow-y-auto">
         <table class="w-full border-collapse">
             <thead>
                 <tr>
-                    <th>الباحث</th>
-                    <th class="w-1/4">العنوان</th>
-                    <th>المشرف</th>
-                    <th>رقم الرسالة</th>
-                    <th>الجامعة</th>
-                    <th>السنة</th>
-                    <th>الدرجة</th>
-                    <th>الإجراء</th>
+                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>الإجراء</th>
                 </tr>
             </thead>
             <tbody id="thesesTableBody"></tbody>
@@ -83,140 +73,59 @@
     </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    db.ref('theses_data').on('value', (snap) => {
+    db.ref('theses_data').on('value', snap => {
         const tbody = document.getElementById('thesesTableBody');
         tbody.innerHTML = '';
         snap.forEach(child => {
-            const v = child.val();
-            const id = child.key;
-            const row = document.createElement('tr');
-            row.id = `row-${id}`;
-            row.innerHTML = `
-                <td class="text-right pr-2 font-bold text-blue-900">${v.author || '-'}</td>
-                <td class="text-right text-blue-800">${v.title || '-'}</td>
-                <td>${v.supervisor || '-'}</td>
-                <td class="font-mono">${v.serialNum || '-'}</td>
-                <td>${v.university || '-'}</td>
-                <td>${v.year || '-'}</td>
-                <td>${v.degree || 'ماجستير'}</td>
-                <td>
-                    <button onclick="enableEdit('${id}')" class="bg-yellow-600 text-white px-2 py-0.5 rounded">تعديل</button>
-                    <button onclick="deleteRecord('${id}')" class="bg-red-600 text-white px-2 py-0.5 rounded font-bold">X</button>
-                </td>
-            `;
-            tbody.appendChild(row);
+            const v = child.val(); const id = child.key;
+            tbody.innerHTML += `<tr id="row-${id}">
+                <td>${v.author}</td><td class="text-right">${v.title}</td><td>${v.university}</td><td>${v.college}</td><td>${v.department}</td><td>${v.year}</td><td>${v.degree}</td><td>${v.serialNum}</td>
+                <td><button onclick="enableEdit('${id}')" class="bg-yellow-600 text-white px-1 rounded">تعديل</button> <button onclick="deleteRec('${id}')" class="bg-red-600 text-white px-1 rounded">X</button></td>
+            </tr>`;
         });
     });
 
-    // دالة التصفية والبحث الشامل مدمجة
     function applyFilters() {
-        const query = document.getElementById('globalSearch').value.toLowerCase();
-        const u = document.getElementById('filterUni').value.toLowerCase();
-        const c = document.getElementById('filterColl').value.toLowerCase();
-        const y = document.getElementById('filterYear').value.toLowerCase();
-        const deg = document.getElementById('filterDeg').value;
+        const gs = document.getElementById('gSearch').value.toLowerCase();
+        const u = document.getElementById('fUni').value.toLowerCase();
+        const c = document.getElementById('fColl').value.toLowerCase();
+        const d = document.getElementById('fDept').value.toLowerCase();
+        const y = document.getElementById('fYear').value.toLowerCase();
+        const deg = document.getElementById('fDeg').value;
         
-        const rows = document.querySelectorAll('#thesesTableBody tr');
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            const matchGlobal = text.includes(query);
-            const matchFilters = text.includes(u) && text.includes(c) && text.includes(y) && (deg === "" || text.includes(deg.toLowerCase()));
-            
-            row.style.display = (matchGlobal && matchFilters) ? "" : "none";
+        document.querySelectorAll('#thesesTableBody tr').forEach(row => {
+            const t = row.innerText.toLowerCase();
+            const cells = row.getElementsByTagName('td');
+            const match = t.includes(gs) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText==deg);
+            row.style.display = match ? "" : "none";
         });
     }
 
     function enableEdit(id) {
         const row = document.getElementById(`row-${id}`);
         const cells = row.getElementsByTagName('td');
-        const d = { a: cells[0].innerText, t: cells[1].innerText, s: cells[2].innerText, n: cells[3].innerText, u: cells[4].innerText, y: cells[5].innerText, deg: cells[6].innerText };
-        
+        const old = { a:cells[0].innerText, t:cells[1].innerText, u:cells[2].innerText, c:cells[3].innerText, d:cells[4].innerText, y:cells[5].innerText, deg:cells[6].innerText, sn:cells[7].innerText };
         row.innerHTML = `
-            <td><input type="text" class="edit-mode" id="e-a-${id}" value="${d.a}"></td>
-            <td><input type="text" class="edit-mode" id="e-t-${id}" value="${d.t}"></td>
-            <td><input type="text" class="edit-mode" id="e-s-${id}" value="${d.s}"></td>
-            <td><input type="text" class="edit-mode" id="e-n-${id}" value="${d.n}"></td>
-            <td><input type="text" class="edit-mode" id="e-u-${id}" value="${d.u}"></td>
-            <td><input type="number" class="edit-mode" id="e-y-${id}" value="${d.y}"></td>
-            <td><select class="edit-mode" id="e-deg-${id}"><option ${d.deg=='ماجستير'?'selected':''}>ماجستير</option><option ${d.deg=='دكتوراة'?'selected':''}>دكتوراة</option></select></td>
-            <td>
-                <button onclick="saveEdit('${id}')" class="bg-green-600 text-white px-2 py-0.5 rounded">حفظ</button>
-                <button onclick="location.reload()" class="bg-gray-400 text-white px-2 py-0.5 rounded text-[8px]">إلغاء</button>
-            </td>
-        `;
+            <td><input class="edit-mode" id="e-a-${id}" value="${old.a}"></td><td><input class="edit-mode" id="e-t-${id}" value="${old.t}"></td><td><input class="edit-mode" id="e-u-${id}" value="${old.u}"></td><td><input class="edit-mode" id="e-c-${id}" value="${old.c}"></td><td><input class="edit-mode" id="e-d-${id}" value="${old.d}"></td><td><input class="edit-mode" id="e-y-${id}" value="${old.y}"></td><td><select class="edit-mode" id="e-deg-${id}"><option ${old.deg=='ماجستير'?'selected':''}>ماجستير</option><option ${old.deg=='دكتوراة'?'selected':''}>دكتوراة</option></select></td><td><input class="edit-mode" id="e-sn-${id}" value="${old.sn}"></td>
+            <td><button onclick="saveEdit('${id}')" class="bg-green-600 text-white px-2 rounded">حفظ</button></td>`;
     }
 
     function saveEdit(id) {
-        const updates = {
-            author: document.getElementById(`e-a-${id}`).value,
-            title: document.getElementById(`e-t-${id}`).value,
-            supervisor: document.getElementById(`e-s-${id}`).value,
-            serialNum: document.getElementById(`e-n-${id}`).value,
-            university: document.getElementById(`e-u-${id}`).value,
-            year: document.getElementById(`e-y-${id}`).value,
-            degree: document.getElementById(`e-deg-${id}`).value
-        };
-        db.ref('theses_data').child(id).update(updates).then(() => alert("تم التحديث ✅"));
+        const up = { author:document.getElementById(`e-a-${id}`).value, title:document.getElementById(`e-t-${id}`).value, university:document.getElementById(`e-u-${id}`).value, college:document.getElementById(`e-c-${id}`).value, department:document.getElementById(`e-d-${id}`).value, year:document.getElementById(`e-y-${id}`).value, degree:document.getElementById(`e-deg-${id}`).value, serialNum:document.getElementById(`e-sn-${id}`).value };
+        db.ref('theses_data').child(id).update(up).then(() => alert("تم التحديث"));
     }
 
-    document.getElementById('thesisForm').addEventListener('submit', (e) => {
+    document.getElementById('thesisForm').onsubmit = (e) => {
         e.preventDefault();
-        const data = {
-            author: document.getElementById('author').value,
-            title: document.getElementById('title').value,
-            supervisor: document.getElementById('supervisor').value,
-            serialNum: document.getElementById('serialNum').value,
-            university: document.getElementById('university').value,
-            college: document.getElementById('college').value,
-            department: document.getElementById('department').value,
-            degree: document.getElementById('degree').value,
-            status: document.getElementById('status').value,
-            year: document.getElementById('year').value,
-            link: document.getElementById('link').value,
-            notes: document.getElementById('notes').value
-        };
-        db.ref('theses_data').push(data).then(() => {
-            alert("تم الحفظ بنجاح ✅");
-            document.getElementById('thesisForm').reset();
-        });
-    });
+        const data = { author:document.getElementById('author').value, title:document.getElementById('title').value, supervisor:document.getElementById('supervisor').value, serialNum:document.getElementById('serialNum').value, university:document.getElementById('university').value, college:document.getElementById('college').value, department:document.getElementById('department').value, degree:document.getElementById('degree').value, status:document.getElementById('status').value, year:document.getElementById('year').value, link:document.getElementById('link').value, notes:document.getElementById('notes').value };
+        db.ref('theses_data').push(data).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
+    };
 
-    function deleteRecord(id) { if(confirm("حذف نهائي؟")) db.ref('theses_data').child(id).remove(); }
-    function downloadTemplate() {
-        const h = [["اسم الباحث", "عنوان الرسالة", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة العلمية", "السنة", "الحالة", "الرابط", "ملاحظات"]];
-        const ws = XLSX.utils.aoa_to_sheet(h);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-        XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
-    }
-    function importExcel(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const data = new Uint8Array(event.target.result);
-            const wb = XLSX.read(data, {type: 'array'});
-            const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            json.forEach(r => {
-                db.ref('theses_data').push({
-                    author: r["اسم الباحث"] || "", title: r["عنوان الرسالة"] || "", supervisor: r["المشرف"] || "",
-                    serialNum: r["رقم الرسالة"] || "", university: r["الجامعة"] || "", college: r["الكلية"] || "",
-                    department: r["القسم"] || "", degree: r["الدرجة العلمية"] || "ماجستير", year: r["السنة"] || "", status: r["الحالة"] || "متوفرة"
-                });
-            });
-            alert("تم رفع الملف ✅");
-        };
-        reader.readAsArrayBuffer(file);
-    }
+    function deleteRec(id) { if(confirm("حذف؟")) db.ref('theses_data').child(id).remove(); }
 </script>
 </body>
 </html>
