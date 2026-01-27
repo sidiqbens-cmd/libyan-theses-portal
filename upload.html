@@ -54,12 +54,14 @@
         </form>
     </div>
 
-    <div class="main-card p-2 grid grid-cols-5 gap-2 bg-blue-50 border-blue-200 border">
-        <input type="text" id="filterUni" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
-        <input type="text" id="filterColl" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
-        <input type="text" id="filterDept" placeholder="تصفية بالقسم" onkeyup="applyFilters()">
-        <input type="text" id="filterYear" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
-        <select id="filterDeg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
+    <div class="main-card p-2 bg-blue-50 border-blue-200 border">
+        <div class="grid grid-cols-6 gap-2 mb-1">
+            <input type="text" id="globalSearch" placeholder="🔍 بحث شامل (باحث، عنوان، مشرف...)" onkeyup="applyFilters()" class="col-span-2 border-blue-400 bg-white font-bold">
+            <input type="text" id="filterUni" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
+            <input type="text" id="filterColl" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
+            <input type="text" id="filterYear" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
+            <select id="filterDeg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
+        </div>
     </div>
 
     <div class="main-card overflow-hidden">
@@ -91,7 +93,6 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // جلب البيانات
     db.ref('theses_data').on('value', (snap) => {
         const tbody = document.getElementById('thesesTableBody');
         tbody.innerHTML = '';
@@ -117,7 +118,24 @@
         });
     });
 
-    // دالة التعديل المباشر مع رقم الرسالة
+    // دالة التصفية والبحث الشامل مدمجة
+    function applyFilters() {
+        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const u = document.getElementById('filterUni').value.toLowerCase();
+        const c = document.getElementById('filterColl').value.toLowerCase();
+        const y = document.getElementById('filterYear').value.toLowerCase();
+        const deg = document.getElementById('filterDeg').value;
+        
+        const rows = document.querySelectorAll('#thesesTableBody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const matchGlobal = text.includes(query);
+            const matchFilters = text.includes(u) && text.includes(c) && text.includes(y) && (deg === "" || text.includes(deg.toLowerCase()));
+            
+            row.style.display = (matchGlobal && matchFilters) ? "" : "none";
+        });
+    }
+
     function enableEdit(id) {
         const row = document.getElementById(`row-${id}`);
         const cells = row.getElementsByTagName('td');
@@ -151,17 +169,6 @@
         db.ref('theses_data').child(id).update(updates).then(() => alert("تم التحديث ✅"));
     }
 
-    function applyFilters() {
-        const u = document.getElementById('filterUni').value.toLowerCase();
-        const c = document.getElementById('filterColl').value.toLowerCase();
-        const y = document.getElementById('filterYear').value.toLowerCase();
-        const rows = document.querySelectorAll('#thesesTableBody tr');
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = (text.includes(u) && text.includes(c) && text.includes(y)) ? "" : "none";
-        });
-    }
-
     document.getElementById('thesisForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const data = {
@@ -185,7 +192,6 @@
     });
 
     function deleteRecord(id) { if(confirm("حذف نهائي؟")) db.ref('theses_data').child(id).remove(); }
-    
     function downloadTemplate() {
         const h = [["اسم الباحث", "عنوان الرسالة", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة العلمية", "السنة", "الحالة", "الرابط", "ملاحظات"]];
         const ws = XLSX.utils.aoa_to_sheet(h);
@@ -193,7 +199,6 @@
         XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
         XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
     }
-
     function importExcel(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -203,19 +208,12 @@
             const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
             json.forEach(r => {
                 db.ref('theses_data').push({
-                    author: r["اسم الباحث"] || "",
-                    title: r["عنوان الرسالة"] || "",
-                    supervisor: r["المشرف"] || "",
-                    serialNum: r["رقم الرسالة"] || "",
-                    university: r["الجامعة"] || "",
-                    college: r["الكلية"] || "",
-                    department: r["القسم"] || "",
-                    degree: r["الدرجة العلمية"] || "ماجستير",
-                    year: r["السنة"] || "",
-                    status: r["الحالة"] || "متوفرة"
+                    author: r["اسم الباحث"] || "", title: r["عنوان الرسالة"] || "", supervisor: r["المشرف"] || "",
+                    serialNum: r["رقم الرسالة"] || "", university: r["الجامعة"] || "", college: r["الكلية"] || "",
+                    department: r["القسم"] || "", degree: r["الدرجة العلمية"] || "ماجستير", year: r["السنة"] || "", status: r["الحالة"] || "متوفرة"
                 });
             });
-            alert("تم رفع الملف بنجاح ✅");
+            alert("تم رفع الملف ✅");
         };
         reader.readAsArrayBuffer(file);
     }
