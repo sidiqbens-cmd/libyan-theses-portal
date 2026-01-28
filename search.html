@@ -10,65 +10,61 @@
         body { font-size: 11px; background-color: #f8fafc; padding: 10px; }
         .filter-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 5px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; white-space: nowrap; }
         td { padding: 4px; border: 1px solid #e2e8f0; text-align: center; background: white; }
     </style>
 </head>
 <body>
-    <div class="text-center mb-4">
-        <h1 class="text-xl font-bold text-blue-900">الفهرس الليبي الموحد</h1>
-        <p class="text-gray-600 text-[10px]">منظومة البحث في الرسائل العلمية الجامعية</p>
-    </div>
-
     <div class="filter-card grid grid-cols-6 gap-2 bg-blue-50">
-        <input type="text" id="pSearch" placeholder="🔍 بحث شامل..." onkeyup="publicSearch()">
-        <input type="text" id="pUni" placeholder="تصفية بالجامعة" onkeyup="publicSearch()">
-        <input type="text" id="pColl" placeholder="تصفية بالكلية" onkeyup="publicSearch()">
-        <input type="text" id="pDept" placeholder="تصفية بالقسم" onkeyup="publicSearch()">
-        <input type="text" id="pYear" placeholder="تصفية بالسنة" onkeyup="publicSearch()">
-        <select id="pDeg" onchange="publicSearch()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
+        <input type="text" id="s_gs" placeholder="🔍 بحث شامل..." onkeyup="pFilter()">
+        <input type="text" id="s_uni" placeholder="تصفية بالجامعة" onkeyup="pFilter()">
+        <input type="text" id="s_coll" placeholder="تصفية بالكلية" onkeyup="pFilter()">
+        <input type="text" id="s_dept" placeholder="تصفية بالقسم" onkeyup="pFilter()">
+        <input type="text" id="s_year" placeholder="تصفية بالسنة" onkeyup="pFilter()">
+        <select id="s_deg" onchange="pFilter()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
     </div>
-
-    <div class="bg-white rounded shadow overflow-hidden">
-        <table class="w-full border-collapse">
+    <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full border-collapse min-w-[1000px]">
             <thead>
                 <tr>
-                    <th class="w-1/4">العنوان</th><th>الباحث</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>المستند</th>
+                    <th class="w-1/4">العنوان</th><th>الباحث</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>مكان التواجد</th><th>الرابط</th>
                 </tr>
             </thead>
             <tbody id="publicBody"></tbody>
         </table>
     </div>
-
 <script>
     const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     db.ref('theses_data').on('value', snap => {
         const tbody = document.getElementById('publicBody');
         tbody.innerHTML = '';
         snap.forEach(child => {
             const v = child.val();
             tbody.innerHTML += `<tr>
-                <td class="text-right font-bold text-blue-900">${v.title}</td><td>${v.author}</td><td>${v.university}</td><td>${v.college}</td><td>${v.department}</td><td>${v.year}</td><td>${v.degree}</td><td>${v.serialNum}</td>
-                <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold">عرض</a>` : '-'}</td>
+                <td class="text-right font-bold text-blue-900">${v.title || ''}</td>
+                <td>${v.author || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td>
+                <td class="text-orange-700 font-bold">${v.location || ''}</td>
+                <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold underline">عرض</a>` : '-'}</td>
             </tr>`;
         });
     });
-
-    function publicSearch() {
-        const gs = document.getElementById('pSearch').value.toLowerCase();
-        const u = document.getElementById('pUni').value.toLowerCase();
-        const c = document.getElementById('pColl').value.toLowerCase();
-        const d = document.getElementById('pDept').value.toLowerCase();
-        const y = document.getElementById('pYear').value.toLowerCase();
-        const deg = document.getElementById('pDeg').value;
-        
+    function pFilter() {
+        const q = document.getElementById('s_gs').value.toLowerCase();
+        const u = document.getElementById('s_uni').value.toLowerCase();
+        const c = document.getElementById('s_coll').value.toLowerCase();
+        const d = document.getElementById('s_dept').value.toLowerCase();
+        const y = document.getElementById('s_year').value.toLowerCase();
+        const deg = document.getElementById('s_deg').value.toLowerCase();
         document.querySelectorAll('#publicBody tr').forEach(row => {
-            const t = row.innerText.toLowerCase();
-            const cells = row.getElementsByTagName('td');
-            const match = t.includes(gs) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText==deg);
+            const cells = row.children;
+            const match = row.innerText.toLowerCase().includes(q) && 
+                          cells[2].innerText.toLowerCase().includes(u) && 
+                          cells[3].innerText.toLowerCase().includes(c) && 
+                          cells[4].innerText.toLowerCase().includes(d) && 
+                          cells[5].innerText.toLowerCase().includes(y) && 
+                          (deg=="" || cells[6].innerText.toLowerCase().includes(deg));
             row.style.display = match ? "" : "none";
         });
     }
