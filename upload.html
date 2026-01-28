@@ -8,25 +8,26 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; }
+        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
         td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
-        .excel-btn { background: #15803d; color: white; padding: 4px 10px; border-radius: 3px; font-weight: bold; cursor: pointer; }
+        .excel-btn { background: #15803d; color: white; padding: 3px 8px; border-radius: 3px; font-weight: bold; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
-    <div class="flex justify-between items-center mb-2 px-1">
+    <div class="flex justify-between items-center mb-1 px-1">
         <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
-        <div class="flex gap-2">
-            <a href="#" onclick="downloadTemplate()" class="text-green-700 underline font-bold">تحميل قالب Excel</a>
+        <div class="flex gap-3 items-center">
+            <a href="#" onclick="downloadTemplate()" class="text-green-700 underline font-bold text-[10px]">تحميل قالب Excel</a>
             <label class="excel-btn"> رفع ملف Excel <input type="file" id="excelFile" accept=".xlsx, .xls" hidden onchange="uploadExcel(this)"> </label>
         </div>
     </div>
 
     <div class="main-card p-3">
         <form id="thesisForm">
+            <input type="hidden" id="editKey">
             <div class="grid grid-cols-4 gap-2 mb-2">
                 <input type="text" id="author" placeholder="اسم الباحث" required>
                 <input type="text" id="title" placeholder="عنوان الرسالة" required>
@@ -47,7 +48,8 @@
             </div>
             <div class="flex gap-2">
                 <input type="text" id="notes" placeholder="ملاحظات">
-                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded cursor-pointer">حفظ البيانات ✅</button>
+                <button type="submit" id="submitBtn" class="bg-blue-900 text-white font-bold px-6 py-1 rounded cursor-pointer">حفظ البيانات ✅</button>
+                <button type="button" id="cancelEdit" class="hidden bg-gray-500 text-white px-4 py-1 rounded">إلغاء التعديل</button>
             </div>
         </form>
     </div>
@@ -62,7 +64,7 @@
     </div>
 
     <div class="main-card overflow-x-auto">
-        <table class="w-full border-collapse min-w-[1000px]">
+        <table class="w-full border-collapse min-w-[1100px]">
             <thead>
                 <tr>
                     <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>المكان</th><th>الإجراء</th>
@@ -77,29 +79,74 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    db.ref('theses_data').on('value', snap => {
-        const tbody = document.getElementById('thesesTableBody');
-        tbody.innerHTML = '';
-        snap.forEach(child => {
-            const v = child.val();
-            tbody.innerHTML += `<tr>
-                <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
-                <td><button onclick="if(confirm('حذف؟')) db.ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-2 rounded">X</button></td>
-            </tr>`;
+    function loadData() {
+        db.ref('theses_data').on('value', snap => {
+            const tbody = document.getElementById('thesesTableBody');
+            tbody.innerHTML = '';
+            snap.forEach(child => {
+                const v = child.val();
+                tbody.innerHTML += `<tr>
+                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
+                    <td class="flex gap-1 justify-center">
+                        <button onclick="editRow('${child.key}')" class="bg-blue-600 text-white px-2 rounded">تعديل</button>
+                        <button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-2 rounded font-bold">X</button>
+                    </td>
+                </tr>`;
+            });
         });
-    });
+    }
+    loadData();
 
     document.getElementById('thesisForm').onsubmit = (e) => {
         e.preventDefault();
-        db.ref('theses_data').push({
+        const key = document.getElementById('editKey').value;
+        const data = {
             author: document.getElementById('author').value, title: document.getElementById('title').value,
+            supervisor: document.getElementById('supervisor').value, serialNum: document.getElementById('serialNum').value,
             university: document.getElementById('university').value, college: document.getElementById('college').value,
             department: document.getElementById('department').value, location: document.getElementById('location').value,
-            degree: document.getElementById('degree').value, status: document.getElementById('status').value, 
+            degree: document.getElementById('degree').value, status: document.getElementById('status').value,
             year: document.getElementById('year').value, link: document.getElementById('link').value || "",
-            serialNum: document.getElementById('serialNum').value || ""
-        }).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
+            notes: document.getElementById('notes').value || ""
+        };
+        if(key) {
+            db.ref('theses_data/' + key).update(data).then(() => { resetForm(); alert("تم التعديل ✅"); });
+        } else {
+            db.ref('theses_data').push(data).then(() => { resetForm(); alert("تم الحفظ ✅"); });
+        }
+    };
+
+    function editRow(key) {
+        db.ref('theses_data/' + key).once('value', snap => {
+            const v = snap.val();
+            document.getElementById('editKey').value = key;
+            document.getElementById('author').value = v.author || '';
+            document.getElementById('title').value = v.title || '';
+            document.getElementById('supervisor').value = v.supervisor || '';
+            document.getElementById('serialNum').value = v.serialNum || '';
+            document.getElementById('university').value = v.university || '';
+            document.getElementById('college').value = v.college || '';
+            document.getElementById('department').value = v.department || '';
+            document.getElementById('location').value = v.location || '';
+            document.getElementById('degree').value = v.degree || '';
+            document.getElementById('status').value = v.status || '';
+            document.getElementById('year').value = v.year || '';
+            document.getElementById('link').value = v.link || '';
+            document.getElementById('notes').value = v.notes || '';
+            document.getElementById('submitBtn').innerText = "تحديث البيانات 🔄";
+            document.getElementById('cancelEdit').classList.remove('hidden');
+            window.scrollTo(0,0);
+        });
     }
+
+    function resetForm() {
+        document.getElementById('thesisForm').reset();
+        document.getElementById('editKey').value = "";
+        document.getElementById('submitBtn').innerText = "حفظ البيانات ✅";
+        document.getElementById('cancelEdit').classList.add('hidden');
+    }
+
+    document.getElementById('cancelEdit').onclick = resetForm;
 
     function uploadExcel(input) {
         const file = input.files[0];
@@ -111,10 +158,10 @@
             const rows = XLSX.utils.sheet_to_json(sheet);
             rows.forEach(row => {
                 db.ref('theses_data').push({
-                    author: row['الباحث'] || '', title: row['العنوان'] || '', university: row['الجامعة'] || '',
-                    college: row['الكلية'] || '', department: row['القسم'] || '', location: row['مكان التواجد'] || '',
-                    year: row['السنة'] || '', degree: row['الدرجة'] || '', status: row['الحالة'] || 'متوفرة',
-                    link: row['الرابط'] || '', serialNum: row['رقم الرسالة'] || ''
+                    author: row['الباحث'] || '', title: row['العنوان'] || '', supervisor: row['المشرف'] || '',
+                    university: row['الجامعة'] || '', college: row['الكلية'] || '', department: row['القسم'] || '',
+                    location: row['مكان التواجد'] || '', year: row['السنة'] || '', degree: row['الدرجة'] || '',
+                    status: row['الحالة'] || 'متوفرة', link: row['الرابط'] || '', serialNum: row['رقم الرسالة'] || '', notes: row['ملاحظات'] || ''
                 });
             });
             alert("تم رفع " + rows.length + " رسالة بنجاح ✅");
@@ -124,7 +171,7 @@
 
     function downloadTemplate() {
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet([{ "الباحث": "", "العنوان": "", "الجامعة": "", "الكلية": "", "القسم": "", "السنة": "", "الدرجة": "ماجستير", "مكان التواجد": "", "رقم الرسالة": "", "الرابط": "", "الحالة": "متوفرة" }]);
+        const ws = XLSX.utils.json_to_sheet([{ "الباحث": "", "العنوان": "", "المشرف": "", "الجامعة": "", "الكلية": "", "القسم": "", "السنة": "", "الدرجة": "ماجستير", "مكان التواجد": "", "رقم الرسالة": "", "الرابط": "", "الحالة": "متوفرة", "ملاحظات": "" }]);
         XLSX.utils.book_append_sheet(wb, ws, "Template");
         XLSX.writeFile(wb, "Libyan_Theses_Template.xlsx");
     }
