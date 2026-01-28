@@ -15,8 +15,9 @@
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; }
         td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
         .edit-mode { background: #fffde7 !important; border: 1px solid #fbc02d !important; font-weight: bold; }
-        .badge-green { background: #dcfce7; color: #166534; padding: 2px 5px; border-radius: 4px; }
-        .badge-red { background: #fee2e2; color: #991b1b; padding: 2px 5px; border-radius: 4px; }
+        .badge { padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -32,7 +33,7 @@
 
     <div id="adminContent" class="hidden">
         <div class="flex justify-between items-center mb-2 px-2">
-            <div class="text-blue-900 font-bold">جهة الرفع: <span id="libraryNameDisplay" class="text-orange-600"></span></div>
+            <div class="text-blue-900 font-bold">المكتبة الحالية: <span id="libName" class="text-orange-600"></span></div>
             <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
         </div>
 
@@ -57,7 +58,7 @@
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="notes" placeholder="ملاحظات إضافية">
-                    <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ في المستودع ✅</button>
+                    <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
                 </div>
             </form>
         </div>
@@ -85,29 +86,21 @@
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // قاعدة بيانات المكاتب (الأكواد)
-    const libraries = {
-        "101": "جامعة طرابلس - مكتبة الآداب",
-        "102": "جامعة بنغازي - المكتبة المركزية",
-        "103": "جامعة سبها - مكتبة كلية العلوم"
-    };
-
-    let currentLibrary = "";
+    const libraries = { "101": "جامعة طرابلس - مكتبة الآداب", "102": "جامعة بنغازي - المكتبة المركزية" };
+    let currentLib = "";
 
     function checkLogin() {
         const code = document.getElementById('passCode').value;
         if (libraries[code]) {
-            currentLibrary = libraries[code];
+            currentLib = libraries[code];
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminContent').classList.remove('hidden');
-            document.getElementById('libraryNameDisplay').innerText = currentLibrary;
+            document.getElementById('libName').innerText = currentLib;
             loadData();
-        } else {
-            document.getElementById('loginError').classList.remove('hidden');
-        }
+        } else { document.getElementById('loginError').classList.remove('hidden'); }
     }
 
     function loadData() {
@@ -116,10 +109,10 @@
             tbody.innerHTML = '';
             snap.forEach(child => {
                 const v = child.val(); const id = child.key;
-                const statusClass = v.status === "متوفرة" ? "badge-green" : "badge-red";
+                const statusClass = (v.status || "متوفرة") === "متوفرة" ? "badge-green" : "badge-red";
                 tbody.innerHTML += `<tr id="row-${id}">
-                    <td>${v.author}</td><td class="text-right">${v.title}</td><td>${v.university}</td><td>${v.year}</td>
-                    <td><span class="${statusClass}">${v.status}</span></td><td>${v.location || '-'}</td>
+                    <td>${v.author || '-'}</td><td class="text-right">${v.title || '-'}</td><td>${v.university || '-'}</td><td>${v.year || '-'}</td>
+                    <td><span class="badge ${statusClass}">${v.status || 'متوفرة'}</span></td><td>${v.location || '-'}</td>
                     <td><button onclick="enableEdit('${id}')" class="bg-yellow-600 text-white px-1 rounded">تعديل</button> <button onclick="deleteRec('${id}')" class="bg-red-600 text-white px-1 rounded">X</button></td>
                 </tr>`;
             });
@@ -138,17 +131,29 @@
             status: document.getElementById('status').value,
             year: document.getElementById('year').value,
             link: document.getElementById('link').value || "",
-            location: currentLibrary, // الربط التلقائي بمكان التواجد
-            timestamp: new Date().toISOString()
+            location: currentLib,
+            serialNum: document.getElementById('serialNum').value || "-"
         };
-        db.ref('theses_data').push(data).then(() => {
-            alert("تم الحفظ بنجاح ✅");
-            document.getElementById('thesisForm').reset();
-        });
+        db.ref('theses_data').push(data).then(() => { alert("تم الحفظ بنجاح ✅"); document.getElementById('thesisForm').reset(); });
     };
 
-    // (بقية الدوال: التعديل، الحذف، الفلترة تظل كما هي مع مراعاة الحقول الجديدة)
     function deleteRec(id) { if(confirm("حذف؟")) db.ref('theses_data').child(id).remove(); }
+
+    function applyFilters() {
+        const gs = document.getElementById('gSearch').value.toLowerCase();
+        const u = document.getElementById('fUni').value.toLowerCase();
+        const c = document.getElementById('fColl').value.toLowerCase();
+        const d = document.getElementById('fDept').value.toLowerCase();
+        const y = document.getElementById('fYear').value.toLowerCase();
+        const deg = document.getElementById('fDeg').value;
+        
+        document.querySelectorAll('#thesesTableBody tr').forEach(row => {
+            const t = row.innerText.toLowerCase();
+            const cells = row.getElementsByTagName('td');
+            const match = t.includes(gs) && cells[2].innerText.toLowerCase().includes(u) && (deg=="" || t.includes(deg.toLowerCase()));
+            row.style.display = match ? "" : "none";
+        });
+    }
 </script>
 </body>
 </html>
