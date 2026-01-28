@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
+        body { font-size: 14px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
@@ -64,10 +64,10 @@
     </div>
 
     <div class="main-card overflow-x-auto">
-        <table class="w-full border-collapse min-w-[1200px]">
+        <table class="w-full border-collapse min-w-[1300px]">
             <thead>
                 <tr>
-                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>المشرف</th><th>الجامعة</th><th>الكلية</th><th>السنة</th><th>الدرجة</th><th>المكان</th><th>الإجراء</th>
+                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>المشرف</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>المكان</th><th>الرابط</th><th>الإجراء</th>
                 </tr>
             </thead>
             <tbody id="thesesTableBody"></tbody>
@@ -86,10 +86,11 @@
             snap.forEach(child => {
                 const v = child.val();
                 tbody.innerHTML += `<tr>
-                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.supervisor || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
+                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.supervisor || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
+                    <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 underline">عرض</a>` : '-'}</td>
                     <td class="flex gap-1 justify-center">
                         <button onclick="editRow('${child.key}')" class="bg-blue-600 text-white px-2 rounded">تعديل</button>
-                        <button onclick="if(confirm('حذف؟')) db.ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-2 rounded font-bold">X</button>
+                        <button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-2 rounded font-bold">X</button>
                     </td>
                 </tr>`;
             });
@@ -185,7 +186,7 @@
         const deg = document.getElementById('f_deg').value.toLowerCase();
         document.querySelectorAll('#thesesTableBody tr').forEach(row => {
             const cells = row.children;
-            const match = row.innerText.toLowerCase().includes(q) && cells[3].innerText.toLowerCase().includes(u) && cells[4].innerText.toLowerCase().includes(c) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText.toLowerCase().includes(deg));
+            const match = row.innerText.toLowerCase().includes(q) && cells[3].innerText.toLowerCase().includes(u) && cells[4].innerText.toLowerCase().includes(c) && cells[5].innerText.toLowerCase().includes(d) && cells[6].innerText.toLowerCase().includes(y) && (deg=="" || cells[7].innerText.toLowerCase().includes(deg));
             row.style.display = match ? "" : "none";
         });
     }
