@@ -23,10 +23,11 @@
                 <input type="text" id="supervisor" placeholder="المشرف">
                 <input type="text" id="serialNum" placeholder="رقم الرسالة">
             </div>
-            <div class="grid grid-cols-3 gap-2 mb-2">
+            <div class="grid grid-cols-4 gap-2 mb-2">
                 <input type="text" id="university" placeholder="الجامعة" required>
                 <input type="text" id="college" placeholder="الكلية" required>
                 <input type="text" id="department" placeholder="القسم" required>
+                <input type="text" id="location" placeholder="مكان تواجد الرسالة (المكتبة)" required>
             </div>
             <div class="grid grid-cols-4 gap-2 mb-2">
                 <select id="degree"><option>ماجستير</option><option>دكتوراة</option></select>
@@ -36,7 +37,7 @@
             </div>
             <div class="flex gap-2">
                 <input type="text" id="notes" placeholder="ملاحظات">
-                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
+                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded cursor-pointer">حفظ البيانات ✅</button>
             </div>
         </form>
     </div>
@@ -54,7 +55,7 @@
         <table class="w-full border-collapse min-w-[1000px]">
             <thead>
                 <tr>
-                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>الإجراء</th>
+                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>المكان</th><th>الإجراء</th>
                 </tr>
             </thead>
             <tbody id="thesesTableBody"></tbody>
@@ -63,7 +64,7 @@
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     db.ref('theses_data').on('value', snap => {
@@ -72,8 +73,8 @@
         snap.forEach(child => {
             const v = child.val();
             tbody.innerHTML += `<tr>
-                <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td>
-                <td><button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-1 rounded">X</button></td>
+                <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
+                <td><button onclick="if(confirm('حذف؟')) db.ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-2 rounded">X</button></td>
             </tr>`;
         });
     });
@@ -83,9 +84,10 @@
         db.ref('theses_data').push({
             author: document.getElementById('author').value, title: document.getElementById('title').value,
             university: document.getElementById('university').value, college: document.getElementById('college').value,
-            department: document.getElementById('department').value, degree: document.getElementById('degree').value,
-            status: document.getElementById('status').value, year: document.getElementById('year').value,
-            link: document.getElementById('link').value || "", serialNum: document.getElementById('serialNum').value || ""
+            department: document.getElementById('department').value, location: document.getElementById('location').value,
+            degree: document.getElementById('degree').value, status: document.getElementById('status').value, 
+            year: document.getElementById('year').value, link: document.getElementById('link').value || "",
+            serialNum: document.getElementById('serialNum').value || ""
         }).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
     }
 
@@ -96,9 +98,15 @@
         const d = document.getElementById('f_dept').value.toLowerCase();
         const y = document.getElementById('f_year').value.toLowerCase();
         const deg = document.getElementById('f_deg').value.toLowerCase();
+
         document.querySelectorAll('#thesesTableBody tr').forEach(row => {
             const cells = row.children;
-            const match = row.innerText.toLowerCase().includes(q) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText.toLowerCase().includes(deg));
+            const match = row.innerText.toLowerCase().includes(q) && 
+                          cells[2].innerText.toLowerCase().includes(u) && 
+                          cells[3].innerText.toLowerCase().includes(c) && 
+                          cells[4].innerText.toLowerCase().includes(d) && 
+                          cells[5].innerText.toLowerCase().includes(y) && 
+                          (deg=="" || cells[6].innerText.toLowerCase().includes(deg));
             row.style.display = match ? "" : "none";
         });
     }
