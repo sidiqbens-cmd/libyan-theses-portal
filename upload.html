@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
+        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
@@ -15,11 +15,6 @@
     </style>
 </head>
 <body>
-
-    <div class="flex justify-between items-center mb-2 px-2">
-        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
-    </div>
-
     <div class="main-card p-3">
         <form id="thesisForm">
             <div class="grid grid-cols-4 gap-2 mb-2">
@@ -47,12 +42,12 @@
     </div>
 
     <div class="main-card p-2 bg-blue-50 grid grid-cols-6 gap-2 border-blue-200 border">
-        <input type="text" id="gs" placeholder="🔍 بحث شامل..." onkeyup="applyFilters()">
-        <input type="text" id="fu" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
-        <input type="text" id="fc" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
-        <input type="text" id="fd" placeholder="تصفية بالقسم" onkeyup="applyFilters()">
-        <input type="text" id="fy" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
-        <select id="fg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
+        <input type="text" id="f_gs" placeholder="🔍 بحث شامل..." onkeyup="filterTable()">
+        <input type="text" id="f_uni" placeholder="تصفية بالجامعة" onkeyup="filterTable()">
+        <input type="text" id="f_coll" placeholder="تصفية بالكلية" onkeyup="filterTable()">
+        <input type="text" id="f_dept" placeholder="تصفية بالقسم" onkeyup="filterTable()">
+        <input type="text" id="f_year" placeholder="تصفية بالسنة" onkeyup="filterTable()">
+        <select id="f_deg" onchange="filterTable()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
     </div>
 
     <div class="main-card overflow-x-auto">
@@ -68,44 +63,43 @@
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", authDomain: "libyan-theses-portal.firebaseapp.com", projectId: "libyan-theses-portal", databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function loadData() {
-        db.ref('theses_data').on('value', snap => {
-            const tbody = document.getElementById('thesesTableBody');
-            tbody.innerHTML = '';
-            snap.forEach(child => {
-                const v = child.val();
-                // معالجة undefined لظهور بيانات نظيفة
-                tbody.innerHTML += `<tr>
-                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td>
-                    <td><button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-1 rounded">X</button></td>
-                </tr>`;
-            });
+    db.ref('theses_data').on('value', snap => {
+        const tbody = document.getElementById('thesesTableBody');
+        tbody.innerHTML = '';
+        snap.forEach(child => {
+            const v = child.val();
+            tbody.innerHTML += `<tr>
+                <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td>
+                <td><button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-1 rounded">X</button></td>
+            </tr>`;
         });
-    }
-    loadData();
+    });
 
     document.getElementById('thesisForm').onsubmit = (e) => {
         e.preventDefault();
-        const data = {
+        db.ref('theses_data').push({
             author: document.getElementById('author').value, title: document.getElementById('title').value,
             university: document.getElementById('university').value, college: document.getElementById('college').value,
             department: document.getElementById('department').value, degree: document.getElementById('degree').value,
             status: document.getElementById('status').value, year: document.getElementById('year').value,
             link: document.getElementById('link').value || "", serialNum: document.getElementById('serialNum').value || ""
-        };
-        db.ref('theses_data').push(data).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
+        }).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
     }
 
-    function applyFilters() {
-        const g = document.getElementById('gs').value.toLowerCase();
-        const u = document.getElementById('fu').value.toLowerCase();
-        const rows = document.querySelectorAll('#thesesTableBody tr');
-        rows.forEach(row => {
-            const t = row.innerText.toLowerCase();
-            row.style.display = t.includes(g) && t.includes(u) ? "" : "none";
+    function filterTable() {
+        const q = document.getElementById('f_gs').value.toLowerCase();
+        const u = document.getElementById('f_uni').value.toLowerCase();
+        const c = document.getElementById('f_coll').value.toLowerCase();
+        const d = document.getElementById('f_dept').value.toLowerCase();
+        const y = document.getElementById('f_year').value.toLowerCase();
+        const deg = document.getElementById('f_deg').value.toLowerCase();
+        document.querySelectorAll('#thesesTableBody tr').forEach(row => {
+            const cells = row.children;
+            const match = row.innerText.toLowerCase().includes(q) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText.toLowerCase().includes(deg));
+            row.style.display = match ? "" : "none";
         });
     }
 </script>
