@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
-        .login-overlay { position: fixed; inset: 0; background: #1e3a8a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
@@ -17,66 +16,54 @@
 </head>
 <body>
 
-    <div id="loginScreen" class="login-overlay">
-        <div class="bg-white p-6 rounded shadow-xl text-center w-80">
-            <h2 class="font-bold mb-4 text-blue-900 text-lg">دخول المندوبين</h2>
-            <input type="password" id="passCode" placeholder="أدخل كود المكتبة" class="mb-4 text-center p-2 border-2 border-blue-900 text-lg w-full">
-            <button onclick="checkLogin()" class="bg-blue-900 text-white w-full py-2 rounded font-bold">دخول للمنظومة</button>
-            <p id="loginError" class="text-red-600 mt-2 hidden text-xs">الكود غير صحيح!</p>
-        </div>
+    <div class="flex justify-between items-center mb-2 px-2">
+        <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
     </div>
 
-    <div id="adminContent" class="hidden">
-        <div class="flex justify-between items-center mb-2 px-2">
-            <div class="text-blue-900 font-bold text-xs">المكتبة: <span id="libName" class="text-orange-600"></span></div>
-            <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
-        </div>
+    <div class="main-card p-3">
+        <form id="thesisForm">
+            <div class="grid grid-cols-4 gap-2 mb-2">
+                <input type="text" id="author" placeholder="اسم الباحث" required>
+                <input type="text" id="title" placeholder="عنوان الرسالة" required>
+                <input type="text" id="supervisor" placeholder="المشرف">
+                <input type="text" id="serialNum" placeholder="رقم الرسالة">
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-2">
+                <input type="text" id="university" placeholder="الجامعة" required>
+                <input type="text" id="college" placeholder="الكلية" required>
+                <input type="text" id="department" placeholder="القسم" required>
+            </div>
+            <div class="grid grid-cols-4 gap-2 mb-2">
+                <select id="degree"><option>ماجستير</option><option>دكتوراة</option></select>
+                <select id="status"><option>متوفرة</option><option>غير متوفرة</option></select>
+                <input type="number" id="year" placeholder="السنة">
+                <input type="url" id="link" placeholder="الرابط">
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="notes" placeholder="ملاحظات">
+                <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
+            </div>
+        </form>
+    </div>
 
-        <div class="main-card p-3">
-            <form id="thesisForm">
-                <div class="grid grid-cols-4 gap-2 mb-2">
-                    <input type="text" id="author" placeholder="اسم الباحث" required>
-                    <input type="text" id="title" placeholder="عنوان الرسالة" required>
-                    <input type="text" id="supervisor" placeholder="المشرف">
-                    <input type="text" id="serialNum" placeholder="رقم الرسالة">
-                </div>
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                    <input type="text" id="university" placeholder="الجامعة" required>
-                    <input type="text" id="college" placeholder="الكلية" required>
-                    <input type="text" id="department" placeholder="القسم" required>
-                </div>
-                <div class="grid grid-cols-4 gap-2 mb-2">
-                    <select id="degree"><option>ماجستير</option><option>دكتوراة</option></select>
-                    <select id="status"><option>متوفرة</option><option>غير متوفرة</option></select>
-                    <input type="number" id="year" placeholder="السنة">
-                    <input type="url" id="link" placeholder="الرابط">
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="notes" placeholder="ملاحظات">
-                    <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
-                </div>
-            </form>
-        </div>
+    <div class="main-card p-2 bg-blue-50 grid grid-cols-6 gap-2 border-blue-200 border">
+        <input type="text" id="gs" placeholder="🔍 بحث شامل..." onkeyup="applyFilters()">
+        <input type="text" id="fu" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
+        <input type="text" id="fc" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
+        <input type="text" id="fd" placeholder="تصفية بالقسم" onkeyup="applyFilters()">
+        <input type="text" id="fy" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
+        <select id="fg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
+    </div>
 
-        <div class="main-card p-2 bg-blue-50 grid grid-cols-6 gap-2 border-blue-200 border">
-            <input type="text" id="gs" placeholder="🔍 بحث شامل..." onkeyup="applyFilters()">
-            <input type="text" id="fu" placeholder="تصفية بالجامعة" onkeyup="applyFilters()">
-            <input type="text" id="fc" placeholder="تصفية بالكلية" onkeyup="applyFilters()">
-            <input type="text" id="fd" placeholder="تصفية بالقسم" onkeyup="applyFilters()">
-            <input type="text" id="fy" placeholder="تصفية بالسنة" onkeyup="applyFilters()">
-            <select id="fg" onchange="applyFilters()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
-        </div>
-
-        <div class="main-card overflow-x-auto">
-            <table class="w-full border-collapse min-w-[1000px]">
-                <thead>
-                    <tr>
-                        <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>الإجراء</th>
-                    </tr>
-                </thead>
-                <tbody id="thesesTableBody"></tbody>
-            </table>
-        </div>
+    <div class="main-card overflow-x-auto">
+        <table class="w-full border-collapse min-w-[1000px]">
+            <thead>
+                <tr>
+                    <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="thesesTableBody"></tbody>
+        </table>
     </div>
 
 <script>
@@ -84,26 +71,13 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const libraries = { "101": "جامعة طرابلس - مكتبة الآداب", "102": "جامعة بنغازي - المكتبة المركزية" };
-    let currentLib = "";
-
-    function checkLogin() {
-        const c = document.getElementById('passCode').value;
-        if(libraries[c]) { 
-            currentLib = libraries[c];
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('adminContent').classList.remove('hidden');
-            document.getElementById('libName').innerText = currentLib;
-            loadData();
-        } else { document.getElementById('loginError').classList.remove('hidden'); }
-    }
-
     function loadData() {
         db.ref('theses_data').on('value', snap => {
             const tbody = document.getElementById('thesesTableBody');
             tbody.innerHTML = '';
             snap.forEach(child => {
                 const v = child.val();
+                // معالجة undefined لظهور بيانات نظيفة
                 tbody.innerHTML += `<tr>
                     <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td>
                     <td><button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-1 rounded">X</button></td>
@@ -111,6 +85,7 @@
             });
         });
     }
+    loadData();
 
     document.getElementById('thesisForm').onsubmit = (e) => {
         e.preventDefault();
@@ -119,7 +94,7 @@
             university: document.getElementById('university').value, college: document.getElementById('college').value,
             department: document.getElementById('department').value, degree: document.getElementById('degree').value,
             status: document.getElementById('status').value, year: document.getElementById('year').value,
-            link: document.getElementById('link').value || "", location: currentLib, serialNum: document.getElementById('serialNum').value || ""
+            link: document.getElementById('link').value || "", serialNum: document.getElementById('serialNum').value || ""
         };
         db.ref('theses_data').push(data).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
     }
@@ -127,16 +102,10 @@
     function applyFilters() {
         const g = document.getElementById('gs').value.toLowerCase();
         const u = document.getElementById('fu').value.toLowerCase();
-        const c = document.getElementById('fc').value.toLowerCase();
-        const d = document.getElementById('fd').value.toLowerCase();
-        const y = document.getElementById('fy').value.toLowerCase();
-        const deg = document.getElementById('fg').value;
-        
-        document.querySelectorAll('#thesesTableBody tr').forEach(row => {
+        const rows = document.querySelectorAll('#thesesTableBody tr');
+        rows.forEach(row => {
             const t = row.innerText.toLowerCase();
-            const cells = row.getElementsByTagName('td');
-            const match = t.includes(g) && cells[2].innerText.toLowerCase().includes(u) && cells[3].innerText.toLowerCase().includes(c) && cells[4].innerText.toLowerCase().includes(d) && cells[5].innerText.toLowerCase().includes(y) && (deg=="" || cells[6].innerText==deg);
-            row.style.display = match ? "" : "none";
+            row.style.display = t.includes(g) && t.includes(u) ? "" : "none";
         });
     }
 </script>
