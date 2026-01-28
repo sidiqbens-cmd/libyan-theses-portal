@@ -54,13 +54,14 @@
         </form>
     </div>
 
-    <div class="main-card p-2 bg-blue-50 grid grid-cols-6 gap-2 border-blue-200 border">
+    <div class="main-card p-2 bg-blue-50 grid grid-cols-7 gap-2 border-blue-200 border">
         <input type="text" id="f_gs" placeholder="🔍 بحث شامل..." onkeyup="filterTable()">
         <input type="text" id="f_uni" placeholder="تصفية بالجامعة" onkeyup="filterTable()">
         <input type="text" id="f_coll" placeholder="تصفية بالكلية" onkeyup="filterTable()">
         <input type="text" id="f_dept" placeholder="تصفية بالقسم" onkeyup="filterTable()">
         <input type="text" id="f_year" placeholder="تصفية بالسنة" onkeyup="filterTable()">
-        <select id="f_deg" onchange="filterTable()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراه</option></select>
+        <input type="text" id="f_loc" placeholder="تصفية بالمكان" onkeyup="filterTable()">
+        <select id="f_deg" onchange="filterTable()"><option value="">كل الدرجات</option><option>ماجستير</option><option>دكتوراة</option></select>
     </div>
 
     <div class="main-card overflow-x-auto">
@@ -189,27 +190,28 @@
     }
 
     function filterTable() {
-        const q = document.getElementById('f_gs').value.toLowerCase().trim();
-        const u = document.getElementById('f_uni').value.toLowerCase().trim();
-        const c = document.getElementById('f_coll').value.toLowerCase().trim();
-        const d = document.getElementById('f_dept').value.toLowerCase().trim();
-        const y = document.getElementById('f_year').value.toLowerCase().trim();
-        const deg = document.getElementById('f_deg').value.toLowerCase().trim();
+    const q = document.getElementById('f_gs').value.toLowerCase().trim();
+    const u = document.getElementById('f_uni').value.toLowerCase().trim();
+    const c = document.getElementById('f_coll').value.toLowerCase().trim();
+    const d = document.getElementById('f_dept').value.toLowerCase().trim();
+    const y = document.getElementById('f_year').value.toLowerCase().trim();
+    const loc = document.getElementById('f_loc').value.toLowerCase().trim(); // تعريف المتغير الجديد
+    const deg = document.getElementById('f_deg').value.toLowerCase().trim();
 
-        document.querySelectorAll('#thesesTableBody tr').forEach(row => {
-            const cells = row.children;
+    document.querySelectorAll('#thesesTableBody tr').forEach(row => {
+        const cells = row.children;
         
-            // التحقق من كل عمود بناءً على ترتيب loadData الجديد
-            const match = row.innerText.toLowerCase().includes(q) && 
-                          cells[3].innerText.toLowerCase().includes(u) && // الجامعة
-                          cells[4].innerText.toLowerCase().includes(c) && // الكلية
-                          cells[5].innerText.toLowerCase().includes(d) && // القسم
-                          cells[6].innerText.toLowerCase().includes(y) && // السنة
-                          (deg === "" || cells[7].innerText.toLowerCase().includes(deg)); // الدرجة
-    
-            row.style.display = match ? "" : "none";
-        });
-    }
+        const match = row.innerText.toLowerCase().includes(q) && 
+                      cells[3].innerText.toLowerCase().includes(u) && 
+                      cells[4].innerText.toLowerCase().includes(c) && 
+                      cells[5].innerText.toLowerCase().includes(d) && 
+                      cells[6].innerText.toLowerCase().includes(y) && 
+                      cells[9].innerText.toLowerCase().includes(loc) && // الربط مع عمود مكان التواجد
+                      (deg === "" || cells[7].innerText.toLowerCase().includes(deg));
+
+        row.style.display = match ? "" : "none";
+    });
+}
 </script>
 </body>
 </html>
