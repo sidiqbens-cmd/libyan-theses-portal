@@ -2,79 +2,100 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>طلب انضمام | الفهرس الليبي الموحد</title>
+    <title>انضمام مكتبة | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background-color: #f8fafc; font-family: sans-serif; font-size: 12px; }
-        .form-card { background: white; max-width: 500px; margin: 20px auto; padding: 20px; border-radius: 8px; shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 6px solid #1e3a8a; }
-        input, select { width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 4px; display: block; }
+        body { font-size: 12px; background-color: #f8fafc; font-family: sans-serif; }
+        .form-card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border-top: 4px solid #1e3a8a; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; outline: none; }
         label { font-weight: bold; color: #1e3a8a; }
-        .btn-submit { background-color: #1e3a8a; color: white; width: 100%; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; border: none; }
-        .btn-submit:hover { background-color: #000; }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="form-card">
-        <h2 class="text-center text-lg font-bold text-blue-900 mb-4 border-b pb-2">نموذج طلب انضمام مكتبة</h2>
-        <form id="joinForm">
-            <label>اسم المكتبة الكامل</label>
-            <input type="text" id="libraryName" placeholder="مثلاً: مكتبة كلية الزراعة" required>
+    <div class="form-card w-full max-w-lg p-6">
+        <div class="text-center mb-6">
+            <h1 class="text-xl font-bold text-blue-900">نموذج انضمام مكتبة للفهرس</h1>
+            <p class="text-gray-500">يرجى تعبئة البيانات بدقة لتفعيل بطاقة المكتبة التفاعلية</p>
+        </div>
 
-            <label>المدينة</label>
-            <input type="text" id="city" placeholder="مثلاً: طرابلس" required>
+        <form id="joinForm" class="space-y-4">
+            <div>
+                <label>اسم المكتبة الرسمي</label>
+                <input type="text" id="libName" placeholder="مثلاً: مكتبة كلية الآداب - جامعة طرابلس" required>
+            </div>
 
-            <label>التبعية (الجامعة / المركز)</label>
-            <input type="text" id="affiliation" placeholder="مثلاً: جامعة طرابلس" required>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label>الجامعة التابعة لها</label>
+                    <input type="text" id="university" required>
+                </div>
+                <div>
+                    <label>المسؤول عن التواصل</label>
+                    <input type="text" id="contactPerson" required>
+                </div>
+            </div>
 
-            <label>رقم هاتف للتواصل</label>
-            <input type="tel" id="phone" placeholder="09XXXXXXXX" required>
+            <div>
+                <label>رابط الموقع على خرائط جوجل (Google Maps)</label>
+                <input type="url" id="libMap" placeholder="انسخ الرابط من تطبيق الخرائط هنا">
+            </div>
 
-            <label>رابط الموقع على الخريطة (Google Maps)</label>
-            <input type="url" id="location" placeholder="https://goo.gl/maps/..." required>
+            <div>
+                <label>مواعيد العمل الرسمية</label>
+                <input type="text" id="libHours" placeholder="مثلاً: من الأحد للخميس (9:00 ص - 2:00 ظ)">
+            </div>
 
-            <button type="submit" class="btn-submit">إرسال طلب الانضمام</button>
+            <div>
+                <label>نبذة عن المكتبة / تعليمات للباحثين</label>
+                <textarea id="libInfo" rows="3" placeholder="اكتب هنا أي تفاصيل إضافية تهم الباحث..."></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-900 text-white font-bold py-2 rounded shadow hover:bg-blue-800 transition">إرسال طلب الانضمام ✅</button>
         </form>
     </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    document.getElementById('joinForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const newLibrary = {
-            libraryName: document.getElementById('libraryName').value,
-            city: document.getElementById('city').value,
-            affiliation: document.getElementById('affiliation').value,
-            phone: document.getElementById('phone').value,
-            location: document.getElementById('location').value,
-            requestDate: new Date().toLocaleString('ar-LY'),
-            status: 'pending'
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
+            authDomain: "libyan-theses-portal.firebaseapp.com", 
+            projectId: "libyan-theses-portal", 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", 
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" 
         };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        // الإرسال إلى المسار الموحد libraries_directory
-        const newRef = db.ref('libraries_directory').push();
-        newRef.set(newLibrary)
-            .then(() => {
-                alert("تم إرسال طلبك بنجاح! سيتم مراجعته من قبل الإدارة.");
+        document.getElementById('joinForm').onsubmit = (e) => {
+            e.preventDefault();
+            
+            const libName = document.getElementById('libName').value;
+            const data = {
+                university: document.getElementById('university').value,
+                contact: document.getElementById('contactPerson').value,
+                map: document.getElementById('libMap').value,
+                info: document.getElementById('libInfo').value,
+                hours: document.getElementById('libHours').value,
+                timestamp: Date.now()
+            };
+
+            // حفظ الطلب في قائمة الطلبات العامة
+            db.ref('join_requests').push({ libName, ...data });
+
+            // تحديث بيانات بطاقة المكتبة فوراً لتكون جاهزة للعرض في صفحة الجمهور
+            db.ref('libraries_info/' + libName).set({
+                info: `المواعيد: ${data.hours} <br> ${data.info}`,
+                map: data.map
+            }).then(() => {
+                alert("تم إرسال طلبك بنجاح! ستظهر بيانات مكتبتك في الفهرس فوراً ✅");
                 document.getElementById('joinForm').reset();
-            })
-            .catch((error) => {
-                alert("حدث خطأ أثناء الإرسال: " + error.message);
+            }).catch(err => {
+                alert("حدث خطأ، يرجى المحاولة لاحقاً");
+                console.error(err);
             });
-    });
-</script>
+        };
+    </script>
 </body>
 </html>
