@@ -2,19 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الرسائل | الفهرس الليبي الموحد</title>
+    <title>لوحة الإدارة | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; }
+        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
         .login-overlay { position: fixed; inset: 0; background: #1e3a8a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
         td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
-        .edit-mode { background: #fffde7 !important; border: 1px solid #fbc02d !important; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -30,7 +28,7 @@
 
     <div id="adminContent" class="hidden">
         <div class="flex justify-between items-center mb-2 px-2">
-            <div class="text-blue-900 font-bold">المكتبة: <span id="libName" class="text-orange-600"></span></div>
+            <div class="text-blue-900 font-bold text-xs">المكتبة: <span id="libName" class="text-orange-600"></span></div>
             <h1 class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</h1>
         </div>
 
@@ -49,12 +47,12 @@
                 </div>
                 <div class="grid grid-cols-4 gap-2 mb-2">
                     <select id="degree"><option>ماجستير</option><option>دكتوراة</option></select>
-                    <select id="status"><option value="متوفرة">متوفرة</option><option value="غير متوفرة">غير متوفرة</option></select>
+                    <select id="status"><option>متوفرة</option><option>غير متوفرة</option></select>
                     <input type="number" id="year" placeholder="السنة">
                     <input type="url" id="link" placeholder="الرابط">
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="notes" placeholder="ملاحظات إضافية">
+                    <input type="text" id="notes" placeholder="ملاحظات">
                     <button type="submit" class="bg-blue-900 text-white font-bold px-6 py-1 rounded">حفظ البيانات ✅</button>
                 </div>
             </form>
@@ -73,7 +71,7 @@
             <table class="w-full border-collapse min-w-[1000px]">
                 <thead>
                     <tr>
-                        <th>الباحث</th><th class="w-1/5">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>الرقم</th><th>الحالة</th><th>الإجراء</th>
+                        <th>الباحث</th><th class="w-1/4">العنوان</th><th>الجامعة</th><th>الكلية</th><th>القسم</th><th>السنة</th><th>الدرجة</th><th>رقم الرسالة</th><th>الإجراء</th>
                     </tr>
                 </thead>
                 <tbody id="thesesTableBody"></tbody>
@@ -105,10 +103,10 @@
             const tbody = document.getElementById('thesesTableBody');
             tbody.innerHTML = '';
             snap.forEach(child => {
-                const v = child.val(); const id = child.key;
-                tbody.innerHTML += `<tr id="row-${id}">
-                    <td>${v.author || ''}</td><td class="text-right">${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td><td>${v.status || 'متوفرة'}</td>
-                    <td><button onclick="deleteRec('${id}')" class="bg-red-600 text-white px-1 rounded">X</button></td>
+                const v = child.val();
+                tbody.innerHTML += `<tr>
+                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.serialNum || ''}</td>
+                    <td><button onclick="if(confirm('حذف؟')) firebase.database().ref('theses_data/${child.key}').remove()" class="bg-red-600 text-white px-1 rounded">X</button></td>
                 </tr>`;
             });
         });
@@ -125,7 +123,6 @@
         };
         db.ref('theses_data').push(data).then(() => { alert("تم الحفظ ✅"); document.getElementById('thesisForm').reset(); });
     }
-    function deleteRec(id) { if(confirm("حذف؟")) db.ref('theses_data').child(id).remove(); }
 
     function applyFilters() {
         const g = document.getElementById('gs').value.toLowerCase();
