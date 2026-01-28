@@ -86,7 +86,7 @@
             snap.forEach(child => {
                 const v = child.val();
                 tbody.innerHTML += `<tr>
-                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.supervisor || ''}</td><td>${v.university || ''}</td><td>${v.college ||  ''}</td><td>${v.serialNum ||''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree || ''}</td><td>${v.location || ''}</td>
+                    <td>${v.author || ''}</td><td>${v.title || ''}</td><td>${v.supervisor || ''}</td><td>${v.university || ''}</td><td>${v.college || ''}</td><td>${v.department || ''}</td><td>${v.year || ''}</td><td>${v.degree ||   ''}</td><td>${v.serialNum ||''}</td><td>${v.location || ''}</td>
                     <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 underline">عرض</a>` : '-'}</td>
                     <td class="flex gap-1 justify-center">
                         <button onclick="editRow('${child.key}')" class="bg-blue-600 text-white px-2 rounded">تعديل</button>
