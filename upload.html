@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
+        body { font-size: 14px; background-color: #f1f5f9; padding: 5px; font-family: sans-serif; }
         .main-card { background: white; border-radius: 4px; border-top: 4px solid #1e3a8a; margin-bottom: 5px; border: 1px solid #ddd; }
         input, select { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; outline: none; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; white-space: nowrap; }
@@ -197,8 +197,12 @@
         const deg = document.getElementById('f_deg').value.toLowerCase();
         document.querySelectorAll('#thesesTableBody tr').forEach(row => {
             const cells = row.children;
-            const match = row.innerText.toLowerCase().includes(q) && cells[4].innerText.toLowerCase().includes(u) && cells[5].innerText.toLowerCase().includes(c) && cells[6].innerText.toLowerCase().includes(d) && cells[7].innerText.toLowerCase().includes(y) && (deg=="" || cells[8].innerText.toLowerCase().includes(deg));
-            row.style.display = match ? "" : "none";
+            const match = row.innerText.toLowerCase().includes(q) && 
+              cells[3].innerText.toLowerCase().includes(u) && 
+              cells[4].innerText.toLowerCase().includes(c) && 
+              cells[5].innerText.toLowerCase().includes(d) && 
+              cells[6].innerText.toLowerCase().includes(y) && 
+              (deg=="" || cells[7].innerText.toLowerCase().includes(deg));
         });
     }
 </script>
