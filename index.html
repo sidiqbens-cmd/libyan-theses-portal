@@ -3,31 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد | البحث عن الرسائل العلمية</title>
+    <title>الفهرس الليبي الموحد | صفحة الجمهور</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f8fafc; font-family: sans-serif; }
-        .main-card { background: white; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 5px; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #cbd5e1; white-space: nowrap; text-align: center; }
-        td { padding: 5px; border: 1px solid #e2e8f0; text-align: center; }
-        input, select { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; }
+        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
+        .main-card { background: white; border-radius: 0px; box-shadow: none; border: 1px solid #cbd5e1; }
+        th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #475569; white-space: nowrap; font-size: 10px; }
+        td { padding: 3px; border: 1px solid #cbd5e1; text-align: center; color: #334155; }
+        input, select { width: 100%; padding: 4px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 10px; height: 28px; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        tr:hover { background-color: #f1f5f9; }
     </style>
 </head>
-<body class="p-2">
+<body class="p-1">
 
-    <div class="flex justify-between items-center mb-2 px-1">
-        <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد - بوابة الباحثين</h1>
+    <div class="flex justify-between items-center mb-1 bg-white p-2 border border-slate-300">
+        <h1 class="text-blue-900 font-bold text-sm">الفهرس الليبي الموحد - بوابة الباحثين</h1>
+        <div class="flex gap-2">
+            <a href="join.html" class="bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-green-800 transition">
+                ➕ انضمام مكتبة للفهرس
+            </a>
+        </div>
     </div>
 
-    <div class="main-card p-2 bg-blue-50 grid grid-cols-7 gap-2 border-blue-200 border">
+    <div class="main-card p-1 bg-slate-100 grid grid-cols-7 gap-1 border-b-0">
         <input type="text" id="f_gs" placeholder="🔍 بحث شامل..." onkeyup="filterTable()">
-        <input type="text" id="f_uni" placeholder="تصفية بالجامعة" onkeyup="filterTable()">
-        <input type="text" id="f_coll" placeholder="تصفية بالكلية" onkeyup="filterTable()">
-        <input type="text" id="f_dept" placeholder="تصفية بالقسم" onkeyup="filterTable()">
-        <input type="text" id="f_year" placeholder="تصفية بالسنة" onkeyup="filterTable()">
-        <input type="text" id="f_loc" placeholder="تصفية بالمكان" onkeyup="filterTable()">
+        <input type="text" id="f_uni" placeholder="الجامعة" onkeyup="filterTable()">
+        <input type="text" id="f_coll" placeholder="الكلية" onkeyup="filterTable()">
+        <input type="text" id="f_dept" placeholder="القسم" onkeyup="filterTable()">
+        <input type="text" id="f_year" placeholder="السنة" onkeyup="filterTable()">
+        <input type="text" id="f_loc" placeholder="مكان التواجد" onkeyup="filterTable()">
         <select id="f_deg" onchange="filterTable()">
             <option value="">كل الدرجات</option>
             <option>ماجستير</option>
@@ -36,9 +43,10 @@
     </div>
 
     <div class="main-card overflow-x-auto">
-        <table class="w-full border-collapse min-w-[1200px]">
+        <table class="w-full border-collapse min-w-[1100px]">
             <thead>
                 <tr>
+                    <th class="w-16">رقم الرسالة</th>
                     <th>الباحث</th>
                     <th class="w-1/4">العنوان</th>
                     <th>المشرف</th>
@@ -47,24 +55,23 @@
                     <th>القسم</th>
                     <th>السنة</th>
                     <th>الدرجة</th>
-                    <th>رقم الرسالة</th>
                     <th>مكان التواجد</th>
-                    <th>الرابط</th>
+                    <th class="w-16">الرابط</th>
                 </tr>
             </thead>
             <tbody id="thesesTableBody"></tbody>
         </table>
     </div>
 
-    <div id="libraryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-lg max-w-sm w-full p-5 shadow-2xl border-t-4 border-blue-900 text-right">
-            <div class="flex justify-between items-start mb-4">
-                <h3 id="libName" class="font-bold text-blue-900 text-lg font-sans">اسم المكتبة</h3>
-                <button onclick="closeLibModal()" class="text-red-600 font-bold text-xl">×</button>
+    <div id="libraryModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded shadow-xl max-w-sm w-full p-4 border-t-4 border-blue-900 text-right">
+            <div class="flex justify-between items-center mb-3 border-b pb-2">
+                <h3 id="libName" class="font-bold text-blue-900 text-sm">اسم المكتبة</h3>
+                <button onclick="closeLibModal()" class="text-gray-500 hover:text-red-600 text-xl">&times;</button>
             </div>
-            <div id="libDetails" class="text-xs space-y-2 mb-4 text-gray-700 font-sans"></div>
-            <div id="libMap" class="w-full h-40 bg-gray-200 rounded mb-4 overflow-hidden"></div>
-            <button onclick="closeLibModal()" class="w-full bg-blue-900 text-white py-2 rounded font-bold text-xs">إغلاق</button>
+            <div id="libDetails" class="text-[11px] mb-3 text-gray-700 leading-relaxed"></div>
+            <div id="libMap" class="w-full h-32 bg-gray-100 rounded border overflow-hidden mb-3"></div>
+            <button onclick="closeLibModal()" class="w-full bg-slate-800 text-white py-1.5 rounded text-[10px]">إغلاق</button>
         </div>
     </div>
 
@@ -86,17 +93,17 @@
                 snap.forEach(child => {
                     const v = child.val();
                     tbody.innerHTML += `<tr>
+                        <td class="font-bold text-blue-800">${v.serialNum || '-'}</td>
                         <td>${v.author || ''}</td>
-                        <td>${v.title || ''}</td>
+                        <td class="text-right px-2">${v.title || ''}</td>
                         <td>${v.supervisor || ''}</td>
                         <td>${v.university || ''}</td>
                         <td>${v.college || ''}</td>
                         <td>${v.department || ''}</td>
                         <td>${v.year || ''}</td>
                         <td>${v.degree || ''}</td>
-                        <td>${v.serialNum || ''}</td>
-                        <td class="cursor-pointer text-blue-700 font-bold hover:underline" onclick="showLibraryCard('${v.location}')">${v.location || ''}</td>
-                        <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 underline font-bold">عرض</a>` : '-'}</td>
+                        <td class="cursor-pointer text-blue-600 hover:bg-blue-50 font-bold" onclick="showLibraryCard('${v.location}')">📍 ${v.location || ''}</td>
+                        <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold underline">عرض</a>` : '-'}</td>
                     </tr>`;
                 });
             });
@@ -104,49 +111,47 @@
         loadData();
 
         function filterTable() {
-            const q = document.getElementById('f_gs').value.toLowerCase().trim();
-            const u = document.getElementById('f_uni').value.toLowerCase().trim();
-            const c = document.getElementById('f_coll').value.toLowerCase().trim();
-            const d = document.getElementById('f_dept').value.toLowerCase().trim();
-            const y = document.getElementById('f_year').value.toLowerCase().trim();
-            const loc = document.getElementById('f_loc').value.toLowerCase().trim();
-            const deg = document.getElementById('f_deg').value.toLowerCase().trim();
+            const filters = [
+                document.getElementById('f_gs').value.toLowerCase(),
+                document.getElementById('f_uni').value.toLowerCase(),
+                document.getElementById('f_coll').value.toLowerCase(),
+                document.getElementById('f_dept').value.toLowerCase(),
+                document.getElementById('f_year').value.toLowerCase(),
+                document.getElementById('f_loc').value.toLowerCase(),
+                document.getElementById('f_deg').value.toLowerCase()
+            ];
 
             document.querySelectorAll('#thesesTableBody tr').forEach(row => {
                 const cells = row.children;
-                const match = row.innerText.toLowerCase().includes(q) && 
-                              cells[3].innerText.toLowerCase().includes(u) && 
-                              cells[4].innerText.toLowerCase().includes(c) && 
-                              cells[5].innerText.toLowerCase().includes(d) && 
-                              cells[6].innerText.toLowerCase().includes(y) && 
-                              cells[9].innerText.toLowerCase().includes(loc) &&
-                              (deg === "" || cells[7].innerText.toLowerCase().includes(deg));
+                const match = row.innerText.toLowerCase().includes(filters[0]) &&
+                              cells[4].innerText.toLowerCase().includes(filters[1]) &&
+                              cells[5].innerText.toLowerCase().includes(filters[2]) &&
+                              cells[6].innerText.toLowerCase().includes(filters[3]) &&
+                              cells[7].innerText.toLowerCase().includes(filters[4]) &&
+                              cells[9].innerText.toLowerCase().includes(filters[5]) &&
+                              (filters[6] === "" || cells[8].innerText.toLowerCase().includes(filters[6]));
                 row.style.display = match ? "" : "none";
             });
         }
 
         function showLibraryCard(locName) {
-            const libraryData = {
-                "مكتبة كلية الآداب جامعة طرابلس": { 
-                    info: "الموقع: قاطع ب، الدور الأرضي. المواعيد: من الأحد إلى الخميس، 9:00 صباحاً - 2:00 ظهراً.", 
-                    map: "" 
+            db.ref('libraries_info/' + locName).once('value', snap => {
+                const lib = snap.val();
+                document.getElementById('libName').innerText = locName;
+                if(lib) {
+                    document.getElementById('libDetails').innerHTML = `<p>${lib.info || 'لا توجد تفاصيل.'}</p>`;
+                    document.getElementById('libMap').innerHTML = lib.map ? 
+                        `<iframe width="100%" height="100%" frameborder="0" src="${lib.map.replace("view", "preview")}&output=embed"></iframe>` : 
+                        `<div class="flex items-center justify-center h-full text-gray-400">الخريطة غير متوفرة</div>`;
+                } else {
+                    document.getElementById('libDetails').innerHTML = `<p class="italic text-orange-600">هذه المكتبة لم تنضم رسمياً للفهرس بعد.</p>`;
+                    document.getElementById('libMap').innerHTML = `<div class="flex items-center justify-center h-full text-gray-400">🗺️</div>`;
                 }
-            };
-            const lib = libraryData[locName] || { info: "بيانات الموقع الجغرافي والمواعيد لهذه المكتبة ستتوفر قريباً.", map: "" };
-            document.getElementById('libName').innerText = locName;
-            document.getElementById('libDetails').innerHTML = `<p>${lib.info}</p>`;
-            
-            if(lib.map) {
-                document.getElementById('libMap').innerHTML = `<iframe width="100%" height="100%" frameborder="0" src="${lib.map}"></iframe>`;
-            } else {
-                document.getElementById('libMap').innerHTML = `<div class="p-5 text-center text-gray-400 bg-gray-100 h-full flex items-center justify-center">الخريطة غير متوفرة حالياً</div>`;
-            }
-            document.getElementById('libraryModal').classList.remove('hidden');
+                document.getElementById('libraryModal').classList.remove('hidden');
+            });
         }
 
-        function closeLibModal() {
-            document.getElementById('libraryModal').classList.add('hidden');
-        }
+        function closeLibModal() { document.getElementById('libraryModal').classList.add('hidden'); }
     </script>
 </body>
 </html>
