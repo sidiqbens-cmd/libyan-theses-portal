@@ -2,101 +2,99 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
+    <title>إدارة طلبات الانضمام | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; padding: 5px; }
-        .main-card { background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-top: 4px solid #1e3a8a; }
-        th { background-color: #1e3a8a; color: white; padding: 4px; border: 1px solid #cbd5e1; font-weight: bold; }
-        td { padding: 3px; border: 1px solid #e2e8f0; text-align: center; background: white; }
-        .btn-approve { background: #15803d; color: white; padding: 1px 8px; border-radius: 3px; font-weight: bold; font-size: 10px; cursor: pointer; }
-        .btn-approve:hover { background: #000; }
-        .tag-city { background: #dcfce7; color: #166534; font-weight: bold; padding: 0 4px; border-radius: 2px; }
+        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
+        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #475569; text-align: center; }
+        td { padding: 6px; border: 1px solid #cbd5e1; text-align: center; background: white; }
+        .btn-approve { background-color: #16a34a; color: white; padding: 4px 8px; rounded: 2px; font-weight: bold; }
+        .btn-delete { background-color: #dc2626; color: white; padding: 4px 8px; rounded: 2px; font-weight: bold; margin-right: 4px; }
     </style>
 </head>
-<body>
+<body class="p-2">
 
-    <div class="main-card p-2 mb-2 flex justify-between items-center">
-        <h1 class="text-blue-900 font-bold text-xs">الفهرس الليبي الموحد | إدارة طلبات الانضمام (المسار: libraries_directory)</h1>
-        <div id="counter" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold italic">جاري جلب البيانات...</div>
+    <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300">
+        <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
+        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs font-bold">جاري تحميل الطلبات...</div>
     </div>
 
-    <div class="main-card overflow-hidden">
+    <div class="overflow-x-auto main-card border border-slate-300">
         <table class="w-full border-collapse">
             <thead>
                 <tr>
-                    <th class="w-1/4">اسم المكتبة</th>
-                    <th>المدينة</th>
+                    <th>اسم المكتبة</th>
                     <th>التبعية</th>
+                    <th>المسؤول</th>
                     <th>الهاتف</th>
                     <th>الموقع</th>
-                    <th>التاريخ</th>
-                    <th>الإجراء</th>
+                    <th>الإجراءات</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
+            <tbody id="requestsTableBody">
                 </tbody>
         </table>
     </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
+            authDomain: "libyan-theses-portal.firebaseapp.com", 
+            projectId: "libyan-theses-portal", 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", 
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" 
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        function loadRequests() {
+            db.ref('join_requests').on('value', snap => {
+                const tbody = document.getElementById('requestsTableBody');
+                const stats = document.getElementById('stats');
+                tbody.innerHTML = '';
+                
+                if (!snap.exists()) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-gray-500 text-sm">لا توجد طلبات انضمام حالياً</td></tr>';
+                    stats.innerText = '0 طلبات انتظار';
+                    return;
+                }
 
-    // جلب البيانات مع الغوص داخل المعرفات العشوائية
-    db.ref('libraries_directory').on('value', (snapshot) => {
-        const tbody = document.getElementById('tableBody');
-        const counterDiv = document.getElementById('counter');
-        tbody.innerHTML = '';
-        let count = 0;
-
-        if (snapshot.exists()) {
-            snapshot.forEach((child) => {
-                const data = child.val();
-                const id = child.key;
-                count++;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="font-bold text-blue-900 text-right pr-2 border-r-2 border-blue-900">${data.libraryName || '-'}</td>
-                        <td><span class="tag-city">${data.city || '-'}</span></td>
-                        <td>${data.affiliation || '-'}</td>
-                        <td class="font-mono text-[10px]">${data.phone || '-'}</td>
-                        <td><a href="${data.location}" target="_blank" class="text-blue-600 underline">الخريطة</a></td>
-                        <td class="text-gray-400 text-[9px]">${data.requestDate || '-'}</td>
-                        <td><button onclick="approve('${id}')" class="btn-approve">اعتماد ✅</button></td>
+                let count = 0;
+                snap.forEach(child => {
+                    const v = child.val();
+                    const key = child.key;
+                    count++;
+                    
+                    // نستخدم نفس المسميات الموجودة في Firebase لديك
+                    tbody.innerHTML += `<tr>
+                        <td class="font-bold text-blue-900 text-right px-4">${v.libName || 'بدون اسم'}</td>
+                        <td>${v.affiliation || '-'}</td>
+                        <td>${v.contact || '-'}</td>
+                        <td>${v.phone || '-'}</td>
+                        <td>
+                            ${v.map ? `<a href="${v.map}" target="_blank" class="text-blue-600 font-bold underline">خريطة 📍</a>` : '-'}
+                        </td>
+                        <td>
+                            <button onclick="deleteRequest('${key}')" class="btn-delete">حذف</button>
+                        </td>
                     </tr>`;
+                });
+                stats.innerText = `${count} طلبات انتظار`;
             });
-            counterDiv.innerText = count + " طلبات انتظار";
-        } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-gray-400 italic">لا توجد طلبات جديدة حالياً</td></tr>';
-            counterDiv.innerText = "0 طلبات";
         }
-    });
 
-    function approve(id) {
-        db.ref('libraries_directory').child(id).once('value', (snap) => {
-            const data = snap.val();
-            if (confirm(`اعتماد مكتبة: ${data.libraryName}؟`)) {
-                db.ref('approved_libraries').child(id).set({
-                    ...data,
-                    status: 'approved',
-                    approvalDate: new Date().toLocaleString('ar-LY')
-                }).then(() => {
-                    return db.ref('libraries_directory').child(id).remove();
-                }).then(() => alert("تم الاعتماد بنجاح ✅"));
+        function deleteRequest(key) {
+            if(confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+                db.ref('join_requests/' + key).remove()
+                .then(() => alert("تم الحذف بنجاح ✅"))
+                .catch(err => alert("خطأ في الحذف: " + err.message));
             }
-        });
-    }
-</script>
+        }
+
+        // تشغيل الدالة عند تحميل الصفحة
+        loadRequests();
+    </script>
 </body>
 </html>
