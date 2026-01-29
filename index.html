@@ -85,27 +85,31 @@
         const db = firebase.database();
 
         function loadData() {
-            db.ref('theses_data').on('value', snap => {
-                const tbody = document.getElementById('thesesTableBody');
-                tbody.innerHTML = '';
-                snap.forEach(child => {
-                    const v = child.val();
-                    tbody.innerHTML += `<tr>
-                        <td class="font-bold text-blue-800">${v.serialNum || '-'}</td>
-                        <td>${v.author || ''}</td>
-                        <td class="text-right px-2 font-bold">${v.title || ''}</td>
-                        <td>${v.supervisor || ''}</td>
-                        <td>${v.university || ''}</td>
-                        <td>${v.college || ''}</td>
-                        <td>${v.department || ''}</td>
-                        <td>${v.year || ''}</td>
-                        <td>${v.degree || ''}</td>
-                        <td class="cursor-pointer text-blue-600 font-bold hover:bg-blue-50" onclick="showLibraryCard('${v.location}')">📍 ${v.location || ''}</td>
-                        <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold underline">عرض</a>` : '-'}</td>
-                    </tr>`;
-                });
-            });
-        }
+    db.ref('theses_data').on('value', snap => {
+        const tbody = document.getElementById('thesesTableBody');
+        tbody.innerHTML = '';
+        snap.forEach(child => {
+            const v = child.val();
+            tbody.innerHTML += `<tr>
+                <td>${v.author || ''}</td>
+                <td class="text-right px-2 font-bold text-black">${v.title || ''}</td>
+                <td>${v.supervisor || ''}</td>
+                <td>${v.university || ''}</td>
+                <td>${v.college || ''}</td>
+                <td>${v.department || ''}</td>
+                <td>${v.year || ''}</td>
+                <td>${v.degree || ''}</td>
+                <td class="font-bold text-blue-900 bg-slate-50">${v.serialNum || '-'}</td>
+                <td class="cursor-pointer text-blue-600 font-bold hover:bg-blue-100 transition" onclick="showLibraryCard('${v.location}')">
+                    📍 ${v.location || ''}
+                </td>
+                <td>
+                    ${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-700 font-bold underline">عرض</a>` : '-'}
+                </td>
+            </tr>`;
+        });
+    });
+}
         loadData();
 
         function filterTable() {
