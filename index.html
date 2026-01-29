@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -85,38 +85,55 @@
         const db = firebase.database();
 
         function loadData() {
-    db.ref('theses_data').on('value', snap => {
-        const tbody = document.getElementById('thesesTableBody');
-        tbody.innerHTML = '';
-        snap.forEach(child => {
-            const v = child.val();
-            tbody.innerHTML += `<tr>
-                <td>${v.author || ''}</td>
-                <td class="text-right px-2 font-bold text-black">${v.title || ''}</td>
-                <td>${v.supervisor || ''}</td>
-                <td>${v.university || ''}</td>
-                <td>${v.college || ''}</td>
-                <td>${v.department || ''}</td>
-                <td>${v.year || ''}</td>
-                <td>${v.degree || ''}</td>
-                <td class="font-bold text-blue-900 bg-slate-50">${v.serialNum || '-'}</td>
-                <td class="cursor-pointer text-blue-600 font-bold hover:bg-blue-100 transition" onclick="showLibraryCard('${v.location}')">
-                    📍 ${v.location || ''}
-                </td>
-                <td>
-                    ${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-700 font-bold underline">عرض</a>` : '-'}
-                </td>
-            </tr>`;
-        });
-    });
-}
+            db.ref('theses_data').on('value', snap => {
+                const tbody = document.getElementById('thesesTableBody');
+                tbody.innerHTML = '';
+                snap.forEach(child => {
+                    const v = child.val();
+                    tbody.innerHTML += `<tr>
+                        <td>${v.author || ''}</td>
+                        <td class="text-right px-2 font-bold text-black">${v.title || ''}</td>
+                        <td>${v.supervisor || ''}</td>
+                        <td>${v.university || ''}</td>
+                        <td>${v.college || ''}</td>
+                        <td>${v.department || ''}</td>
+                        <td>${v.year || ''}</td>
+                        <td>${v.degree || ''}</td>
+                        <td class="font-bold text-blue-900 bg-slate-50">${v.serialNum || '-'}</td>
+                        <td class="cursor-pointer text-blue-600 font-bold hover:bg-blue-100 transition" onclick="showLibraryCard('${v.location}')">
+                            📍 ${v.location || ''}
+                        </td>
+                        <td>
+                            ${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-700 font-bold underline">عرض</a>` : '-'}
+                        </td>
+                    </tr>`;
+                });
+            });
+        }
         loadData();
 
-        function filterTable() {
-            const f = [document.getElementById('f_gs').value.toLowerCase(), document.getElementById('f_uni').value.toLowerCase(), document.getElementById('f_coll').value.toLowerCase(), document.getElementById('f_dept').value.toLowerCase(), document.getElementById('f_year').value.toLowerCase(), document.getElementById('f_loc').value.toLowerCase(), document.getElementById('f_deg').value.toLowerCase()];
+       function filterTable() {
+            const f = [
+                document.getElementById('f_gs').value.toLowerCase(),
+                document.getElementById('f_uni').value.toLowerCase(),
+                document.getElementById('f_coll').value.toLowerCase(),
+                document.getElementById('f_dept').value.toLowerCase(),
+                document.getElementById('f_year').value.toLowerCase(),
+                document.getElementById('f_loc').value.toLowerCase(),
+                document.getElementById('f_deg').value.toLowerCase()
+            ];
+
             document.querySelectorAll('#thesesTableBody tr').forEach(row => {
                 const c = row.children;
-                const m = row.innerText.toLowerCase().includes(f[0]) && c[4].innerText.toLowerCase().includes(f[1]) && c[5].innerText.toLowerCase().includes(f[2]) && c[6].innerText.toLowerCase().includes(f[3]) && c[7].innerText.toLowerCase().includes(f[4]) && c[9].innerText.toLowerCase().includes(f[5]) && (f[6] === "" || c[8].innerText.toLowerCase().includes(f[6]));
+                // الترتيب الجديد: الجامعة[3]، الكلية[4]، القسم[5]، السنة[6]، الدرجة[7]، مكان التواجد[9]
+                const m = row.innerText.toLowerCase().includes(f[0]) && 
+                    c[3].innerText.toLowerCase().includes(f[1]) && 
+                    c[4].innerText.toLowerCase().includes(f[2]) && 
+                    c[5].innerText.toLowerCase().includes(f[3]) && 
+                    c[6].innerText.toLowerCase().includes(f[4]) && 
+                    c[9].innerText.toLowerCase().includes(f[5]) && 
+                    (f[6] === "" || c[7].innerText.toLowerCase().includes(f[6]));
+        
                 row.style.display = m ? "" : "none";
             });
         }
