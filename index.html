@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد | صفحة الجمهور</title>
+    <title>الفهرس الليبي الموحد | البحث</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
-        .main-card { background: white; border-radius: 0px; box-shadow: none; border: 1px solid #cbd5e1; }
+        .main-card { background: white; border: 1px solid #cbd5e1; }
         th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #475569; white-space: nowrap; font-size: 10px; }
         td { padding: 3px; border: 1px solid #cbd5e1; text-align: center; color: #334155; }
-        input, select { width: 100%; padding: 4px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 10px; height: 28px; }
+        input, select { width: 100%; padding: 4px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 10px; height: 26px; }
         tr:nth-child(even) { background-color: #f8fafc; }
-        tr:hover { background-color: #f1f5f9; }
     </style>
 </head>
 <body class="p-1">
 
     <div class="flex justify-between items-center mb-1 bg-white p-2 border border-slate-300">
-        <h1 class="text-blue-900 font-bold text-sm">الفهرس الليبي الموحد - بوابة الباحثين</h1>
-        <div class="flex gap-2">
-            <a href="join.html" class="bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-green-800 transition">
-                ➕ انضمام مكتبة للفهرس
-            </a>
-        </div>
+        <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد</h1>
+        <a href="join.html" class="bg-green-700 text-white px-3 py-1 rounded text-[10px] font-bold">➕ انضمام مكتبة</a>
     </div>
 
     <div class="main-card p-1 bg-slate-100 grid grid-cols-7 gap-1 border-b-0">
@@ -56,31 +51,25 @@
                     <th>السنة</th>
                     <th>الدرجة</th>
                     <th>مكان التواجد</th>
-                    <th class="w-16">الرابط</th>
+                    <th class="w-16">عرض</th>
                 </tr>
             </thead>
             <tbody id="thesesTableBody"></tbody>
         </table>
     </div>
 
-    <div id="libraryModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50 font-sans">
+    <div id="libraryModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded shadow-xl max-w-sm w-full border-t-4 border-blue-900 overflow-hidden text-right">
-            <div class="bg-slate-50 p-3 border-b flex justify-between items-center">
-                <h3 id="libName" class="font-bold text-blue-900 text-sm italic">اسم المكتبة</h3>
-                <button onclick="closeLibModal()" class="text-gray-400 hover:text-red-600 text-xl leading-none">&times;</button>
+            <div class="bg-slate-50 p-2 border-b flex justify-between items-center">
+                <h3 id="libName" class="font-bold text-blue-900 text-xs">اسم المكتبة</h3>
+                <button onclick="closeLibModal()" class="text-gray-400 hover:text-red-600 text-xl">&times;</button>
             </div>
-        
             <div class="p-4 space-y-3">
-                <div id="libDetails" class="text-[11px] text-gray-700 leading-relaxed space-y-1">
-                    </div>
-
-                <div id="libLinks" class="flex gap-2 border-t pt-3 justify-center">
-                    </div>
-
+                <div id="libDetails" class="text-[11px] text-gray-700 space-y-1"></div>
+                <div id="libLinks" class="flex gap-2 border-t pt-2 justify-center"></div>
                 <div id="libMap" class="w-full h-32 bg-gray-100 rounded border overflow-hidden"></div>
             </div>
-
-            <button onclick="closeLibModal()" class="w-full bg-slate-800 text-white py-2 rounded-none text-[10px] font-bold">إغلاق</button>
+            <button onclick="closeLibModal()" class="w-full bg-slate-800 text-white py-2 text-[10px] font-bold">إغلاق</button>
         </div>
     </div>
 
@@ -104,14 +93,14 @@
                     tbody.innerHTML += `<tr>
                         <td class="font-bold text-blue-800">${v.serialNum || '-'}</td>
                         <td>${v.author || ''}</td>
-                        <td class="text-right px-2">${v.title || ''}</td>
+                        <td class="text-right px-2 font-bold">${v.title || ''}</td>
                         <td>${v.supervisor || ''}</td>
                         <td>${v.university || ''}</td>
                         <td>${v.college || ''}</td>
                         <td>${v.department || ''}</td>
                         <td>${v.year || ''}</td>
                         <td>${v.degree || ''}</td>
-                        <td class="cursor-pointer text-blue-600 hover:bg-blue-50 font-bold" onclick="showLibraryCard('${v.location}')">📍 ${v.location || ''}</td>
+                        <td class="cursor-pointer text-blue-600 font-bold hover:bg-blue-50" onclick="showLibraryCard('${v.location}')">📍 ${v.location || ''}</td>
                         <td>${v.link ? `<a href="${v.link}" target="_blank" class="text-blue-600 font-bold underline">عرض</a>` : '-'}</td>
                     </tr>`;
                 });
@@ -120,26 +109,11 @@
         loadData();
 
         function filterTable() {
-            const filters = [
-                document.getElementById('f_gs').value.toLowerCase(),
-                document.getElementById('f_uni').value.toLowerCase(),
-                document.getElementById('f_coll').value.toLowerCase(),
-                document.getElementById('f_dept').value.toLowerCase(),
-                document.getElementById('f_year').value.toLowerCase(),
-                document.getElementById('f_loc').value.toLowerCase(),
-                document.getElementById('f_deg').value.toLowerCase()
-            ];
-
+            const f = [document.getElementById('f_gs').value.toLowerCase(), document.getElementById('f_uni').value.toLowerCase(), document.getElementById('f_coll').value.toLowerCase(), document.getElementById('f_dept').value.toLowerCase(), document.getElementById('f_year').value.toLowerCase(), document.getElementById('f_loc').value.toLowerCase(), document.getElementById('f_deg').value.toLowerCase()];
             document.querySelectorAll('#thesesTableBody tr').forEach(row => {
-                const cells = row.children;
-                const match = row.innerText.toLowerCase().includes(filters[0]) &&
-                              cells[4].innerText.toLowerCase().includes(filters[1]) &&
-                              cells[5].innerText.toLowerCase().includes(filters[2]) &&
-                              cells[6].innerText.toLowerCase().includes(filters[3]) &&
-                              cells[7].innerText.toLowerCase().includes(filters[4]) &&
-                              cells[9].innerText.toLowerCase().includes(filters[5]) &&
-                              (filters[6] === "" || cells[8].innerText.toLowerCase().includes(filters[6]));
-                row.style.display = match ? "" : "none";
+                const c = row.children;
+                const m = row.innerText.toLowerCase().includes(f[0]) && c[4].innerText.toLowerCase().includes(f[1]) && c[5].innerText.toLowerCase().includes(f[2]) && c[6].innerText.toLowerCase().includes(f[3]) && c[7].innerText.toLowerCase().includes(f[4]) && c[9].innerText.toLowerCase().includes(f[5]) && (f[6] === "" || c[8].innerText.toLowerCase().includes(f[6]));
+                row.style.display = m ? "" : "none";
             });
         }
 
@@ -147,19 +121,25 @@
             db.ref('libraries_info/' + locName).once('value', snap => {
                 const lib = snap.val();
                 document.getElementById('libName').innerText = locName;
+                const details = document.getElementById('libDetails');
+                const links = document.getElementById('libLinks');
+                const mapDiv = document.getElementById('libMap');
+                
                 if(lib) {
-                    document.getElementById('libDetails').innerHTML = `<p>${lib.info || 'لا توجد تفاصيل.'}</p>`;
-                    document.getElementById('libMap').innerHTML = lib.map ? 
-                        `<iframe width="100%" height="100%" frameborder="0" src="${lib.map.replace("view", "preview")}&output=embed"></iframe>` : 
-                        `<div class="flex items-center justify-center h-full text-gray-400">الخريطة غير متوفرة</div>`;
+                    details.innerHTML = `<p><b>التبعية:</b> ${lib.info.split('<br>')[0].replace('التبعية: ','')}</p><p><b>المواعيد:</b> ${lib.hours || 'غير محددة'}</p><p><b>الهاتف:</b> ${lib.phone || '-'}</p>`;
+                    links.innerHTML = '';
+                    if(lib.fb) links.innerHTML += `<a href="${lib.fb}" target="_blank" class="bg-blue-600 text-white px-2 py-1 rounded text-[9px]">فيسبوك</a>`;
+                    if(lib.web) links.innerHTML += `<a href="${lib.web}" target="_blank" class="bg-slate-700 text-white px-2 py-1 rounded text-[9px]">موقع</a>`;
+                    let mapUrl = lib.map ? (lib.map.includes('pb=') ? lib.map : `https://maps.google.com/maps?q=${encodeURIComponent(locName)}&output=embed`) : '';
+                    mapDiv.innerHTML = mapUrl ? `<iframe width="100%" height="100%" frameborder="0" src="${mapUrl}"></iframe>` : '<div class="p-5 text-gray-400 text-center">لا توجد خريطة</div>';
                 } else {
-                    document.getElementById('libDetails').innerHTML = `<p class="italic text-orange-600">هذه المكتبة لم تنضم رسمياً للفهرس بعد.</p>`;
-                    document.getElementById('libMap').innerHTML = `<div class="flex items-center justify-center h-full text-gray-400">🗺️</div>`;
+                    details.innerHTML = '<p class="italic text-orange-600">هذه المكتبة لم تنضم رسمياً بعد.</p>';
+                    links.innerHTML = '';
+                    mapDiv.innerHTML = '';
                 }
                 document.getElementById('libraryModal').classList.remove('hidden');
             });
         }
-
         function closeLibModal() { document.getElementById('libraryModal').classList.add('hidden'); }
     </script>
 </body>
