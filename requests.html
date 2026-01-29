@@ -8,33 +8,30 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #475569; text-align: center; }
-        td { padding: 6px; border: 1px solid #cbd5e1; text-align: center; background: white; }
-        .btn-approve { background-color: #16a34a; color: white; padding: 4px 8px; rounded: 2px; font-weight: bold; }
-        .btn-delete { background-color: #dc2626; color: white; padding: 4px 8px; rounded: 2px; font-weight: bold; margin-right: 4px; }
+        th { background: #1e3a8a; color: white; padding: 5px; border: 1px solid #475569; text-align: center; }
+        td { padding: 4px; border: 1px solid #cbd5e1; text-align: center; background: white; }
     </style>
 </head>
 <body class="p-2">
 
-    <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300">
+    <div class="flex justify-between items-center mb-2 bg-white p-2 border border-slate-300">
         <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
-        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs font-bold">جاري تحميل الطلبات...</div>
+        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold">0 طلبات انتظار</div>
     </div>
 
-    <div class="overflow-x-auto main-card border border-slate-300">
+    <div class="overflow-x-auto">
         <table class="w-full border-collapse">
             <thead>
                 <tr>
-                    <th>اسم المكتبة</th>
+                    <th class="w-1/4">اسم المكتبة</th>
                     <th>التبعية</th>
-                    <th>المسؤول</th>
                     <th>الهاتف</th>
                     <th>الموقع</th>
-                    <th>الإجراءات</th>
+                    <th>التاريخ</th>
+                    <th>الإجراء</th>
                 </tr>
             </thead>
-            <tbody id="requestsTableBody">
-                </tbody>
+            <tbody id="requestsTableBody"></tbody>
         </table>
     </div>
 
@@ -54,30 +51,23 @@
                 const tbody = document.getElementById('requestsTableBody');
                 const stats = document.getElementById('stats');
                 tbody.innerHTML = '';
-                
-                if (!snap.exists()) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-gray-500 text-sm">لا توجد طلبات انضمام حالياً</td></tr>';
-                    stats.innerText = '0 طلبات انتظار';
-                    return;
-                }
-
                 let count = 0;
+
                 snap.forEach(child => {
                     const v = child.val();
                     const key = child.key;
                     count++;
                     
-                    // نستخدم نفس المسميات الموجودة في Firebase لديك
+                    const date = v.timestamp ? new Date(v.timestamp).toLocaleDateString('ar-LY') : '-';
+
                     tbody.innerHTML += `<tr>
-                        <td class="font-bold text-blue-900 text-right px-4">${v.libName || 'بدون اسم'}</td>
+                        <td class="font-bold text-right px-2">${v.libName || '-'}</td>
                         <td>${v.affiliation || '-'}</td>
-                        <td>${v.contact || '-'}</td>
                         <td>${v.phone || '-'}</td>
+                        <td>${v.map ? `<a href="${v.map}" target="_blank" class="text-blue-600 underline">الخريطة</a>` : '-'}</td>
+                        <td>${date}</td>
                         <td>
-                            ${v.map ? `<a href="${v.map}" target="_blank" class="text-blue-600 font-bold underline">خريطة 📍</a>` : '-'}
-                        </td>
-                        <td>
-                            <button onclick="deleteRequest('${key}')" class="btn-delete">حذف</button>
+                            <button onclick="approveLib('${key}', '${v.libName}')" class="bg-green-600 text-white px-2 py-1 rounded text-[10px] font-bold">✅ اعتماد</button>
                         </td>
                     </tr>`;
                 });
@@ -85,15 +75,15 @@
             });
         }
 
-        function deleteRequest(key) {
-            if(confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+        function approveLib(key, name) {
+            if(confirm(`هل أنت متأكد من اعتماد مكتبة: ${name}؟`)) {
+                // هنا يمكن إضافة كود لنقل البيانات للمجلد الرئيسي إذا رغبت، 
+                // حالياً سنكتفي بحذف الطلب بعد الاعتماد اليدوي
                 db.ref('join_requests/' + key).remove()
-                .then(() => alert("تم الحذف بنجاح ✅"))
-                .catch(err => alert("خطأ في الحذف: " + err.message));
+                .then(() => alert("تم الاعتماد بنجاح ✅"));
             }
         }
 
-        // تشغيل الدالة عند تحميل الصفحة
         loadRequests();
     </script>
 </body>
