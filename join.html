@@ -7,30 +7,31 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 12px; background-color: #f8fafc; font-family: sans-serif; }
-        .form-card { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border-top: 4px solid #1e3a8a; }
-        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-top: 4px; outline: none; }
-        label { font-weight: bold; color: #1e3a8a; }
+        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
+        .form-card { background: white; border: 1px solid #cbd5e1; width: 100%; max-width: 500px; padding: 15px; }
+        label { font-weight: bold; color: #1e3a8a; display: block; margin-top: 8px; }
+        input { width: 100%; padding: 6px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 11px; margin-top: 2px; }
+        .hint { color: #64748b; font-size: 10px; margin-top: 2px; display: block; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-2">
 
-    <div class="form-card w-full max-w-lg p-6">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-blue-900">نموذج انضمام مكتبة للفهرس</h1>
-            <p class="text-gray-500">يرجى تعبئة البيانات بدقة لتفعيل بطاقة المكتبة التفاعلية</p>
+    <div class="form-card">
+        <div class="text-center mb-4 border-b pb-2">
+            <h1 class="text-blue-900 font-bold text-sm text-center italic">الفهرس الليبي الموحد</h1>
+            <p class="text-gray-600 font-bold">نموذج انضمام مكتبة</p>
         </div>
 
-        <form id="joinForm" class="space-y-4">
+        <form id="joinForm" class="space-y-2">
             <div>
                 <label>اسم المكتبة الرسمي</label>
-                <input type="text" id="libName" placeholder="مثلاً: مكتبة كلية الآداب - جامعة طرابلس" required>
+                <input type="text" id="libName" placeholder="مثلاً: مكتبة كلية التقنية الإلكترونية" required>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label>الجامعة التابعة لها</label>
-                    <input type="text" id="university" required>
+                    <label>التبعية</label>
+                    <input type="text" id="affiliation" placeholder="الجامعة أو الوزارة" required>
                 </div>
                 <div>
                     <label>المسؤول عن التواصل</label>
@@ -38,22 +39,45 @@
                 </div>
             </div>
 
-            <div>
-                <label>رابط الموقع على خرائط جوجل (Google Maps)</label>
-                <input type="url" id="libMap" placeholder="انسخ الرابط من تطبيق الخرائط هنا">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="libPhone" required>
+                </div>
+                <div>
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="libEmail" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label>رابط موقع المكتبة</label>
+                    <input type="url" id="libWeb" placeholder="https://...">
+                </div>
+                <div>
+                    <label>رابط صفحة الفيسبوك</label>
+                    <input type="url" id="libFb" placeholder="https://facebook.com/...">
+                </div>
             </div>
 
             <div>
-                <label>مواعيد العمل الرسمية</label>
+                <label>مواعيد العمل</label>
                 <input type="text" id="libHours" placeholder="مثلاً: من الأحد للخميس (9:00 ص - 2:00 ظ)">
             </div>
 
-            <div>
-                <label>نبذة عن المكتبة / تعليمات للباحثين</label>
-                <textarea id="libInfo" rows="3" placeholder="اكتب هنا أي تفاصيل إضافية تهم الباحث..."></textarea>
+            <div class="bg-blue-50 p-2 border border-blue-200 mt-2">
+                <label>الموقع الجغرافي (Google Maps)</label>
+                <div class="flex gap-2">
+                    <input type="url" id="libMap" placeholder="الصق الرابط هنا..." required>
+                    <a href="https://www.google.com/maps" target="_blank" class="bg-blue-800 text-white px-2 py-1 rounded text-[10px] flex items-center shrink-0">
+                        فتح الخريطة 📍
+                    </a>
+                </div>
+                <span class="hint">* قم بالضغط على موقع المكتبة في الخريطة، اختر "مشاركة" ثم "نسخ الرابط" ولصقه هنا.</span>
             </div>
 
-            <button type="submit" class="w-full bg-blue-900 text-white font-bold py-2 rounded shadow hover:bg-blue-800 transition">إرسال طلب الانضمام ✅</button>
+            <button type="submit" class="w-full bg-blue-900 text-white font-bold py-2 mt-4 rounded hover:bg-blue-800 transition text-sm">إرسال طلب الانضمام</button>
         </form>
     </div>
 
@@ -73,27 +97,29 @@
             
             const libName = document.getElementById('libName').value;
             const data = {
-                university: document.getElementById('university').value,
+                affiliation: document.getElementById('affiliation').value,
                 contact: document.getElementById('contactPerson').value,
+                phone: document.getElementById('libPhone').value,
+                email: document.getElementById('libEmail').value,
+                website: document.getElementById('libWeb').value,
+                facebook: document.getElementById('libFb').value,
                 map: document.getElementById('libMap').value,
-                info: document.getElementById('libInfo').value,
                 hours: document.getElementById('libHours').value,
                 timestamp: Date.now()
             };
 
-            // حفظ الطلب في قائمة الطلبات العامة
+            // حفظ الطلب الكامل للتحقق الإداري
             db.ref('join_requests').push({ libName, ...data });
 
-            // تحديث بيانات بطاقة المكتبة فوراً لتكون جاهزة للعرض في صفحة الجمهور
+            // تحديث بيانات البطاقة التي تظهر للجمهور فوراً
             db.ref('libraries_info/' + libName).set({
-                info: `المواعيد: ${data.hours} <br> ${data.info}`,
-                map: data.map
+                info: `التبعية: ${data.affiliation} <br> المواعيد: ${data.hours} <br> هاتف: ${data.phone} <br> إيميل: ${data.email}`,
+                map: data.map,
+                fb: data.facebook,
+                web: data.website
             }).then(() => {
-                alert("تم إرسال طلبك بنجاح! ستظهر بيانات مكتبتك في الفهرس فوراً ✅");
+                alert("تم إرسال بيانات المكتبة بنجاح ✅");
                 document.getElementById('joinForm').reset();
-            }).catch(err => {
-                alert("حدث خطأ، يرجى المحاولة لاحقاً");
-                console.error(err);
             });
         };
     </script>
