@@ -2,99 +2,121 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الفهرس الليبي الموحد - لوحة التحكم</title>
+    <title>لوحة الإدارة | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-family: system-ui; background-color: #f1f5f9; font-size: 11px; }
-        .nav-card { transition: all 0.2s; border-bottom: 4px solid transparent; }
-        .nav-card:hover { transform: translateY(-3px); border-bottom-color: #1e3a8a; }
-        input, select { border: 1px solid #cbd5e1 !important; padding: 6px !important; outline: none; }
+        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
+        .admin-card { background: white; border: 1px solid #cbd5e1; padding: 10px; margin-bottom: 5px; }
+        label { font-weight: bold; color: #1e3a8a; margin-left: 5px; }
+        input, select { padding: 4px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 11px; outline: none; }
+        input:focus { border-color: #1e3a8a; }
+        th { background: #1e3a8a; color: white; padding: 5px; border: 1px solid #475569; }
+        td { padding: 4px; border: 1px solid #cbd5e1; text-align: center; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-2">
 
-<div class="max-w-4xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        
-        <a href="admin_libraries.html" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center group text-center border">
-            <span class="text-2xl mb-1">🏢</span>
-            <span class="font-bold text-slate-700 text-xs">إدارة طلبات المكتبات</span>
-            <div id="countDisplay" class="mt-1 text-blue-600 font-bold">جاري الفحص...</div>
-        </a>
-
-        <a href="#thesisForm" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center border">
-            <span class="text-2xl mb-1">🎓</span>
-            <span class="font-bold text-slate-700 text-xs">إضافة رسائل علمية</span>
-            <span class="text-[9px] text-slate-400">إدخال يدوي مباشر</span>
-        </a>
-
-        <a href="index.html" class="nav-card bg-white p-4 rounded-xl shadow-sm flex flex-col items-center border">
-            <span class="text-2xl mb-1">🔍</span>
-            <span class="font-bold text-slate-700 text-xs">واجهة البحث</span>
-            <span class="text-[9px] text-slate-400">معاينة الجمهور</span>
-        </a>
+    <div class="admin-card">
+        <h2 class="text-blue-900 font-bold mb-2 border-b pb-1 italic text-sm">إضافة رسالة جديدة للفهرس</h2>
+        <form id="uploadForm" class="grid grid-cols-5 gap-2">
+            <input type="text" id="author" placeholder="اسم الباحث" required>
+            <input type="text" id="title" placeholder="عنوان الرسالة" class="col-span-2" required>
+            <input type="text" id="supervisor" placeholder="المشرف">
+            <input type="text" id="university" placeholder="الجامعة" required>
+            <input type="text" id="college" placeholder="الكلية">
+            <input type="text" id="department" placeholder="القسم">
+            <input type="text" id="year" placeholder="السنة">
+            <input type="text" id="degree" placeholder="الدرجة (ماجستير/دكتوراة)">
+            <input type="text" id="location" placeholder="مكان التواجد (اسم المكتبة)" required>
+            
+            <input type="text" id="serialNum" placeholder="رقم الرسالة">
+            <select id="status" class="bg-yellow-50 font-bold text-blue-900">
+                <option value="متوفرة">✅ متوفرة</option>
+                <option value="غير متوفرة">❌ غير متوفرة</option>
+            </select>
+            
+            <input type="url" id="link" placeholder="رابط الملف (إن وجد)" class="col-span-2">
+            <button type="submit" class="bg-blue-900 text-white font-bold rounded hover:bg-blue-800 transition">إضافة الآن</button>
+        </form>
     </div>
 
-    <div id="thesisForm" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-xs font-bold mb-4 border-r-4 border-blue-900 pr-2">إضافة بيانات رسالة جديدة</h2>
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            <input type="text" id="researcher" placeholder="اسم الباحث" class="rounded bg-slate-50">
-            <input type="text" id="title" placeholder="عنوان الرسالة" class="rounded bg-slate-50 font-bold">
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <input type="text" id="university" placeholder="الجامعة" class="rounded">
-            <input type="number" id="year" placeholder="سنة التخرج" class="rounded">
-            <select id="degree" class="rounded font-bold"><option>ماجستير</option><option>دكتوراه</option></select>
-            <select id="status" class="rounded text-green-700 font-bold"><option>متوفرة ✅</option><option>غير متوفرة ❌</option></select>
-        </div>
-        <button onclick="saveData()" class="w-full py-2.5 bg-blue-900 text-white rounded-lg font-bold text-xs shadow-md hover:bg-blue-800 transition-all">
-            💾 حفظ في الفهرس الموحد
-        </button>
+    <div class="admin-card overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr>
+                    <th>الباحث</th>
+                    <th>العنوان</th>
+                    <th>الرقم</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="adminTableBody"></tbody>
+        </table>
     </div>
-</div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc",
-        authDomain: "libyan-theses-portal.firebaseapp.com",
-        projectId: "libyan-theses-portal",
-        databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-        appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // عداد الطلبات الحي (إصلاح مشكلة الـ Initialization)
-    db.ref('libraries_directory').on('value', (snap) => {
-        const count = snap.numChildren() || 0;
-        const display = document.getElementById('countDisplay');
-        if(count > 0) {
-            display.innerHTML = `<span class="bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] animate-pulse">يوجد ${count} طلبات</span>`;
-        } else {
-            display.innerText = "لا توجد طلبات";
-            display.className = "mt-1 text-slate-400 font-bold";
-        }
-    });
-
-    function saveData() {
-        const data = {
-            researcher: document.getElementById('researcher').value,
-            title: document.getElementById('title').value,
-            university: document.getElementById('university').value,
-            year: document.getElementById('year').value,
-            degree: document.getElementById('degree').value,
-            status: document.getElementById('status').value,
-            timestamp: Date.now()
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
+            authDomain: "libyan-theses-portal.firebaseapp.com", 
+            projectId: "libyan-theses-portal", 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", 
+            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" 
         };
-        if(!data.title || !data.researcher) return alert("يرجى ملء البيانات");
-        db.ref('theses').push(data).then(() => {
-            alert("تم الحفظ ✅");
-            document.querySelectorAll('input').forEach(i => i.value = '');
-        });
-    }
-</script>
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // دالة الحفظ
+        document.getElementById('uploadForm').onsubmit = (e) => {
+            e.preventDefault();
+            const data = {
+                author: document.getElementById('author').value,
+                title: document.getElementById('title').value,
+                supervisor: document.getElementById('supervisor').value,
+                university: document.getElementById('university').value,
+                college: document.getElementById('college').value,
+                department: document.getElementById('department').value,
+                year: document.getElementById('year').value,
+                degree: document.getElementById('degree').value,
+                location: document.getElementById('location').value,
+                serialNum: document.getElementById('serialNum').value,
+                status: document.getElementById('status').value, // حفظ الحالة
+                link: document.getElementById('link').value,
+                timestamp: Date.now()
+            };
+
+            db.ref('theses_data').push(data).then(() => {
+                alert("تمت الإضافة بنجاح ✅");
+                document.getElementById('uploadForm').reset();
+            });
+        };
+
+        // دالة عرض البيانات للحذف أو التأكد
+        function loadAdminData() {
+            db.ref('theses_data').on('value', snap => {
+                const tbody = document.getElementById('adminTableBody');
+                tbody.innerHTML = '';
+                snap.forEach(child => {
+                    const v = child.val();
+                    const k = child.key;
+                    tbody.innerHTML += `<tr>
+                        <td class="text-right px-2">${v.author}</td>
+                        <td class="text-right px-2 font-bold">${v.title}</td>
+                        <td class="text-blue-800 font-bold">${v.serialNum || '-'}</td>
+                        <td class="${v.status === 'غير متوفرة' ? 'text-red-600' : 'text-green-600'} font-bold">${v.status || 'متوفرة'}</td>
+                        <td><button onclick="deleteThesis('${k}')" class="text-red-600 font-bold">حذف</button></td>
+                    </tr>`;
+                });
+            });
+        }
+
+        function deleteThesis(key) {
+            if(confirm('هل تريد حذف هذه الرسالة؟')) db.ref('theses_data/' + key).remove();
+        }
+
+        loadAdminData();
+    </script>
 </body>
 </html>
