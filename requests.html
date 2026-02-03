@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الفهرس الليبي الموحد | إدارة الطلبات</title>
+    <title>إدارة الطلبات | بوابة الرسائل الجامعية اللليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -10,11 +10,11 @@
 <body class="p-2 bg-slate-50 text-[11px] font-sans">
 
     <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300 shadow-sm">
-        <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
+        <h1 class="text-blue-900 font-bold text-sm italic">بوابة الرسائل الجامعية اللليبية | إدارة طلبات الانضمام</h1>
         <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold italic">جاري المزامنة...</div>
     </div>
 
-    <div class="overflow-x-auto border border-slate-300">
+    <div class="overflow-x-auto border border-slate-300 shadow-md">
         <table class="w-full border-collapse">
             <thead>
                 <tr class="bg-blue-900 text-white">
@@ -24,70 +24,69 @@
                     <th class="p-2 border border-slate-600">الإجراء</th>
                 </tr>
             </thead>
-            <tbody id="requestsTableBody" class="bg-white"></tbody>
+            <tbody id="requestsTableBody" class="bg-white text-center"></tbody>
         </table>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white p-4 rounded shadow-lg max-w-sm w-full text-right">
-            <h2 class="font-bold text-blue-900 border-b pb-2 mb-2">بيانات اعتماد المكتبة</h2>
-            <div id="credDetails" class="bg-yellow-50 p-2 border border-yellow-200 rounded mb-4 select-all cursor-pointer">
-                </div>
-            <p class="text-[10px] text-gray-500 mb-4">انسخ البيانات أعلاه وأرسلها للمكتبة عبر الإيميل أو الواتساب.</p>
-            <button onclick="closeModal()" class="w-full bg-slate-800 text-white py-2 rounded font-bold">إغلاق</button>
-        </div>
-    </div>
-
     <script>
+        // إعدادات القاعدة فقط (بدون الحاجة لخدمات الـ Auth المعقدة هنا)
         const firebaseConfig = { 
-            apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
-            authDomain: "libyan-theses-portal.firebaseapp.com", 
-            projectId: "libyan-theses-portal", 
-            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", 
-            appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        db.ref('join_requests').on('value', snap => {
-            const tbody = document.getElementById('requestsTableBody');
-            tbody.innerHTML = '';
-            let count = 0;
-            snap.forEach(child => {
-                const v = child.val();
-                const key = child.key;
-                count++;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-2 border border-slate-200 font-bold text-blue-900 text-right">${v.libName}</td>
-                        <td class="p-2 border border-slate-200">${v.contact}</td>
-                        <td class="p-2 border border-slate-200 text-blue-600 underline">${v.email}</td>
-                        <td class="p-2 border border-slate-200">
-                            <button onclick="showApprove('${key}', '${v.email}', '${v.libName}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold">اعتماد يدوي</button>
-                            <button onclick="del('${key}')" class="bg-red-600 text-white px-2 py-1 rounded font-bold mr-1">حذف</button>
-                        </td>
-                    </tr>`;
-            });
-            document.getElementById('stats').innerText = `${count} طلبات انتظار`;
-        });
-
-        function showApprove(key, email, name) {
-            const pass = "Libya@" + Math.floor(1000 + Math.random() * 9000); // كلمة مرور عشوائية بسيطة
-            const text = `مرحباً مكتبة ${name}،\nتم اعتمادكم في الفهرس الليبي الموحد.\n\nبريد الدخول: ${email}\nكلمة المرور: ${pass}\n\nرابط لوحة الإدارة: [سأعطيك الرابط لاحقاً]`;
-            
-            document.getElementById('credDetails').innerText = text;
-            document.getElementById('modal').classList.remove('hidden');
-            
-            // إضافة المكتبة لقائمة المعتمدين في قاعدة البيانات
-            db.ref('approved_libraries/' + name).set({
-                email: email,
-                password: pass,
-                status: 'active'
+        function loadData() {
+            db.ref('join_requests').on('value', snap => {
+                const tbody = document.getElementById('requestsTableBody');
+                tbody.innerHTML = '';
+                let count = 0;
+                snap.forEach(child => {
+                    const v = child.val();
+                    const key = child.key;
+                    count++;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-2 border border-slate-200 font-bold text-blue-900 text-right">${v.libName || '-'}</td>
+                            <td class="p-2 border border-slate-200">${v.contact || '-'}</td>
+                            <td class="p-2 border border-slate-200 text-blue-600">${v.email || '-'}</td>
+                            <td class="p-2 border border-slate-200">
+                                <button onclick="approveManually('${key}', '${v.email}', '${v.libName}', '${v.phone}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold hover:bg-green-800">✅ اعتماد</button>
+                                <button onclick="del('${key}')" class="bg-red-600 text-white px-2 py-1 rounded font-bold mr-1">حذف</button>
+                            </td>
+                        </tr>`;
+                });
+                document.getElementById('stats').innerText = `${count} طلبات انتظار`;
             });
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function del(key) { if(confirm('حذف الطلب؟')) db.ref('join_requests/' + key).remove(); }
+        function approveManually(key, email, name, phone) {
+            const pass = "Libya@" + Math.floor(1000 + Math.random() * 9000);
+            const msg = `مرحباً مكتبة ${name}، تم اعتماد انضمامكم لبوابة الرسائل الجامعية اللليبية .\nبريد الدخول: ${email}\nكلمة المرور: ${pass}`;
+            
+            if(confirm(`سيتم اعتماد المكتبة بكلمة مرور: ${pass}\nهل تريد النسخ والمتابعة؟`)) {
+                // 1. تسجيل المكتبة في قائمة المعتمدين
+                db.ref('approved_libraries/' + key).set({
+                    libName: name,
+                    email: email,
+                    password: pass,
+                    date: new Date().toLocaleDateString()
+                }).then(() => {
+                    // 2. حذف الطلب من الانتظار
+                    db.ref('join_requests/' + key).remove();
+                    
+                    // 3. فتح خيار الإرسال (إيميل)
+                    const mailtoLink = `mailto:${email}?subject=اعتماد مكتبة -  بوابة الرسائل الجامعية اللليبية&body=${encodeURIComponent(msg)}`;
+                    window.location.href = mailtoLink;
+                    
+                    alert("تم الحفظ والاعتماد. سيفتح متصفحك الآن لإرسال الإيميل.");
+                });
+            }
+        }
+
+        function del(key) { if(confirm('حذف الطلب نهائياً؟')) db.ref('join_requests/' + key).remove(); }
+        
+        loadData();
     </script>
 </body>
 </html>
