@@ -2,17 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة طلبات الانضمام | الفهرس الليبي الموحد</title>
+    <title>الفهرس الليبي الموحد | إدارة الطلبات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="p-2 bg-slate-50 text-[11px] font-sans">
 
     <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300 shadow-sm">
         <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
-        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold">جاري المزامنة...</div>
+        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold italic">جاري المزامنة...</div>
     </div>
 
     <div class="overflow-x-auto border border-slate-300">
@@ -20,10 +19,8 @@
             <thead>
                 <tr class="bg-blue-900 text-white">
                     <th class="p-2 border border-slate-600 text-right">اسم المكتبة</th>
-                    <th class="p-2 border border-slate-600">التبعية</th>
                     <th class="p-2 border border-slate-600">المسؤول</th>
-                    <th class="p-2 border border-slate-600">الهاتف</th>
-                    <th class="p-2 border border-slate-600">البريد</th>
+                    <th class="p-2 border border-slate-600">البريد الإلكتروني</th>
                     <th class="p-2 border border-slate-600">الإجراء</th>
                 </tr>
             </thead>
@@ -31,8 +28,17 @@
         </table>
     </div>
 
+    <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white p-4 rounded shadow-lg max-w-sm w-full text-right">
+            <h2 class="font-bold text-blue-900 border-b pb-2 mb-2">بيانات اعتماد المكتبة</h2>
+            <div id="credDetails" class="bg-yellow-50 p-2 border border-yellow-200 rounded mb-4 select-all cursor-pointer">
+                </div>
+            <p class="text-[10px] text-gray-500 mb-4">انسخ البيانات أعلاه وأرسلها للمكتبة عبر الإيميل أو الواتساب.</p>
+            <button onclick="closeModal()" class="w-full bg-slate-800 text-white py-2 rounded font-bold">إغلاق</button>
+        </div>
+    </div>
+
     <script>
-        // إعدادات Firebase الخاصة بك
         const firebaseConfig = { 
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
             authDomain: "libyan-theses-portal.firebaseapp.com", 
@@ -42,9 +48,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const auth = firebase.auth();
 
-        // تحميل الطلبات
         db.ref('join_requests').on('value', snap => {
             const tbody = document.getElementById('requestsTableBody');
             tbody.innerHTML = '';
@@ -56,12 +60,10 @@
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-2 border border-slate-200 font-bold text-blue-900 text-right">${v.libName}</td>
-                        <td class="p-2 border border-slate-200">${v.affiliation}</td>
                         <td class="p-2 border border-slate-200">${v.contact}</td>
-                        <td class="p-2 border border-slate-200" dir="ltr">${v.phone}</td>
                         <td class="p-2 border border-slate-200 text-blue-600 underline">${v.email}</td>
                         <td class="p-2 border border-slate-200">
-                            <button onclick="approve('${key}', '${v.email}', '${v.libName}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold">اعتماد وإرسال إيميل</button>
+                            <button onclick="showApprove('${key}', '${v.email}', '${v.libName}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold">اعتماد يدوي</button>
                             <button onclick="del('${key}')" class="bg-red-600 text-white px-2 py-1 rounded font-bold mr-1">حذف</button>
                         </td>
                     </tr>`;
@@ -69,30 +71,22 @@
             document.getElementById('stats').innerText = `${count} طلبات انتظار`;
         });
 
-        // دالة الاعتماد
-        async function approve(key, email, name) {
-            if(confirm(`تأكيد اعتماد مكتبة (${name})؟`)) {
-                try {
-                    // 1. محاولة إنشاء حساب (بكلمة مرور مؤقتة)
-                    await auth.createUserWithEmailAndPassword(email, "Libya@2026");
-                    // 2. إرسال رابط إعادة تعيين كلمة المرور فوراً ليختاروا كلمتهم الخاصة
-                    await auth.sendPasswordResetEmail(email);
-                    // 3. حذف الطلب من قائمة الانتظار بعد النجاح
-                    await db.ref('join_requests/' + key).remove();
-                    alert("تم الاعتماد وإرسال الإيميل الرسمي بنجاح ✅");
-                } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
-                        // إذا كان الحساب موجوداً مسبقاً، نكتفي بإرسال رابط التعيين
-                        await auth.sendPasswordResetEmail(email);
-                        await db.ref('join_requests/' + key).remove();
-                        alert("هذا البريد مسجل مسبقاً. تم إرسال رابط جديد لضبط كلمة المرور.");
-                    } else {
-                        alert("حدث خطأ تقني: " + error.message);
-                    }
-                }
-            }
+        function showApprove(key, email, name) {
+            const pass = "Libya@" + Math.floor(1000 + Math.random() * 9000); // كلمة مرور عشوائية بسيطة
+            const text = `مرحباً مكتبة ${name}،\nتم اعتمادكم في الفهرس الليبي الموحد.\n\nبريد الدخول: ${email}\nكلمة المرور: ${pass}\n\nرابط لوحة الإدارة: [سأعطيك الرابط لاحقاً]`;
+            
+            document.getElementById('credDetails').innerText = text;
+            document.getElementById('modal').classList.remove('hidden');
+            
+            // إضافة المكتبة لقائمة المعتمدين في قاعدة البيانات
+            db.ref('approved_libraries/' + name).set({
+                email: email,
+                password: pass,
+                status: 'active'
+            });
         }
 
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function del(key) { if(confirm('حذف الطلب؟')) db.ref('join_requests/' + key).remove(); }
     </script>
 </body>
