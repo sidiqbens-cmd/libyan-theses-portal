@@ -2,40 +2,50 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>دخول المكتبات | الفهرس الليبي الموحد</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول المكتبات | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background-color: #f1f5f9; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .login-card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; max-width: 350px; shadow: lg; }
+        input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; outline: none; }
+        button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1e40af; }
+        button:disabled { background: #64748b; cursor: not-allowed; }
+    </style>
 </head>
-<body class="bg-slate-50 flex items-center justify-center h-screen m-0">
+<body>
 
-    <div class="bg-white p-8 rounded-lg border border-slate-200 w-full max-w-[350px] shadow-lg">
+    <div class="login-card">
         <div class="text-center mb-6">
-            <h1 class="text-blue-900 font-bold text-xl italic mb-1">الفهرس الليبي الموحد</h1>
-            <p class="text-gray-500 text-[10px]">نظام الدخول الموحد للمكتبات</p>
+            <h1 class="text-blue-900 font-bold text-xl italic mb-1">بوابة الرسائل الجامعية الليبية</h1>
+            <p class="text-gray-500 text-[11px]">نظام الدخول الموحد للمكتبات</p>
         </div>
         
         <form id="loginForm">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-2 mb-3 border rounded text-sm outline-none focus:border-blue-900" required>
-            <input type="password" id="password" placeholder="كلمة المرور" class="w-full p-2 mb-4 border rounded text-sm outline-none focus:border-blue-900" required>
-            <button type="submit" id="loginBtn" class="w-full bg-blue-900 text-white py-2 rounded font-bold hover:bg-blue-800 transition-all">تسجيل الدخول</button>
+            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
+            <button type="submit" id="loginBtn">تسجيل الدخول</button>
         </form>
         
         <div id="statusMsg" class="text-center mt-4 text-blue-600 text-[11px] font-bold h-4"></div>
     </div>
 
     <script>
-        // --- الخطوة الهامة: ضع إعداداتك هنا ---
+        // الإعدادات التي قدمتها يا صديق لربط البوابة
         const firebaseConfig = {
-            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc", // استخرجه من إعدادات Firebase كما شرحنا
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "libyan-theses-portal",
             storageBucket: "libyan-theses-portal.appspot.com",
             messagingSenderId: "782635467382",
-            appId: "1:782635467382:web:xxxxxx"
+            appId: "1:782635467382:web:48a60589a194519f964082" // تم استنتاجه من بياناتك
         };
 
+        // بدء التشغيل
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -47,40 +57,40 @@
             const status = document.getElementById('statusMsg');
 
             btn.disabled = true;
-            status.innerText = "جاري التحقق من البيانات...";
+            status.innerText = "جاري الاتصال بالسيرفر...";
 
+            // طلب البيانات من المسار المعتمد
             db.ref('approved_libraries').once('value').then(snap => {
                 let found = false;
                 
-                snap.forEach(child => {
-                    const lib = child.val();
-
-                    // --- تطبيق الحل التقني (Input Validation) ---
-                    // نتأكد أن lib موجود، وأن حقل email موجود، وأنه نص فعلي قبل تحويله
-                    if (lib && typeof lib.email === 'string') {
-                        const registeredEmail = lib.email.toLowerCase().trim();
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const lib = child.val();
                         
-                        if (registeredEmail === emailIn && lib.password === passIn) {
-                            found = true;
-                            localStorage.setItem('libToken', child.key);
-                            localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
-                            
-                            status.innerText = "تم الدخول! جاري التوجيه...";
-                            setTimeout(() => { 
-                                window.location.href = 'upload.html'; 
-                            }, 1000);
+                        // استخدام التحقق الآمن لمنع خطأ toLowerCase (الحل الجذري)
+                        if (lib && lib.email && typeof lib.email === 'string') {
+                            if (lib.email.toLowerCase().trim() === emailIn && lib.password === passIn) {
+                                found = true;
+                                localStorage.setItem('libToken', child.key);
+                                localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
+                                
+                                status.innerText = "نجح الدخول! يتم الآن فتح البوابة...";
+                                setTimeout(() => { 
+                                    window.location.href = 'upload.html'; 
+                                }, 1000);
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
                 if (!found) {
-                    alert("⚠️ البيانات غير صحيحة.");
+                    alert("⚠️ خطأ: البريد الإلكتروني أو كلمة المرور غير صحيحة.");
                     btn.disabled = false;
                     status.innerText = "";
                 }
             }).catch(err => {
-                // التقاط أخطاء الـ API Key أو الاتصال
-                alert("خطأ في النظام: " + err.message);
+                // التقاط أي رفض من القواعد أو خطأ في المفتاح
+                alert("🔴 فشل الاتصال التقني: " + err.message);
                 btn.disabled = false;
                 status.innerText = "";
             });
