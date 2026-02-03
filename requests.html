@@ -7,38 +7,32 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        body { font-size: 11px; background-color: #f1f5f9; font-family: sans-serif; }
-        th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #475569; text-align: center; }
-        td { padding: 6px; border: 1px solid #cbd5e1; text-align: center; background: white; }
-        .btn-approve { background-color: #15803d; color: white; padding: 3px 8px; border-radius: 2px; font-weight: bold; margin-left: 5px; }
-        .btn-del { background-color: #dc2626; color: white; padding: 3px 8px; border-radius: 2px; font-weight: bold; }
-    </style>
 </head>
-<body class="p-2">
+<body class="p-2 bg-slate-50 text-[11px] font-sans">
 
-    <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300">
+    <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300 shadow-sm">
         <h1 class="text-blue-900 font-bold text-sm italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
-        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs font-bold">جاري التحميل...</div>
+        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold">جاري المزامنة...</div>
     </div>
 
-    <div class="overflow-x-auto border border-slate-300 shadow-sm">
+    <div class="overflow-x-auto border border-slate-300">
         <table class="w-full border-collapse">
             <thead>
-                <tr>
-                    <th class="text-right pr-4 italic">اسم المكتبة</th>
-                    <th>التبعية</th>
-                    <th>المسؤول</th>
-                    <th>رقم الهاتف</th>
-                    <th>البريد الإلكتروني</th>
-                    <th>الإجراءات</th>
+                <tr class="bg-blue-900 text-white">
+                    <th class="p-2 border border-slate-600 text-right">اسم المكتبة</th>
+                    <th class="p-2 border border-slate-600">التبعية</th>
+                    <th class="p-2 border border-slate-600">المسؤول</th>
+                    <th class="p-2 border border-slate-600">الهاتف</th>
+                    <th class="p-2 border border-slate-600">البريد</th>
+                    <th class="p-2 border border-slate-600">الإجراء</th>
                 </tr>
             </thead>
-            <tbody id="requestsTableBody"></tbody>
+            <tbody id="requestsTableBody" class="bg-white"></tbody>
         </table>
     </div>
 
     <script>
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = { 
             apiKey: "AIzaSyAogBGo2_OzNito9D9AXVyAjSjmu-DYotc", 
             authDomain: "libyan-theses-portal.firebaseapp.com", 
@@ -46,70 +40,60 @@
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app", 
             appId: "1:80818219253:web:5ca7224ac6a5c8a7377dbc" 
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
 
-        function loadRequests() {
-            db.ref('join_requests').on('value', snap => {
-                const tbody = document.getElementById('requestsTableBody');
-                tbody.innerHTML = '';
-                let count = 0;
-                snap.forEach(child => {
-                    const v = child.val();
-                    const key = child.key;
-                    count++;
-                    tbody.innerHTML += `<tr>
-                        <td class="font-bold text-blue-900 text-right pr-4">${v.libName || '-'}</td>
-                        <td>${v.affiliation || '-'}</td>
-                        <td>${v.contact || '-'}</td>
-                        <td dir="ltr">${v.phone || '-'}</td>
-                        <td class="text-blue-700">${v.email || '-'}</td>
-                        <td>
-                            <button onclick="approveLibrary('${key}', '${v.email}', '${v.libName}')" class="btn-approve">اعتماد وإرسال إيميل</button>
-                            <button onclick="deleteRequest('${key}')" class="btn-del">حذف</button>
+        // تحميل الطلبات
+        db.ref('join_requests').on('value', snap => {
+            const tbody = document.getElementById('requestsTableBody');
+            tbody.innerHTML = '';
+            let count = 0;
+            snap.forEach(child => {
+                const v = child.val();
+                const key = child.key;
+                count++;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-2 border border-slate-200 font-bold text-blue-900 text-right">${v.libName}</td>
+                        <td class="p-2 border border-slate-200">${v.affiliation}</td>
+                        <td class="p-2 border border-slate-200">${v.contact}</td>
+                        <td class="p-2 border border-slate-200" dir="ltr">${v.phone}</td>
+                        <td class="p-2 border border-slate-200 text-blue-600 underline">${v.email}</td>
+                        <td class="p-2 border border-slate-200">
+                            <button onclick="approve('${key}', '${v.email}', '${v.libName}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold">اعتماد وإرسال إيميل</button>
+                            <button onclick="del('${key}')" class="bg-red-600 text-white px-2 py-1 rounded font-bold mr-1">حذف</button>
                         </td>
                     </tr>`;
-                });
-                document.getElementById('stats').innerText = `${count} طلبات انتظار`;
             });
-        }
+            document.getElementById('stats').innerText = `${count} طلبات انتظار`;
+        });
 
-        // دالة الاعتماد وإرسال الإيميل الرسمي
-        function approveLibrary(key, email, name) {
-            if(confirm(`هل تريد اعتماد مكتبة (${name}) وإرسال رابط تفعيل الحساب لبريدهم؟`)) {
-                // ملاحظة: Firebase يحتاج أن يكون البريد مسجلاً أولاً لإرسال رابط إعادة التعيين
-                // سنقوم بإنشاء حساب بكلمة مرور عشوائية ثم إرسال رابط الضبط
-                const tempPassword = Math.random().toString(36).slice(-8); 
-                
-                auth.createUserWithEmailAndPassword(email, tempPassword)
-                .then(() => {
-                    return auth.sendPasswordResetEmail(email);
-                })
-                .then(() => {
-                    alert("تم اعتماد المكتبة بنجاح وإرسال إيميل التفعيل ✅");
-                    // هنا يمكننا نقل الطلب من 'join_requests' إلى 'approved_libraries' إذا أردت
-                    db.ref('join_requests/' + key).remove();
-                })
-                .catch(error => {
-                    if (error.code === 'auth/email-already-in-top-use') {
-                        // إذا كان الحساب موجوداً مسبقاً، نرسل رابط إعادة التعيين فقط
-                        auth.sendPasswordResetEmail(email).then(() => {
-                            alert("الحساب موجود مسبقاً، تم إرسال رابط جديد لضبط كلمة المرور.");
-                            db.ref('join_requests/' + key).remove();
-                        });
+        // دالة الاعتماد
+        async function approve(key, email, name) {
+            if(confirm(`تأكيد اعتماد مكتبة (${name})؟`)) {
+                try {
+                    // 1. محاولة إنشاء حساب (بكلمة مرور مؤقتة)
+                    await auth.createUserWithEmailAndPassword(email, "Libya@2026");
+                    // 2. إرسال رابط إعادة تعيين كلمة المرور فوراً ليختاروا كلمتهم الخاصة
+                    await auth.sendPasswordResetEmail(email);
+                    // 3. حذف الطلب من قائمة الانتظار بعد النجاح
+                    await db.ref('join_requests/' + key).remove();
+                    alert("تم الاعتماد وإرسال الإيميل الرسمي بنجاح ✅");
+                } catch (error) {
+                    if (error.code === 'auth/email-already-in-use') {
+                        // إذا كان الحساب موجوداً مسبقاً، نكتفي بإرسال رابط التعيين
+                        await auth.sendPasswordResetEmail(email);
+                        await db.ref('join_requests/' + key).remove();
+                        alert("هذا البريد مسجل مسبقاً. تم إرسال رابط جديد لضبط كلمة المرور.");
                     } else {
-                        alert("حدث خطأ: " + error.message);
+                        alert("حدث خطأ تقني: " + error.message);
                     }
-                });
+                }
             }
         }
 
-        function deleteRequest(key) {
-            if(confirm('حذف هذا الطلب؟')) db.ref('join_requests/' + key).remove();
-        }
-
-        loadRequests();
+        function del(key) { if(confirm('حذف الطلب؟')) db.ref('join_requests/' + key).remove(); }
     </script>
 </body>
 </html>
