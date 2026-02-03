@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>دخول المكتبات | بوابة الرسائل الجامعية الليبية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول المكتبات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -10,7 +11,9 @@
         body { background-color: #f1f5f9; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .login-card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; max-width: 350px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; outline: none; }
-        button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        input:focus { border-color: #1e3a8a; }
+        button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.3s; }
+        button:hover { background: #1e40af; }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
     </style>
 </head>
@@ -18,8 +21,8 @@
 
     <div class="login-card">
         <div class="text-center mb-6">
-            <h1 class="text-blue-900 font-bold text-xl italic mb-1">بوابة الرسائل الجامعية الليبية</h1>
-            <p class="text-gray-500 text-[11px]">نظام الدخول الموحد للمكتبات</p>
+            <h1 class="text-blue-900 font-bold text-xl italic mb-1">الفهرس الليبي الموحد</h1>
+            <p class="text-gray-500 text-[11px]">نظام الدخول الموحد للمكتبات المعتمدة</p>
         </div>
         
         <form id="loginForm">
@@ -29,57 +32,78 @@
         </form>
         
         <div id="statusMsg" class="text-center mt-4 text-blue-600 text-xs font-bold italic"></div>
+        
+        <div class="mt-6 border-t pt-4 text-center">
+            <a href="join.html" class="text-blue-700 text-xs font-bold hover:underline">طلب انضمام مكتبة جديدة</a>
+        </div>
     </div>
 
     <script>
+        // إعدادات قاعدة البيانات الخاصة بك
         const firebaseConfig = { 
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.database();
 
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            const emailInput = document.getElementById('email').value.toLowerCase().trim();
-            const passInput = document.getElementById('password').value.trim();
+            
+            const emailIn = document.getElementById('email').value.toLowerCase().trim();
+            const passIn = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
             const status = document.getElementById('statusMsg');
 
+            status.innerText = "جاري الاتصال بقاعدة البيانات...";
             btn.disabled = true;
-            status.innerText = "جاري التحقق من السجلات المعتمدة...";
 
+            // جلب بيانات المكتبات المعتمدة من Firebase
             db.ref('approved_libraries').once('value').then(snap => {
                 let found = false;
                 
-                snap.forEach(child => {
-                    const lib = child.val();
+                if (snap.exists()) {
+                    console.log("تم جلب البيانات بنجاح من Firebase"); // للتأكد في الكونسول
                     
-                    // فحص وقائي لمنع خطأ toLowerCase في حال وجود أي سجل تالف آخر
-                    if (lib && lib.email && typeof lib.email === 'string') {
-                        const registeredEmail = lib.email.toLowerCase().trim();
+                    snap.forEach(child => {
+                        const lib = child.val();
                         
-                        if (registeredEmail === emailInput && lib.password === passInput) {
-                            found = true;
-                            // حفظ بيانات الجلسة للانتقال لصفحة الرفع
-                            localStorage.setItem('libToken', child.key);
-                            localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
+                        // صمام الأمان (الذي ظهر في صورتك): فحص وجود البيانات وصحتها
+                        if (lib && lib.email && typeof lib.email === 'string') {
+                            const registeredEmail = lib.email.toLowerCase().trim();
                             
-                            status.innerText = "تم التحقق بنجاح! جاري الدخول...";
-                            setTimeout(() => { 
-                                window.location.href = 'https://sidiqbens-cmd.github.io/libyan-theses-portal/upload.html'; 
-                            }, 1000);
+                            // مطابقة البيانات
+                            if (registeredEmail === emailIn && lib.password === passIn) {
+                                found = true;
+                                // حفظ بيانات الجلسة في المتصفح
+                                localStorage.setItem('libToken', child.key);
+                                localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
+                                
+                                status.innerText = "نجح التحقق! جاري توجيهك...";
+                                
+                                // التوجيه لصفحة الرفع على GitHub
+                                setTimeout(() => { 
+                                    window.location.href = 'https://sidiqbens-cmd.github.io/libyan-theses-portal/upload.html'; 
+                                }, 1000);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    console.log("لم يتم العثور على فرع approved_libraries");
+                }
 
                 if (!found) {
-                    alert("خطأ: البريد الإلكتروني أو كلمة المرور غير صحيحة.");
-                    btn.disabled = false;
+                    alert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة.");
                     status.innerText = "";
+                    btn.disabled = false;
                 }
             }).catch(err => {
-                alert("خطأ في الاتصال بالقاعدة: " + err.message);
+                console.error("Firebase Error:", err);
+                alert("حدث خطأ في الاتصال: " + err.message);
                 btn.disabled = false;
+                status.innerText = "";
             });
         };
     </script>
