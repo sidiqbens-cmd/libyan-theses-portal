@@ -2,23 +2,22 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول المكتبات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body class="bg-slate-100 flex items-center justify-center h-screen m-0 overflow-hidden">
+<body class="bg-slate-50 flex items-center justify-center h-screen m-0">
 
     <div class="bg-white p-8 rounded-lg border border-slate-200 w-full max-w-[350px] shadow-lg">
         <div class="text-center mb-6">
             <h1 class="text-blue-900 font-bold text-xl italic mb-1">الفهرس الليبي الموحد</h1>
-            <p class="text-gray-500 text-[10px]">نظام الدخول الموحد للمكتبات المعتمدة</p>
+            <p class="text-gray-500 text-[10px]">نظام الدخول الموحد للمكتبات</p>
         </div>
         
         <form id="loginForm">
-            <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-2 mb-3 border border-slate-300 rounded text-sm outline-none focus:border-blue-900" required>
-            <input type="password" id="password" placeholder="كلمة المرور" class="w-full p-2 mb-4 border border-slate-300 rounded text-sm outline-none focus:border-blue-900" required>
+            <input type="email" id="email" placeholder="البريد الإلكتروني" class="w-full p-2 mb-3 border rounded text-sm outline-none focus:border-blue-900" required>
+            <input type="password" id="password" placeholder="كلمة المرور" class="w-full p-2 mb-4 border rounded text-sm outline-none focus:border-blue-900" required>
             <button type="submit" id="loginBtn" class="w-full bg-blue-900 text-white py-2 rounded font-bold hover:bg-blue-800 transition-all">تسجيل الدخول</button>
         </form>
         
@@ -26,9 +25,9 @@
     </div>
 
     <script>
-        // ضع بياناتك الحقيقية هنا من إعدادات فيربيس
+        // --- الخطوة الهامة: ضع إعداداتك هنا ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc", // استخرجه من إعدادات Firebase كما شرحنا
             authDomain: "libyan-theses-portal.firebaseapp.com",
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "libyan-theses-portal",
@@ -48,39 +47,40 @@
             const status = document.getElementById('statusMsg');
 
             btn.disabled = true;
-            status.innerText = "جاري الاتصال بقاعدة البيانات...";
+            status.innerText = "جاري التحقق من البيانات...";
 
-            // جلب البيانات مع معالجة الأخطاء (Catch)
             db.ref('approved_libraries').once('value').then(snap => {
                 let found = false;
                 
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const lib = child.val();
-                        // صمام الأمان لتخطي السجلات الناقصة
-                        if (lib && lib.email && typeof lib.email === 'string') {
-                            if (lib.email.toLowerCase().trim() === emailIn && lib.password === passIn) {
-                                found = true;
-                                localStorage.setItem('libToken', child.key);
-                                localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
-                                
-                                status.innerText = "نجح التحقق! جاري التوجيه...";
-                                setTimeout(() => { 
-                                    window.location.href = 'upload.html'; 
-                                }, 1000);
-                            }
+                snap.forEach(child => {
+                    const lib = child.val();
+
+                    // --- تطبيق الحل التقني (Input Validation) ---
+                    // نتأكد أن lib موجود، وأن حقل email موجود، وأنه نص فعلي قبل تحويله
+                    if (lib && typeof lib.email === 'string') {
+                        const registeredEmail = lib.email.toLowerCase().trim();
+                        
+                        if (registeredEmail === emailIn && lib.password === passIn) {
+                            found = true;
+                            localStorage.setItem('libToken', child.key);
+                            localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
+                            
+                            status.innerText = "تم الدخول! جاري التوجيه...";
+                            setTimeout(() => { 
+                                window.location.href = 'upload.html'; 
+                            }, 1000);
                         }
-                    });
-                }
+                    }
+                });
 
                 if (!found) {
-                    alert("⚠️ البيانات غير صحيحة، يرجى التأكد من البريد وكلمة المرور.");
+                    alert("⚠️ البيانات غير صحيحة.");
                     btn.disabled = false;
                     status.innerText = "";
                 }
             }).catch(err => {
-                // إذا كان مفتاح الـ API خطأ أو القواعد مغلقة، ستظهر هذه الرسالة فوراً
-                alert("حدث خطأ في الاتصال: " + err.message);
+                // التقاط أخطاء الـ API Key أو الاتصال
+                alert("خطأ في النظام: " + err.message);
                 btn.disabled = false;
                 status.innerText = "";
             });
