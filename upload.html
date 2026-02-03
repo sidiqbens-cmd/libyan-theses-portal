@@ -15,15 +15,28 @@
         th { background: #1e3a8a; color: white; padding: 4px; font-weight: bold; border: 1px solid #334155; position: sticky; top: 0; z-index: 20; }
         td { border: 1px solid #e2e8f0; padding: 2px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .btn-header { font-size: 9px; padding: 2px 8px; border-radius: 2px; color: white; font-weight: bold; cursor: pointer; }
+        /* تصميم التلميحات */
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext { visibility: hidden; width: 140px; background-color: #334155; color: #fff; text-align: center; border-radius: 4px; padding: 5px; position: absolute; z-index: 100; bottom: 125%; left: 50%; margin-left: -70px; opacity: 0; transition: opacity 0.3s; font-size: 9px; }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body>
 
     <div class="flex justify-between items-center mb-1 border-b pb-1 bg-white p-1 rounded">
         <div class="flex items-center gap-2">
-            <button onclick="logout()" class="btn-header bg-red-600 hover:bg-red-700">تسجيل خروج</button>
-            <label class="btn-header bg-green-700 hover:bg-green-800">رفع ملف Excel <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls"></label>
-            <button onclick="downloadFullTemplate()" class="btn-header bg-green-600 hover:bg-green-700">تحميل قالب Excel</button>
+            <div class="tooltip">
+                <button onclick="logout()" class="btn-header bg-red-600">خروج</button>
+                <span class="tooltiptext">إنهاء الجلسة بأمان</span>
+            </div>
+            <div class="tooltip">
+                <label class="btn-header bg-green-700">رفع Excel <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls"></label>
+                <span class="tooltiptext">رفع ملف بيانات جاهز</span>
+            </div>
+            <div class="tooltip">
+                <button onclick="downloadFullTemplate()" class="btn-header bg-green-600">تحميل القالب</button>
+                <span class="tooltiptext">تحميل ملف إكسل فارغ للتعبئة</span>
+            </div>
         </div>
         <div class="text-blue-900 font-bold text-xs italic">الفهرس الليبي الموحد | لوحة التحكم</div>
     </div>
@@ -36,27 +49,22 @@
                 <div class="flex items-center"><span class="label-dense">عنوان الرسالة</span><input type="text" id="title" class="dense-input" required></div>
                 <div class="flex items-center"><span class="label-dense">المشرف</span><input type="text" id="supervisor" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">رقم الرسالة</span><input type="text" id="id_num" class="dense-input"></div>
-                
                 <div class="flex items-center"><span class="label-dense">الجامعة</span><input type="text" id="university" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">الكلية</span><input type="text" id="college" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">القسم</span><input type="text" id="dept" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">مكان التواجد</span><input type="text" id="location" class="dense-input"></div>
-
-                <div class="flex items-center">
-                    <span class="label-dense">الدرجة</span>
+                <div class="flex items-center"><span class="label-dense">الدرجة</span>
                     <select id="degree" class="dense-input"><option>ماجستير</option><option>دكتوراه</option></select>
                 </div>
-                <div class="flex items-center">
-                    <span class="label-dense">الحالة</span>
+                <div class="flex items-center"><span class="label-dense">الحالة</span>
                     <select id="status" class="dense-input"><option>متوفرة</option><option>غير متوفرة</option></select>
                 </div>
                 <div class="flex items-center"><span class="label-dense">السنة</span><input type="number" id="year" class="dense-input"></div>
-                <div class="flex items-center"><span class="label-dense">الرابط</span><input type="url" id="link" class="dense-input"></div>
+                <div class="flex items-center"><span class="label-dense">الرابط</span><input type="url" id="link" class="dense-input" placeholder="رابط PDF"></div>
             </div>
-            
             <div class="grid grid-cols-4 gap-4 mt-1">
                 <button type="submit" id="saveBtn" class="bg-blue-900 text-white py-1 rounded font-bold hover:bg-black">اعتماد وحفظ البيانات ✅</button>
-                <div class="col-span-3"><input type="text" placeholder="ملاحظات إضافية" id="notes" class="dense-input"></div>
+                <div class="col-span-3"><input type="text" placeholder="ملاحظات إضافية (تظهر للموظفين فقط)" id="notes" class="dense-input"></div>
             </div>
         </form>
     </div>
@@ -86,7 +94,7 @@
             messagingSenderId: "782635467382",
             appId: "1:782635467382:web:48a60589a194519f964082"
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         function loadData() {
@@ -95,28 +103,54 @@
                 tbody.innerHTML = "";
                 snap.forEach(child => {
                     const d = child.val();
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-blue-50">
-                            <td class="flex justify-center gap-1 py-1">
-                                <button onclick="editItem('${child.key}')" class="bg-yellow-500 text-white px-1 rounded text-[8px]">تعديل</button>
-                                <button onclick="deleteItem('${child.key}')" class="bg-red-600 text-white px-1 rounded text-[8px]">X</button>
-                            </td>
-                            <td><a href="${d.link}" target="_blank">🔗</a></td>
-                            <td>${d.location || '-'}</td>
-                            <td>${d.id_num || '-'}</td>
-                            <td>${d.degree}</td>
-                            <td>${d.year}</td>
-                            <td>${d.dept}</td>
-                            <td>${d.college}</td>
-                            <td>${d.university}</td>
-                            <td>${d.supervisor}</td>
-                            <td class="text-right px-1 font-bold text-blue-900">${d.title}</td>
-                            <td>${d.author}</td>
-                        </tr>`;
+                    tbody.innerHTML += `<tr>
+                        <td class="flex justify-center gap-1 py-1">
+                            <button onclick="editItem('${child.key}')" class="bg-yellow-500 text-white px-1 rounded text-[8px]">تعديل</button>
+                            <button onclick="deleteItem('${child.key}')" class="bg-red-600 text-white px-1 rounded text-[8px]">X</button>
+                        </td>
+                        <td><a href="${d.link}" target="_blank">🔗</a></td>
+                        <td>${d.location || '-'}</td><td>${d.id_num || '-'}</td>
+                        <td>${d.degree}</td><td>${d.year}</td><td>${d.dept}</td><td>${d.college}</td>
+                        <td>${d.university}</td><td>${d.supervisor}</td>
+                        <td class="text-right px-1 font-bold text-blue-900">${d.title}</td><td>${d.author}</td>
+                    </tr>`;
                 });
             });
         }
 
+        // تحميل القالب الشامل (يمين لليسار)
+        window.downloadFullTemplate = function() {
+            const data = [{
+                "الباحث": "اسم الباحث", "العنوان": "عنوان الرسالة", "المشرف": "اسم المشرف", "رقم الرسالة": "123",
+                "الجامعة": "اسم الجامعة", "الكلية": "الكلية", "القسم": "القسم", "الدرجة": "ماجستير", "السنة": 2024,
+                "الرابط": "http://", "المكان": "المكتبة", "الحالة": "متوفرة", "ملاحظات": "..."
+            }];
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "قالب البيانات");
+            XLSX.writeFile(wb, "الفهرس_الليبي_الموحد_قالب_كامل.xlsx");
+        };
+
+        // رفع ملف الإكسل ومعالجة البيانات
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const workbook = XLSX.read(evt.target.result, {type: 'binary'});
+                const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                rawData.forEach(item => {
+                    db.ref('theses').push({
+                        author: item["الباحث"], title: item["العنوان"], supervisor: item["المشرف"], id_num: item["رقم الرسالة"],
+                        university: item["الجامعة"], college: item["الكلية"], dept: item["القسم"], degree: item["الدرجة"],
+                        year: item["السنة"], link: item["الرابط"], location: item["المكان"], status: item["الحالة"], notes: item["ملاحظات"]
+                    });
+                });
+                alert("تم رفع السجلات بنجاح!");
+            };
+            reader.readAsBinaryString(file);
+        });
+
+        // دوال التعديل والحفظ والحذف
         document.getElementById('uploadForm').onsubmit = function(e) {
             e.preventDefault();
             const key = document.getElementById('editKey').value;
@@ -126,62 +160,25 @@
                 university: document.getElementById('university').value, college: document.getElementById('college').value,
                 dept: document.getElementById('dept').value, location: document.getElementById('location').value,
                 degree: document.getElementById('degree').value, status: document.getElementById('status').value,
-                year: document.getElementById('year').value, link: document.getElementById('link').value,
-                notes: document.getElementById('notes').value
+                year: document.getElementById('year').value, link: document.getElementById('link').value, notes: document.getElementById('notes').value
             };
-            if (key) {
-                db.ref('theses/' + key).update(data).then(() => {
-                    document.getElementById('editKey').value = "";
-                    document.getElementById('saveBtn').innerText = "اعتماد وحفظ البيانات ✅";
-                });
-            } else { db.ref('theses').push(data); }
+            if (key) { db.ref('theses/' + key).update(data).then(() => { document.getElementById('editKey').value = ""; }); }
+            else { db.ref('theses').push(data); }
             this.reset();
         };
 
         window.editItem = function(key) {
             db.ref('theses/' + key).once('value').then(s => {
-                const d = s.val();
-                document.getElementById('editKey').value = key;
-                document.getElementById('author').value = d.author;
-                document.getElementById('title').value = d.title;
-                document.getElementById('university').value = d.university;
-                document.getElementById('college').value = d.college;
-                document.getElementById('dept').value = d.dept;
-                document.getElementById('year').value = d.year;
-                document.getElementById('link').value = d.link;
-                document.getElementById('supervisor').value = d.supervisor || "";
-                document.getElementById('id_num').value = d.id_num || "";
-                document.getElementById('location').value = d.location || "";
-                document.getElementById('saveBtn').innerText = "تحديث السجل الآن 🔄";
+                const d = s.val(); document.getElementById('editKey').value = key;
+                document.getElementById('author').value = d.author; document.getElementById('title').value = d.title;
+                document.getElementById('university').value = d.university; document.getElementById('college').value = d.college;
+                document.getElementById('dept').value = d.dept; document.getElementById('year').value = d.year;
+                document.getElementById('link').value = d.link; document.getElementById('supervisor').value = d.supervisor || "";
+                document.getElementById('id_num').value = d.id_num || ""; document.getElementById('location').value = d.location || "";
             });
         };
 
         window.deleteItem = function(key) { if(confirm("حذف السجل؟")) db.ref('theses/' + key).remove(); };
-
-        // قالب Excel الشامل لكل الحقول
-        window.downloadFullTemplate = function() {
-            const data = [{
-                author: "اسم الباحث", title: "العنوان", supervisor: "المشرف", id_num: "123", university: "الجامعة",
-                college: "الكلية", dept: "القسم", degree: "ماجستير", year: 2024, link: "http://...", location: "المكتبة المركزية", status: "متوفرة", notes: "ملاحظات"
-            }];
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Template");
-            XLSX.writeFile(wb, "Full_Library_Template.xlsx");
-        };
-
-        document.getElementById('excelFile').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const workbook = XLSX.read(evt.target.result, {type: 'binary'});
-                const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                data.forEach(item => db.ref('theses').push(item));
-                alert("تم رفع السجلات بنجاح!");
-            };
-            reader.readAsBinaryString(file);
-        });
-
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         loadData();
     </script>
