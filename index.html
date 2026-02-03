@@ -99,12 +99,20 @@
 
         // جلب البيانات عند فتح الصفحة لأول مرة
         window.onload = () => {
-            db.ref('بيانات_الرسائل').limitToLast(20).once('value', snap => {
+        // قمنا بإلغاء limitToLast لجلب كل البيانات المرفوعة بالعربية
+            db.ref('بيانات_الرسائل').once('value', snap => {
                 let results = [];
-                snap.forEach(child => results.push(child.val()));
-                displayData(results.reverse());
-            });
-        };
+                snap.forEach(child => {
+                    const data = child.val();
+                    // نتأكد فقط من وجود "عنوان" لعرض التسجيلة
+                    if (data.العنوان) {
+                        results.push(data);
+                    }
+                });
+        // عرض البيانات بحيث تظهر أحدث الرسائل المرفوعة في الأعلى
+        displayData(results.reverse());
+    });
+};
     </script>
 </body>
 </html>
