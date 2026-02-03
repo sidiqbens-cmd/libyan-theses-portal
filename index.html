@@ -2,49 +2,69 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>البحث | الفهرس الليبي الموحد</title>
+    <title>بوابة البحث | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
-        .search-box { background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        th { background: #1e3a8a; color: white; padding: 10px; border: 1px solid #e2e8f0; }
-        td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; font-size: 13px; }
-        tr:nth-child(even) { background-color: #f1f5f9; }
-        .pdf-link { color: #dc2626; font-weight: bold; text-decoration: underline; }
+        body { background: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin: 0; padding: 2px; overflow: hidden; }
+        .filter-bar { background: #fff; border-bottom: 2px solid #1e3a8a; padding: 4px; display: grid; grid-template-cols: repeat(7, 1fr); gap: 4px; }
+        .filter-input { border: 1px solid #cbd5e1; padding: 2px 5px; border-radius: 2px; height: 24px; font-size: 10px; width: 100%; outline: none; }
+        .filter-input:focus { border-color: #1e3a8a; background: #f8fafc; }
+        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
+        th { background: #1e3a8a; color: white; padding: 6px 2px; border: 1px solid #334155; font-size: 10px; position: sticky; top: 0; z-index: 10; }
+        td { border: 1px solid #e2e8f0; padding: 3px; text-align: center; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        tr:nth-child(even) { background: #f8fafc; }
+        tr:hover { background: #eff6ff; }
+        .header-title { text-align: center; color: #1e3a8a; padding: 5px 0; }
+        .status-ok { color: #059669; font-weight: bold; }
+        .status-no { color: #dc2626; font-weight: bold; }
     </style>
 </head>
-<body class="p-4">
+<body>
 
-    <div class="max-w-6xl mx-auto text-center mb-6">
-        <h1 class="text-3xl font-bold text-blue-900 mb-2">الفهرس الليبي الموحد</h1>
-        <p class="text-gray-600">بوابة البحث الموحدة عن الرسائل العلمية في الجامعات الليبية</p>
+    <div class="header-title">
+        <h2 class="font-bold text-sm">الفهرس الليبي الموحد</h2>
+        <p class="text-[9px]">بوابة البحث الموحدة عن الرسائل العلمية في الجامعات الليبية</p>
     </div>
 
-    <div class="max-w-6xl mx-auto search-box p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" id="searchTitle" placeholder="ابحث بالعنوان أو الكلمات المفتاحية..." class="border p-2 rounded outline-none focus:ring-2 focus:ring-blue-500 text-right">
-            <input type="text" id="searchAuthor" placeholder="ابحث باسم الباحث..." class="border p-2 rounded outline-none focus:ring-2 focus:ring-blue-500 text-right">
-            <button onclick="searchData()" class="bg-blue-900 text-white font-bold py-2 px-6 rounded hover:bg-black transition-all">بـحـث</button>
+    <div class="filter-bar shadow-sm mb-1">
+        <input type="text" id="f_search" class="filter-input" placeholder="🔍 بحث شامل في العناوين والباحثين..." oninput="filterData()">
+        <input type="text" id="f_uni" class="filter-input" placeholder="الجامعة..." oninput="filterData()">
+        <input type="text" id="f_coll" class="filter-input" placeholder="الكلية..." oninput="filterData()">
+        <input type="text" id="f_dept" class="filter-input" placeholder="القسم..." oninput="filterData()">
+        <input type="text" id="f_year" class="filter-input" placeholder="السنة..." oninput="filterData()">
+        <input type="text" id="f_loc" class="filter-input" placeholder="مكان التواجد..." oninput="filterData()">
+        <select id="f_deg" class="filter-input" onchange="filterData()">
+            <option value="">كل الدرجات</option>
+            <option>ماجستير</option>
+            <option>دكتوراه</option>
+        </select>
+    </div>
+
+    <div class="bg-white border rounded shadow-sm overflow-hidden" style="height: calc(100vh - 85px);">
+        <div class="overflow-y-auto h-full">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th width="12%">الباحث</th>
+                        <th width="20%">العنوان</th>
+                        <th width="8%">المشرف</th>
+                        <th width="8%">الجامعة</th>
+                        <th width="7%">الكلية</th>
+                        <th width="7%">القسم</th>
+                        <th width="5%">السنة</th>
+                        <th width="6%">الدرجة</th>
+                        <th width="6%">رقم الرسالة</th>
+                        <th width="6%">الحالة</th>
+                        <th width="8%">مكان التواجد</th>
+                        <th width="3%">عرض</th>
+                    </tr>
+                </thead>
+                <tbody id="thesesBody">
+                    </tbody>
+            </table>
         </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto bg-white rounded shadow overflow-hidden">
-        <table class="w-full border-collapse">
-            <thead>
-                <tr>
-                    <th width="20%">اسم الباحث</th>
-                    <th width="40%">عنوان الرسالة</th>
-                    <th width="15%">الجامعة</th>
-                    <th width="10%">السنة</th>
-                    <th width="10%">الدرجة</th>
-                    <th width="5%">الملف</th>
-                </tr>
-            </thead>
-            <tbody id="resultsTable">
-                </tbody>
-        </table>
     </div>
 
     <script>
@@ -59,60 +79,64 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        let allData = [];
 
-        function displayData(data) {
-            const tbody = document.getElementById('resultsTable');
+        // جلب البيانات بدون قيود
+        function fetchData() {
+            db.ref('بيانات_الرسائل').on('value', snap => {
+                allData = [];
+                snap.forEach(child => {
+                    allData.push(child.val());
+                });
+                renderTable(allData.reverse());
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('thesesBody');
             tbody.innerHTML = "";
-            data.forEach(item => {
+            data.forEach(d => {
                 tbody.innerHTML += `
                     <tr>
-                        <td class="font-semibold">${item.الباحث}</td>
-                        <td class="text-right px-4 text-blue-900 font-bold">${item.العنوان}</td>
-                        <td>${item.الجامعة}</td>
-                        <td>${item.السنة}</td>
-                        <td>${item.الدرجة}</td>
-                        <td>
-                            ${item.الرابط ? `<a href="${item.الرابط}" target="_blank" class="pdf-link">PDF</a>` : '<span class="text-gray-400">❌</span>'}
-                        </td>
+                        <td>${d.الباحث || '-'}</td>
+                        <td class="text-right font-bold px-2 text-blue-900">${d.العنوان || '-'}</td>
+                        <td>${d.المشرف || '-'}</td>
+                        <td>${d.الجامعة || '-'}</td>
+                        <td>${d.الكلية || '-'}</td>
+                        <td>${d.القسم || '-'}</td>
+                        <td>${d.السنة || '-'}</td>
+                        <td>${d.الدرجة || '-'}</td>
+                        <td>${d.رقم_الرسالة || '-'}</td>
+                        <td class="${d.الحالة === 'متوفرة' ? 'status-ok' : 'status-no'}">${d.الحالة || '-'}</td>
+                        <td>${d.مكان_التواجد || '-'}</td>
+                        <td>${d.الرابط ? `<a href="${d.الرابط}" target="_blank">🔗</a>` : '-'}</td>
                     </tr>`;
             });
         }
 
-        function searchData() {
-            const titleVal = document.getElementById('searchTitle').value.toLowerCase();
-            const authorVal = document.getElementById('searchAuthor').value.toLowerCase();
+        // منطق الفلاتر السبعة (طبق الأصل)
+        function filterData() {
+            const s = document.getElementById('f_search').value.toLowerCase();
+            const uni = document.getElementById('f_uni').value.toLowerCase();
+            const coll = document.getElementById('f_coll').value.toLowerCase();
+            const dept = document.getElementById('f_dept').value.toLowerCase();
+            const year = document.getElementById('f_year').value;
+            const loc = document.getElementById('f_loc').value.toLowerCase();
+            const deg = document.getElementById('f_deg').value;
 
-            db.ref('بيانات_الرسائل').once('value', snap => {
-                let results = [];
-                snap.forEach(child => {
-                    const d = child.val();
-                    const matchTitle = d.العنوان && d.العنوان.toLowerCase().includes(titleVal);
-                    const matchAuthor = d.الباحث && d.الباحث.toLowerCase().includes(authorVal);
-                    
-                    if (matchTitle && matchAuthor) {
-                        results.push(d);
-                    }
-                });
-                displayData(results);
+            const filtered = allData.filter(d => {
+                return ( (d.العنوان && d.العنوان.toLowerCase().includes(s)) || (d.الباحث && d.الباحث.toLowerCase().includes(s)) ) &&
+                       ( !uni || (d.الجامعة && d.الجامعة.toLowerCase().includes(uni)) ) &&
+                       ( !coll || (d.الكلية && d.الكلية.toLowerCase().includes(coll)) ) &&
+                       ( !dept || (d.الالقسم && d.القسم.toLowerCase().includes(dept)) ) &&
+                       ( !year || (d.السنة && d.السنة.toString().includes(year)) ) &&
+                       ( !loc || (d.مكان_التواجد && d.مكان_التواجد.toLowerCase().includes(loc)) ) &&
+                       ( !deg || d.الدرجة === deg );
             });
+            renderTable(filtered);
         }
 
-        // جلب البيانات عند فتح الصفحة لأول مرة
-        window.onload = () => {
-        // قمنا بإلغاء limitToLast لجلب كل البيانات المرفوعة بالعربية
-            db.ref('بيانات_الرسائل').once('value', snap => {
-                let results = [];
-                snap.forEach(child => {
-                    const data = child.val();
-                    // نتأكد فقط من وجود "عنوان" لعرض التسجيلة
-                    if (data.العنوان) {
-                        results.push(data);
-                    }
-                });
-        // عرض البيانات بحيث تظهر أحدث الرسائل المرفوعة في الأعلى
-        displayData(results.reverse());
-    });
-};
+        fetchData();
     </script>
 </body>
 </html>
