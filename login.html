@@ -11,7 +11,7 @@
         .login-card { background: white; padding: 20px; border-radius: 4px; border: 1px solid #cbd5e1; width: 100%; max-width: 320px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 12px; outline: none; }
         button { width: 100%; padding: 10px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 2px; cursor: pointer; font-size: 13px; }
-        button:hover { background: #1e40af; }
+        .debug-box { margin-top: 10px; padding: 5px; background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; font-size: 9px; display: none; }
     </style>
 </head>
 <body>
@@ -19,7 +19,7 @@
     <div class="login-card">
         <div class="text-center mb-4">
             <h1 class="text-blue-900 font-bold text-lg italic">بوابة الرسائل الجامعية الليبية</h1>
-            <p class="text-gray-500 text-[10px]">بوابة دخول المكتبات المعتمدة</p>
+            <p class="text-gray-500 text-[10px]">نظام الدخول الموحد للمكتبات</p>
         </div>
         
         <form id="loginForm">
@@ -28,11 +28,8 @@
             <button type="submit" id="loginBtn">تسجيل الدخول</button>
         </form>
         
-        <div id="msg" class="text-center mt-3 text-red-600 text-[10px] font-bold"></div>
-        
-        <div class="mt-4 border-t pt-2 text-center">
-            <a href="join.html" class="text-blue-700 text-[10px] font-bold">طلب انضمام مكتبة جديدة</a>
-        </div>
+        <div id="msg" class="text-center mt-3 text-blue-600 text-[10px] font-bold italic"></div>
+        <div id="debug" class="debug-box"></div>
     </div>
 
     <script>
@@ -44,35 +41,49 @@
 
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value.toLowerCase().trim();
-            const pass = document.getElementById('password').value;
+            const emailInput = document.getElementById('email').value.toLowerCase().trim();
+            const passInput = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
             const msg = document.getElementById('msg');
+            const debug = document.getElementById('debug');
 
-            btn.innerText = "جاري التحقق...";
+            msg.innerText = "جاري الاتصال بقاعدة البيانات...";
             btn.disabled = true;
+            debug.style.display = "none";
 
-            db.ref('approved_libraries').once('value', snap => {
+            // قراءة البيانات مع معالجة الأخطاء
+            db.ref('approved_libraries').once('value')
+            .then(snap => {
                 let found = false;
+                if (!snap.exists()) {
+                    throw new Error("لا توجد مكتبات معتمدة في القاعدة حالياً.");
+                }
+
                 snap.forEach(child => {
                     const lib = child.val();
-                    if(lib.email.toLowerCase().trim() === email && lib.password === pass) {
-                        found = true;
-                        localStorage.setItem('libToken', child.key);
-                        localStorage.setItem('libName', lib.libName);
-                        
-                        msg.className = "text-center mt-3 text-green-600 text-[10px] font-bold";
-                        msg.innerText = "تم التحقق.. جاري الدخول";
-                        
-                        setTimeout(() => { window.location.href = 'lib-admin.html'; }, 1000);
+                    if(lib.email && lib.email.toLowerCase().trim() === emailInput) {
+                        if(lib.password === passInput) {
+                            found = true;
+                            localStorage.setItem('libToken', child.key);
+                            localStorage.setItem('libName', lib.libName);
+                            msg.innerText = "نجح التحقق! يتم توجيهك الآن...";
+                            setTimeout(() => { 
+                                window.location.href = 'https://sidiqbens-cmd.github.io/libyan-theses-portal/upload.html'; 
+                            }, 1000);
+                        } else {
+                            throw new Error("كلمة المرور غير صحيحة لهذا الإيميل.");
+                        }
                     }
                 });
 
-                if(!found) {
-                    msg.innerText = "بيانات الدخول غير صحيحة";
-                    btn.innerText = "تسجيل الدخول";
-                    btn.disabled = false;
-                }
+                if(!found) throw new Error("هذا البريد الإلكتروني غير مسجل لدينا.");
+            })
+            .catch(err => {
+                msg.innerText = "";
+                debug.style.display = "block";
+                debug.innerText = "خطأ التشخيص: " + err.message;
+                btn.disabled = false;
+                btn.innerText = "إعادة المحاولة";
             });
         };
     </script>
