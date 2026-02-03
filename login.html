@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دخول المكتبات | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -9,11 +10,11 @@
     <style>
         body { background-color: #f1f5f9; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .login-card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; max-width: 350px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; outline: none; transition: border-color 0.2s; }
+        input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; outline: none; }
         input:focus { border-color: #1e3a8a; }
-        button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.3s; }
+        button:hover { background: #1e40af; }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
-        #errorMsg { margin-top: 15px; padding: 10px; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; font-size: 11px; border-radius: 4px; display: none; }
     </style>
 </head>
 <body>
@@ -31,7 +32,6 @@
         </form>
         
         <div id="statusMsg" class="text-center mt-4 text-blue-600 text-xs font-bold italic"></div>
-        <div id="errorMsg"></div>
         
         <div class="mt-6 border-t pt-4 text-center">
             <a href="join.html" class="text-blue-700 text-xs font-bold hover:underline">طلب انضمام مكتبة جديدة</a>
@@ -39,63 +39,69 @@
     </div>
 
     <script>
+        // إعدادات قاعدة البيانات الخاصة بك
         const firebaseConfig = { 
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        
+        // التحقق من عدم تهيئة Firebase مرتين
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.database();
 
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
+            
+            // قراءة المدخلات وتجهيز الواجهة
             const emailIn = document.getElementById('email').value.toLowerCase().trim();
             const passIn = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
             const status = document.getElementById('statusMsg');
-            const error = document.getElementById('errorMsg');
 
-            // إعادة ضبط الواجهة
-            error.style.display = "none";
-            status.innerText = "جاري الاتصال بالقاعدة...";
+            status.innerText = "جاري التحقق من البيانات...";
             btn.disabled = true;
 
-            // جلب البيانات مع فحص الأخطاء
+            // جلب بيانات المكتبات المعتمدة
             db.ref('approved_libraries').once('value').then(snap => {
                 let found = false;
                 
-                if (!snap.exists()) {
-                    throw new Error("لا توجد سجلات للمكتبات المعتمدة حالياً في قاعدة البيانات.");
-                }
-
-                snap.forEach(child => {
-                    const lib = child.val();
-                    // فحص ذكي: يتجاهل السجلات التالفة ويقارن البيانات الصحيحة فقط
-                    if (lib && lib.email && typeof lib.email === 'string') {
-                        if (lib.email.toLowerCase().trim() === emailIn) {
-                            if (lib.password === passIn) {
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const lib = child.val();
+                        
+                        // الإصلاح الجذري للخطأ (السطر 57 و 59 سابقاً)
+                        // نتحقق من وجود السجل والبريد قبل تنفيذ أي عمليات تحويل نصية
+                        if (lib && lib.email && typeof lib.email === 'string') {
+                            const registeredEmail = lib.email.toLowerCase().trim();
+                            
+                            if (registeredEmail === emailIn && lib.password === passIn) {
                                 found = true;
+                                // حفظ بيانات الجلسة
                                 localStorage.setItem('libToken', child.key);
-                                localStorage.setItem('libName', lib.libName);
+                                localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
                                 
-                                status.className = "text-center mt-4 text-green-600 text-xs font-bold";
                                 status.innerText = "تم التحقق بنجاح! جاري التوجيه...";
                                 
+                                // التوجيه للرابط الفعلي على GitHub
                                 setTimeout(() => { 
                                     window.location.href = 'https://sidiqbens-cmd.github.io/libyan-theses-portal/upload.html'; 
                                 }, 1000);
-                            } else {
-                                throw new Error("كلمة المرور غير صحيحة.");
                             }
                         }
-                    }
-                });
+                    });
+                }
 
-                if (!found) throw new Error("هذا البريد الإلكتروني غير مسجل كـ مكتبة معتمدة.");
-
+                if (!found) {
+                    alert("⚠️ البريد الإلكتروني أو كلمة المرور غير صحيحة، أو لم يتم اعتماد مكتبتكم بعد.");
+                    status.innerText = "";
+                    btn.disabled = false;
+                }
             }).catch(err => {
-                status.innerText = "";
+                console.error("Firebase Error:", err);
+                alert("حدث خطأ في الاتصال بقاعدة البيانات.");
                 btn.disabled = false;
-                error.innerText = "⚠️ " + err.message;
-                error.style.display = "block";
+                status.innerText = "";
             });
         };
     </script>
