@@ -2,82 +2,79 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دخول المكتبات | الفهرس الليبي الموحد</title>
+    <title>دخول المكتبات | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background-color: #f1f5f9; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 20px; border-radius: 4px; border: 1px solid #cbd5e1; width: 100%; max-width: 320px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #94a3b8; border-radius: 2px; font-size: 12px; outline: none; }
+        button { width: 100%; padding: 10px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 2px; cursor: pointer; font-size: 13px; }
+        button:hover { background: #1e40af; }
+    </style>
 </head>
-<body class="bg-gray-50 flex items-center justify-center h-screen">
+<body>
 
-    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-sm border-t-4 border-blue-600">
+    <div class="login-card">
         <div class="text-center mb-4">
-            <h2 class="text-xl font-bold text-gray-800">الفهرس الليبي الموحد</h2>
-            <p class="text-xs text-gray-500">بوابة دخول المناديب المعتمدين</p>
-        </div>
-
-        <form id="loginForm" class="space-y-3">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">البريد الإلكتروني</label>
-                <input type="email" id="email" class="w-full p-2 border rounded text-sm focus:outline-blue-500" required>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">كلمة المرور</label>
-                <input type="password" id="password" class="w-full p-2 border rounded text-sm focus:outline-blue-500" required>
-            </div>
-            
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 transition">
-                دخول
-            </button>
-        </form>
-
-        <div class="mt-4 text-center">
-            <a href="#" onclick="resetPassword()" class="text-xs text-blue-500 hover:underline">نسيت كلمة المرور؟</a>
+            <h1 class="text-blue-900 font-bold text-lg italic">بوابة الرسائل الجامعية الليبية</h1>
+            <p class="text-gray-500 text-[10px]">بوابة دخول المكتبات المعتمدة</p>
         </div>
         
-        <div id="errorMessage" class="hidden mt-2 p-2 bg-red-100 text-red-700 text-[10px] rounded text-center"></div>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+            <input type="password" id="password" placeholder="كلمة المرور" required>
+            <button type="submit" id="loginBtn">تسجيل الدخول</button>
+        </form>
+        
+        <div id="msg" class="text-center mt-3 text-red-600 text-[10px] font-bold"></div>
+        
+        <div class="mt-4 border-t pt-2 text-center">
+            <a href="join.html" class="text-blue-700 text-[10px] font-bold">طلب انضمام مكتبة جديدة</a>
+        </div>
     </div>
 
     <script>
-        // إعدادات Firebase (نفس الإعدادات التي استخدمناها سابقاً)
-        const firebaseConfig = {
-            apiKey: "AIzaSy...", 
-            authDomain: "libyan-theses-portal.firebaseapp.com",
-            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "libyan-theses-portal",
-            storageBucket: "libyan-theses-portal.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+        const firebaseConfig = { 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        // عملية الدخول
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('errorMessage');
+            const email = document.getElementById('email').value.toLowerCase().trim();
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const msg = document.getElementById('msg');
 
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // التوجه لصفحة رفع الرسائل بعد النجاح
-                    window.location.href = "upload.html"; 
-                })
-                .catch((error) => {
-                    errorDiv.innerText = "خطأ: تأكد من البيانات أو الاعتماد";
-                    errorDiv.classList.remove('hidden');
+            btn.innerText = "جاري التحقق...";
+            btn.disabled = true;
+
+            db.ref('approved_libraries').once('value', snap => {
+                let found = false;
+                snap.forEach(child => {
+                    const lib = child.val();
+                    if(lib.email.toLowerCase().trim() === email && lib.password === pass) {
+                        found = true;
+                        localStorage.setItem('libToken', child.key);
+                        localStorage.setItem('libName', lib.libName);
+                        
+                        msg.className = "text-center mt-3 text-green-600 text-[10px] font-bold";
+                        msg.innerText = "تم التحقق.. جاري الدخول";
+                        
+                        setTimeout(() => { window.location.href = 'lib-admin.html'; }, 1000);
+                    }
                 });
-        });
 
-        // وظيفة استعادة كلمة المرور
-        function resetPassword() {
-            const email = document.getElementById('email').value;
-            if(!email) return alert("يرجى كتابة البريد الإلكتروني أولاً");
-            
-            firebase.auth().languageCode = 'ar';
-            firebase.auth().sendPasswordResetEmail(email)
-                .then(() => alert("تم إرسال رابط التعيين لبريدك بنجاح"));
-        }
+                if(!found) {
+                    msg.innerText = "بيانات الدخول غير صحيحة";
+                    btn.innerText = "تسجيل الدخول";
+                    btn.disabled = false;
+                }
+            });
+        };
     </script>
 </body>
 </html>
