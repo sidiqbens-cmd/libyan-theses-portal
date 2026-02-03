@@ -2,104 +2,152 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الرسائل | بوابة الرسائل الجامعية الليبية</title>
+    <title>بوابة رفع الرسائل | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { font-size: 11px; background-color: #f8fafc; font-family: sans-serif; }
-        .dense-input { border: 1px solid #cbd5e1; padding: 4px; border-radius: 2px; width: 100%; font-size: 11px; }
-        th { background: #1e3a8a; color: white; padding: 4px; border: 1px solid #475569; }
-        td { padding: 4px; border: 1px solid #cbd5e1; text-align: center; background: white; }
+        body { background: #f1f5f9; font-family: sans-serif; font-size: 11px; overflow: hidden; margin: 0; padding: 10px; }
+        .dense-card { background: white; padding: 12px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 8px; }
+        input, select { border: 1px solid #94a3b8; padding: 3px 6px; border-radius: 3px; width: 100%; outline: none; font-size: 11px; }
+        input:focus { border-color: #1e3a8a; }
+        label { font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 1px; }
+        .grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #1e3a8a; color: white; padding: 5px; position: sticky; top: 0; font-weight: normal; }
+        td { border: 1px solid #e2e8f0; padding: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-action { padding: 4px 10px; border-radius: 3px; font-weight: bold; transition: 0.2s; }
     </style>
 </head>
-<body class="p-2">
+<body>
 
-    <div class="flex justify-between items-center bg-white p-2 border border-slate-300 mb-2 shadow-sm">
-        <div>
-            <h1 class="text-blue-900 font-bold text-sm italic">بوابة الرسائل الجامعية الليبية</h1>
-            <span id="libBadge" class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">جاري التحقق...</span>
+    <div class="dense-card flex justify-between items-center bg-blue-50">
+        <div class="flex gap-2">
+            <button class="bg-red-600 text-white btn-action hover:bg-red-700" onclick="logout()">تسجيل الخروج</button>
+            <button class="bg-blue-600 text-white btn-action hover:bg-blue-700">رفع ملف Excel</button>
+            <button class="bg-green-700 text-white btn-action hover:bg-green-800">تحميل قالب Excel</button>
         </div>
-        <button onclick="logout()" class="text-red-600 border border-red-200 px-2 py-1 rounded font-bold hover:bg-red-50">خروج</button>
+        <h2 class="text-blue-900 font-bold text-sm">بوابة رفع الرسائل الجامعية الليبية</h2>
     </div>
 
-    <div class="bg-white p-3 border border-slate-300 mb-2">
-        <form id="thesisForm" class="grid grid-cols-5 gap-2">
-            <div class="col-span-2">
-                <input type="text" id="title" placeholder="عنوان الرسالة الجامعية" class="dense-input font-bold" required>
+    <div class="dense-card">
+        <form id="uploadForm">
+            <div class="grid-layout">
+                <div><label>اسم الباحث</label><input type="text" id="author" required></div>
+                <div><label>عنوان الرسالة</label><input type="text" id="title" required></div>
+                <div><label>الجامعة</label><input type="text" id="university" required></div>
+                <div><label>الكلية</label><input type="text" id="college" required></div>
+                <div><label>القسم</label><input type="text" id="dept" required></div>
+                <div><label>الدرجة العلمية</label>
+                    <select id="degree">
+                        <option>ماجستير</option>
+                        <option>دكتوراه</option>
+                    </select>
+                </div>
+                <div><label>سنة المناقشة</label><input type="number" id="year" required></div>
+                <div><label>اسم المشرف</label><input type="text" id="supervisor" required></div>
+                <div class="col-span-3"><label>رابط ملف الرسالة (PDF/Drive)</label><input type="url" id="link" placeholder="https://..." required></div>
+                <div class="flex items-end">
+                    <button type="submit" id="saveBtn" class="w-full bg-blue-900 text-white py-1 rounded font-bold hover:bg-black transition-colors">اعتماد وحفظ البيانات</button>
+                </div>
             </div>
-            <input type="text" id="author" placeholder="اسم الباحث" class="dense-input" required>
-            <input type="text" id="year" placeholder="السنة" class="dense-input">
-            <button type="submit" class="bg-blue-900 text-white font-bold rounded hover:bg-blue-800">حفظ الآن</button>
         </form>
     </div>
 
-    <div class="bg-white border border-slate-300 overflow-x-auto shadow-md">
-        <table class="w-full border-collapse">
-            <thead>
-                <tr>
-                    <th class="w-2/3 text-right pr-4 italic">عنوان الرسالة</th>
-                    <th>الباحث</th>
-                    <th>السنة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="dataTableBody"></tbody>
-        </table>
+    <div class="dense-card p-0 overflow-hidden" style="max-height: calc(100vh - 200px);">
+        <div class="overflow-y-auto" style="max-height: calc(100vh - 210px);">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="5%">إجراء</th>
+                        <th>الباحث</th>
+                        <th>العنوان</th>
+                        <th>الدرجة</th>
+                        <th>الكلية</th>
+                        <th>السنة</th>
+                        <th>الرابط</th>
+                    </tr>
+                </thead>
+                <tbody id="thesesTable">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        const firebaseConfig = { databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app" };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "libyan-theses-portal",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "782635467382",
+            appId: "1:782635467382:web:48a60589a194519f964082"
+        };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // قراءة بيانات الجلسة من المتصفح
-        const libID = localStorage.getItem('libToken');
-        const libName = localStorage.getItem('libName');
-
-        // الحماية: العودة للدخول إذا لم توجد جلسة
-        if (!libID || !libName) {
-            window.location.href = 'login.html';
-        } else {
-            document.getElementById('libBadge').innerText = "📍 " + libName;
-        }
-
-        // الحفظ التلقائي مع ختم اسم المكتبة
-        document.getElementById('thesisForm').onsubmit = (e) => {
-            e.preventDefault();
-            db.ref('theses_data').push({
-                title: document.getElementById('title').value,
-                author: document.getElementById('author').value,
-                year: document.getElementById('year').value,
-                location: libName, // القيمة ثابتة من الجلسة لضمان الدقة
-                libID: libID,      // المعرف السري للفلترة
-                timestamp: Date.now()
-            }).then(() => {
-                alert("تمت الإضافة بنجاح");
-                document.getElementById('thesisForm').reset();
-            });
-        };
-
-        // عرض رسائل هذه المكتبة فقط (خصوصية تامة)
-        function loadData() {
-            db.ref('theses_data').orderByChild('libID').equalTo(libID).on('value', snap => {
-                const tbody = document.getElementById('dataTableBody');
-                tbody.innerHTML = '';
+        // جلب البيانات فوراً
+        function loadTheses() {
+            db.ref('theses').on('value', snap => {
+                const tbody = document.getElementById('thesesTable');
+                tbody.innerHTML = "";
                 snap.forEach(child => {
-                    const v = child.val();
+                    const d = child.val();
                     tbody.innerHTML += `
-                        <tr>
-                            <td class="text-right pr-4 font-bold text-blue-900">${v.title}</td>
-                            <td>${v.author}</td>
-                            <td>${v.year || '-'}</td>
-                            <td><button onclick="db.ref('theses_data/${child.key}').remove()" class="text-red-600">حذف</button></td>
+                        <tr class="hover:bg-gray-50">
+                            <td><button onclick="deleteItem('${child.key}')" class="text-red-600 font-bold hover:scale-125 transition-transform">X</button></td>
+                            <td>${d.author}</td>
+                            <td class="text-right px-2">${d.title}</td>
+                            <td>${d.degree}</td>
+                            <td>${d.college}</td>
+                            <td>${d.year}</td>
+                            <td><a href="${d.link}" target="_blank" class="text-blue-700 underline font-bold">فتح</a></td>
                         </tr>`;
                 });
             });
         }
 
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        loadData();
+        // حفظ البيانات
+        document.getElementById('uploadForm').onsubmit = function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerText = "جاري الحفظ...";
+
+            const data = {
+                author: document.getElementById('author').value,
+                title: document.getElementById('title').value,
+                university: document.getElementById('university').value,
+                college: document.getElementById('college').value,
+                dept: document.getElementById('dept').value,
+                degree: document.getElementById('degree').value,
+                year: document.getElementById('year').value,
+                supervisor: document.getElementById('supervisor').value,
+                link: document.getElementById('link').value,
+                timestamp: Date.now()
+            };
+
+            db.ref('theses').push(data).then(() => {
+                document.getElementById('uploadForm').reset();
+                btn.disabled = false;
+                btn.innerText = "اعتماد وحفظ البيانات";
+            }).catch(err => {
+                alert("خطأ: " + err.message);
+                btn.disabled = false;
+            });
+        };
+
+        function deleteItem(id) {
+            if(confirm("هل أنت متأكد من حذف هذه الرسالة؟")) db.ref('theses').child(id).remove();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        window.onload = loadTheses;
     </script>
 </body>
 </html>
