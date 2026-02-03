@@ -11,7 +11,7 @@
         .login-card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; max-width: 350px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 13px; outline: none; }
         button { width: 100%; padding: 12px; background: #1e3a8a; color: white; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        button:disabled { background: #94a3b8; }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -28,41 +28,43 @@
             <button type="submit" id="loginBtn">تسجيل الدخول</button>
         </form>
         
-        <div id="status" class="text-center mt-4 text-blue-600 text-xs font-bold italic"></div>
+        <div id="statusMsg" class="text-center mt-4 text-blue-600 text-xs font-bold italic"></div>
     </div>
 
     <script>
-        const firebaseConfig = { databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app" };
+        const firebaseConfig = { 
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
+        };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         document.getElementById('loginForm').onsubmit = function(e) {
             e.preventDefault();
-            const emailIn = document.getElementById('email').value.toLowerCase().trim();
-            const passIn = document.getElementById('password').value.trim();
+            const emailInput = document.getElementById('email').value.toLowerCase().trim();
+            const passInput = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
-            const status = document.getElementById('status');
+            const status = document.getElementById('statusMsg');
 
             btn.disabled = true;
-            status.innerText = "جاري التحقق من السجلات...";
+            status.innerText = "جاري التحقق من السجلات المعتمدة...";
 
             db.ref('approved_libraries').once('value').then(snap => {
-                let userFound = false;
+                let found = false;
                 
                 snap.forEach(child => {
                     const lib = child.val();
                     
-                    // الحل القاطع لخطأ سطر 57 و 59:
-                    // نتحقق أولاً أن السجل ليس فارغاً وأن حقل الإيميل موجود فعلياً قبل معالجته
+                    // فحص وقائي لمنع خطأ toLowerCase في حال وجود أي سجل تالف آخر
                     if (lib && lib.email && typeof lib.email === 'string') {
-                        const regEmail = lib.email.toLowerCase().trim();
+                        const registeredEmail = lib.email.toLowerCase().trim();
                         
-                        if (regEmail === emailIn && lib.password === passIn) {
-                            userFound = true;
+                        if (registeredEmail === emailInput && lib.password === passInput) {
+                            found = true;
+                            // حفظ بيانات الجلسة للانتقال لصفحة الرفع
                             localStorage.setItem('libToken', child.key);
                             localStorage.setItem('libName', lib.libName || "مكتبة معتمدة");
                             
-                            status.innerText = "تم التحقق! جاري الدخول...";
+                            status.innerText = "تم التحقق بنجاح! جاري الدخول...";
                             setTimeout(() => { 
                                 window.location.href = 'https://sidiqbens-cmd.github.io/libyan-theses-portal/upload.html'; 
                             }, 1000);
@@ -70,13 +72,13 @@
                     }
                 });
 
-                if (!userFound) {
-                    alert("⚠️ البيانات غير صحيحة أو الحساب غير معتمد.");
+                if (!found) {
+                    alert("خطأ: البريد الإلكتروني أو كلمة المرور غير صحيحة.");
                     btn.disabled = false;
                     status.innerText = "";
                 }
             }).catch(err => {
-                alert("خطأ في الاتصال: " + err.message);
+                alert("خطأ في الاتصال بالقاعدة: " + err.message);
                 btn.disabled = false;
             });
         };
