@@ -2,76 +2,113 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة البحث | بوابة الرسائل الجامعية الليبية</title>
+    <title>بوابة الرسائل الجامعية الليبية | البحث الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin: 0; padding: 2px; overflow: hidden; }
-        /* تصميم شريط الفلاتر الأفقي */
-        .filter-container { background: #1e3a8a; padding: 5px; display: flex; gap: 4px; align-items: center; border-radius: 4px; margin-bottom: 4px; }
-        .filter-input { border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 2px; height: 26px; font-size: 10px; flex: 1; outline: none; }
-        .filter-input:focus { border-color: #fbbf24; background: #fff; }
+        body { background: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin: 0; padding: 4px; overflow: hidden; }
         
-        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
-        th { background: #334155; color: white; padding: 6px 2px; border: 1px solid #1e293b; font-size: 10px; position: sticky; top: 0; z-index: 10; }
-        td { border: 1px solid #e2e8f0; padding: 3px; text-align: center; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* تصميم البوابة: هيدر واسع وفخم */
+        .portal-header { 
+            background: white; 
+            padding: 15px 25px; 
+            border-radius: 8px; 
+            margin-bottom: 8px; 
+            border-bottom: 4px solid #1e3a8a;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .portal-title { font-size: 22px; color: #1e3a8a; font-weight: 900; }
+        
+        /* شريط الفلاتر الأفقي */
+        .filter-bar { 
+            background: #1e3a8a; 
+            padding: 8px 12px; 
+            display: flex; 
+            gap: 6px; 
+            align-items: center; 
+            border-radius: 6px; 
+            margin-bottom: 6px; 
+        }
+        .filter-input { 
+            border: 1px solid #cbd5e1; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            height: 32px; 
+            font-size: 11px; 
+            flex: 1; 
+            outline: none; 
+        }
+        .filter-input:focus { border-color: #fbbf24; background: #fff; box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2); }
+        
+        /* الجدول الاحترافي */
+        .table-container { background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; height: calc(100vh - 125px); }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { background: #334155; color: white; padding: 10px 4px; border: 1px solid #1e293b; font-size: 10px; position: sticky; top: 0; z-index: 20; }
+        td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         tr:nth-child(even) { background: #f8fafc; }
-        tr:hover { background: #eff6ff; border: 1px solid #1e3a8a; }
-        
-        .status-ok { color: #059669; font-weight: bold; }
-        .status-no { color: #dc2626; font-weight: bold; }
-        .header-area { display: flex; justify-content: space-between; align-items: center; padding: 2px 10px; background: #fff; margin-bottom: 2px; border-radius: 4px; }
+        tr:hover { background: #fffbeb; }
+
+        .tag-available { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 10px; font-weight: bold; font-size: 9px; }
+        .tag-unavailable { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 10px; font-weight: bold; font-size: 9px; }
     </style>
 </head>
 <body>
 
-    <div class="header-area shadow-sm">
-        <div class="text-blue-900 font-bold text-xs italic">بوابة الرسائل الجامعية الليبية | بوابة البحث</div>
-        <div class="text-[9px] text-gray-500">تم تحديث البيانات: 2026-02-03</div>
+    <div class="portal-header">
+        <div>
+            <h1 class="portal-title">بوابة الرسائل الجامعية الليبية</h1>
+            <p class="text-gray-500 font-medium">المنصة الوطنية الموحدة للإنتاج العلمي والأكاديمي</p>
+        </div>
+        <div class="text-left hidden md:block">
+            <div class="text-blue-900 font-bold">وزارة التعليم العالي والبحث العلمي</div>
+            <div class="text-[10px] text-gray-400 text-left">تحديث: فبراير 2026</div>
+        </div>
     </div>
 
-    <div class="filter-container shadow-md">
-        <input type="text" id="f_search" class="filter-input w-1/4" placeholder="🔍 بحث شامل (العنوان أو الباحث)..." oninput="filterData()">
-        <input type="text" id="f_uni" class="filter-input" placeholder="الجامعة" oninput="filterData()">
-        <input type="text" id="f_coll" class="filter-input" placeholder="الكلية" oninput="filterData()">
-        <input type="text" id="f_dept" class="filter-input" placeholder="القسم" oninput="filterData()">
-        <input type="text" id="f_year" class="filter-input" placeholder="السنة" oninput="filterData()">
-        <input type="text" id="f_loc" class="filter-input" placeholder="مكان التواجد" oninput="filterData()">
-        <select id="f_deg" class="filter-input max-w-[100px]" onchange="filterData()">
+    <div class="filter-bar shadow-lg">
+        <input type="text" id="f_search" class="filter-input w-1/4" placeholder="🔍 بحث شامل في العناوين والباحثين..." onkeyup="filterData()">
+        <input type="text" id="f_uni" class="filter-input" placeholder="تصفية بالجامعة" onkeyup="filterData()">
+        <input type="text" id="f_coll" class="filter-input" placeholder="الكلية" onkeyup="filterData()">
+        <input type="text" id="f_dept" class="filter-input" placeholder="القسم" onkeyup="filterData()">
+        <input type="text" id="f_year" class="filter-input" placeholder="السنة" onkeyup="filterData()">
+        <input type="text" id="f_loc" class="filter-input" placeholder="المكان" onkeyup="filterData()">
+        <select id="f_deg" class="filter-input max-w-[120px]" onchange="filterData()">
             <option value="">كل الدرجات</option>
-            <option>ماجستير</option>
-            <option>دكتوراه</option>
+            <option value="ماجستير">ماجستير</option>
+            <option value="دكتوراه">دكتوراه</option>
         </select>
     </div>
 
-    <div class="bg-white border rounded shadow-sm overflow-hidden" style="height: calc(100vh - 75px);">
+    <div class="table-container">
         <div class="overflow-y-auto h-full">
             <table id="resultsTable">
                 <thead>
                     <tr>
-                        <th width="12%">الباحث</th>
-                        <th width="22%">عنوان الرسالة</th>
+                        <th width="11%">اسم الباحث</th>
+                        <th width="20%">عنوان الرسالة العلمية</th>
                         <th width="8%">المشرف</th>
                         <th width="8%">الجامعة</th>
-                        <th width="7%">الكلية</th>
+                        <th width="8%">الكلية</th>
                         <th width="7%">القسم</th>
                         <th width="5%">السنة</th>
                         <th width="6%">الدرجة</th>
                         <th width="6%">رقم الرسالة</th>
                         <th width="6%">الحالة</th>
-                        <th width="9%">المكان</th>
-                        <th width="4%">الملف</th>
+                        <th width="9%">مكان التواجد</th>
+                        <th width="6%">ملاحظات</th>
+                        <th width="3%">🔗</th>
                     </tr>
                 </thead>
-                <tbody id="thesesBody">
-                    </tbody>
+                <tbody id="thesesBody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -101,15 +138,16 @@
                     <tr>
                         <td title="${d.الباحث}">${d.الباحث || '-'}</td>
                         <td class="text-right font-bold px-2 text-blue-900" title="${d.العنوان}">${d.العنوان || '-'}</td>
-                        <td title="${d.المشرف}">${d.المشرف || '-'}</td>
+                        <td>${d.المشرف || '-'}</td>
                         <td>${d.الجامعة || '-'}</td>
                         <td>${d.الكلية || '-'}</td>
                         <td>${d.القسم || '-'}</td>
                         <td>${d.السنة || '-'}</td>
                         <td>${d.الدرجة || '-'}</td>
                         <td>${d.رقم_الرسالة || '-'}</td>
-                        <td class="${d.الحالة === 'متوفرة' ? 'status-ok' : 'status-no'}">${d.الحالة || '-'}</td>
-                        <td title="${d.مكان_التواجد}">${d.مكان_التواجد || '-'}</td>
+                        <td><span class="${d.الحالة === 'متوفرة' ? 'tag-available' : 'tag-unavailable'}">${d.الحالة || '-'}</span></td>
+                        <td>${d.مكان_التواجد || '-'}</td>
+                        <td title="${d.ملاحظات}">${d.ملاحظات || '-'}</td>
                         <td>${d.الرابط ? `<a href="${d.الرابط}" target="_blank">📄</a>` : '-'}</td>
                     </tr>`;
             });
@@ -120,15 +158,13 @@
             const uni = document.getElementById('f_uni').value.toLowerCase();
             const coll = document.getElementById('f_coll').value.toLowerCase();
             const dept = document.getElementById('f_dept').value.toLowerCase();
-            const year = document.getElementById('f_year').value;
+            const year = document.getElementById('f_year').value.toLowerCase();
             const loc = document.getElementById('f_loc').value.toLowerCase();
             const deg = document.getElementById('f_deg').value;
 
             const filtered = allData.filter(d => {
-                const title = d.العنوان ? d.العنوان.toLowerCase() : '';
-                const author = d.الباحث ? d.الباحث.toLowerCase() : '';
-                
-                return (title.includes(s) || author.includes(s)) &&
+                const textSearch = (d.العنوان + d.الباحث + d.المشرف).toLowerCase();
+                return (textSearch.includes(s)) &&
                        (!uni || (d.الجامعة && d.الجامعة.toLowerCase().includes(uni))) &&
                        (!coll || (d.الكلية && d.الكلية.toLowerCase().includes(coll))) &&
                        (!dept || (d.القسم && d.القسم.toLowerCase().includes(dept))) &&
