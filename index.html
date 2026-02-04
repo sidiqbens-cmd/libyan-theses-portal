@@ -9,20 +9,14 @@
     <style>
         body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; margin: 0; padding: 5px; overflow: hidden; }
         .portal-header { background: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 8px; border-bottom: 4px solid #1e3a8a; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .portal-title { font-size: 20px; color: #1e3a8a; font-weight: 900; }
         .filter-bar { background: #1e3a8a; padding: 8px; display: flex; gap: 6px; align-items: center; border-radius: 6px; margin-bottom: 8px; }
         .filter-input { border: 1px solid #cbd5e1; padding: 0 10px; border-radius: 4px; height: 32px; font-size: 11px; flex: 1; outline: none; }
-        .filter-input:focus { border-color: #fbbf24; background: white; }
-        
         .table-container { background: white; border-radius: 6px; overflow: hidden; height: calc(100vh - 120px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { background: #334155; color: white; padding: 10px 4px; border: 1px solid #1e293b; font-size: 10px; position: sticky; top: 0; z-index: 20; }
         td { border: 1px solid #e2e8f0; padding: 6px 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* تصميم مكان التواجد التفاعلي */
-        .lib-clickable { color: #1e3a8a; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; }
-        .lib-clickable:hover { color: #d97706; text-decoration: underline; }
-
-        /* النافذة المنبثقة */
+        .lib-clickable { color: #1e3a8a; font-weight: bold; cursor: pointer; text-decoration: underline; }
         #libModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
         .modal-card { background: white; margin: 10% auto; padding: 25px; border-radius: 12px; width: 350px; border-top: 12px solid #1e3a8a; position: relative; }
     </style>
@@ -30,23 +24,24 @@
 <body>
 
     <div id="libModal" onclick="closeModal()">
-        <div class="modal-card shadow-2xl animate-bounce-short" onclick="event.stopPropagation()">
+        <div class="modal-card shadow-2xl" onclick="event.stopPropagation()">
             <h2 id="modal_lib_name" class="text-xl font-black text-blue-900 mb-1"></h2>
             <p id="modal_lib_uni" class="text-sm text-gray-600 mb-4 border-b pb-2"></p>
             <div class="space-y-3 text-right">
                 <div class="flex items-center gap-2"><span>📞</span> <span id="modal_lib_phone" class="font-bold"></span></div>
                 <div class="flex items-center gap-2"><span>📧</span> <span id="modal_lib_email"></span></div>
-                <div id="modal_lib_map" class="mt-4">
-                    <a id="map_link" href="#" target="_blank" class="block bg-blue-50 text-blue-700 text-center py-2 rounded-lg font-bold border border-blue-200">📍 فتح الموقع على الخريطة</a>
-                </div>
+                <a id="map_link" href="#" target="_blank" class="block bg-blue-50 text-blue-700 text-center py-2 rounded-lg font-bold border border-blue-200 mt-4">📍 الموقع على الخريطة</a>
             </div>
-            <button onclick="closeModal()" class="mt-6 w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-md font-bold text-gray-700">إغلاق النافذة</button>
+            <button onclick="closeModal()" class="mt-6 w-full bg-gray-100 py-2 rounded-md font-bold text-gray-700">إغلاق</button>
         </div>
     </div>
 
     <div class="portal-header">
-        <div><h1 class="text-2xl font-black text-blue-900">بوابة الرسائل الجامعية الليبية</h1></div>
-        <div class="text-left"><span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-[10px] font-bold">نظام الربط الموحد للمكتبات</span></div>
+        <div class="flex items-center gap-4">
+            <h1 class="portal-title">بوابة الرسائل الجامعية الليبية</h1>
+            <a href="join.html" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-full text-[10px] font-bold shadow-sm transition-all">+ انضمام مكتبة</a>
+        </div>
+        <div class="text-left"><span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-[10px] font-bold">وزارة التعليم العالي والبحث العلمي</span></div>
     </div>
 
     <div class="filter-bar shadow-lg">
@@ -78,26 +73,32 @@
     </div>
 
     <script>
-        // ... (إعدادات Firebase الخاصة بك)
+        // إعدادات Firebase الخاصة بك (تمت إعادتها لتعمل البيانات)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "libyan-theses-portal",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "782635467382",
+            appId: "1:782635467382:web:48a60589a194519f964082"
+        };
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let allData = [];
         let librariesData = {};
 
-        // 1. جلب بيانات المكتبات من مسار 'libraries'
+        // جلب المكتبات والرسائل
         db.ref('libraries').on('value', snap => {
             librariesData = {};
-            snap.forEach(child => {
-                const lib = child.val();
-                librariesData[lib.name] = lib; // نستخدم الاسم كمفتاح للربط
-            });
+            snap.forEach(child => { librariesData[child.val().name] = child.val(); });
         });
 
-        // 2. جلب الرسائل
         function fetchData() {
             db.ref('بيانات_الرسائل').on('value', snap => {
                 allData = [];
                 snap.forEach(child => { allData.push(child.val()); });
-                renderTable(allData.reverse());
+                renderTable(allData.slice().reverse());
             });
         }
 
@@ -107,60 +108,51 @@
             data.forEach(d => {
                 tbody.innerHTML += `
                     <tr>
-                        <td title="${d.الباحث}">${d.الباحث || '-'}</td>
+                        <td>${d.الباحث || '-'}</td>
                         <td class="text-right font-bold px-2 text-blue-900">${d.العنوان || '-'}</td>
                         <td>${d.الجامعة || '-'}</td><td>${d.الكلية || '-'}</td><td>${d.القسم || '-'}</td>
                         <td>${d.السنة || '-'}</td><td>${d.الدرجة || '-'}</td>
                         <td><span class="${d.الحالة === 'متوفرة' ? 'text-green-600 font-bold' : 'text-red-600'}">${d.الحالة || '-'}</span></td>
-                        <td class="lib-clickable" onclick="openLibInfo('${d.مكان_التواجد}')">
-                            📍 ${d.مكان_التواجد || '-'}
-                        </td>
+                        <td class="lib-clickable" onclick="openLibInfo('${d.مكان_التواجد}')">📍 ${d.مكان_التواجد || '-'}</td>
                         <td>${d.الرابط ? `<a href="${d.الرابط}" target="_blank">📄</a>` : '-'}</td>
                     </tr>`;
             });
         }
 
-        // 3. محرك الفلاتر المصلح
         function filterNow() {
-            const filters = {
-                text: document.getElementById('f_search').value.toLowerCase(),
-                uni: document.getElementById('f_uni').value.toLowerCase(),
-                coll: document.getElementById('f_coll').value.toLowerCase(),
-                dept: document.getElementById('f_dept').value.toLowerCase(),
-                year: document.getElementById('f_year').value.toLowerCase(),
-                loc: document.getElementById('f_loc').value.toLowerCase(),
-                deg: document.getElementById('f_deg').value
-            };
+            const s = document.getElementById('f_search').value.toLowerCase();
+            const uni = document.getElementById('f_uni').value.toLowerCase();
+            const coll = document.getElementById('f_coll').value.toLowerCase();
+            const dept = document.getElementById('f_dept').value.toLowerCase();
+            const year = document.getElementById('f_year').value.toLowerCase();
+            const loc = document.getElementById('f_loc').value.toLowerCase();
+            const deg = document.getElementById('f_deg').value;
 
             const filtered = allData.filter(d => {
-                return ( (d.العنوان + d.الباحث).toLowerCase().includes(filters.text) ) &&
-                       ( !filters.uni || (d.الجامعة || '').toLowerCase().includes(filters.uni) ) &&
-                       ( !filters.coll || (d.الكلية || '').toLowerCase().includes(filters.coll) ) &&
-                       ( !filters.dept || (d.القسم || '').toLowerCase().includes(filters.dept) ) &&
-                       ( !filters.year || (d.السنة || '').toString().includes(filters.year) ) &&
-                       ( !filters.loc || (d.مكان_التواجد || '').toLowerCase().includes(filters.loc) ) &&
-                       ( !filters.deg || d.الدرجة === filters.deg );
+                return ( (d.العنوان + d.الباحث).toLowerCase().includes(s) ) &&
+                       ( !uni || (d.الجامعة || '').toLowerCase().includes(uni) ) &&
+                       ( !coll || (d.الكلية || '').toLowerCase().includes(coll) ) &&
+                       ( !dept || (d.القسم || '').toLowerCase().includes(dept) ) &&
+                       ( !year || (d.السنة || '').toString().includes(year) ) &&
+                       ( !loc || (d.مكان_التواجد || '').toLowerCase().includes(loc) ) &&
+                       ( !deg || d.الدرجة === deg );
             });
             renderTable(filtered);
         }
 
-        // 4. وظيفة النافذة المنبثقة التفاعلية
         function openLibInfo(name) {
             const lib = librariesData[name];
             if (lib) {
                 document.getElementById('modal_lib_name').innerText = lib.name;
-                document.getElementById('modal_lib_uni').innerText = lib.university + " - " + lib.college;
+                document.getElementById('modal_lib_uni').innerText = lib.university + " - " + (lib.college || "");
                 document.getElementById('modal_lib_phone').innerText = lib.phone || "غير متوفر";
                 document.getElementById('modal_lib_email').innerText = lib.email || "غير متوفر";
                 document.getElementById('map_link').href = lib.mapUrl || "#";
                 document.getElementById('libModal').style.display = "block";
-            } else {
-                alert("بيانات هذه المكتبة لم تكتمل بعد في النظام.");
             }
         }
 
         function closeModal() { document.getElementById('libModal').style.display = "none"; }
-
         fetchData();
     </script>
 </body>
