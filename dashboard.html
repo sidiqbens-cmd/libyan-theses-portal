@@ -2,94 +2,80 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة الرسائل الجامعية الليبية | لوحة القيادة</title>
+    <title>بوابة الرسائل الجامعية الليبية | لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        /* خلفية الصفحة داكنة جداً */
-        body { background: #020617; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 25px; }
+        body { background: #020617; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 20px; }
         
-        /* هيدر فاتح وبارز */
-        .portal-header { background: rgba(30, 41, 59, 0.4); border-bottom: 2px solid #38bdf8; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
-        .main-title { font-size: 60px; font-weight: 900; color: #ffffff; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        /* هيدر فاتح وبارز جداً */
+        .header-panel { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 25px; }
+        .main-title { font-size: 58px; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
 
-        /* تباعد 1 سم بين العناصر */
         .grid-gap { gap: 38px; }
 
-        /* بطاقات الرسوم: جعلناها فاتحة بوضوح لتظهر البيانات */
-        .chart-card-light { 
-            background: #1e293b; /* لون فاتح نسبياً مقارنة بالخلفية */
-            border: 1px solid #334155;
-            border-radius: 16px; 
+        /* تفتيح خلفية بطاقات الرسوم لتكون واضحة */
+        .chart-card { 
+            background: #cbd5e1; /* لون رمادي فاتح لبروز الرسوم */
+            border-radius: 15px; 
             padding: 15px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            height: 200px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            height: 190px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
         }
+        /* تسميات الرسوم بلون داكن لتظهر فوق الرمادي الفاتح */
+        .chart-label { font-size: 11px; font-weight: 800; color: #1e293b; margin-top: 10px; text-transform: uppercase; }
 
-        .chart-label { @apply text-[12px] text-sky-400 font-bold mt-3 uppercase tracking-widest; }
+        /* بطاقات الإحصاء السفلية */
+        .stat-box { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 12px; text-align: center; }
+        .stat-box b { @apply text-2xl text-white block font-black; }
+        .stat-box span { @apply text-[10px] text-sky-400 font-bold; }
 
-        /* بطاقات إحصاء سفلية */
-        .stat-pill { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; text-align: center; }
-        .stat-pill b { @apply text-3xl text-white block font-black; }
-        .stat-pill span { @apply text-[11px] text-slate-500 font-bold; }
+        table { width: 100%; font-size: 12px; }
+        th { @apply text-sky-400 text-right pb-2 border-b border-slate-700; }
+        td { @apply py-2 border-b border-slate-800/50 text-slate-300; }
 
-        table { width: 100%; font-size: 13px; border-collapse: collapse; }
-        th { @apply text-sky-400 text-right pb-3 border-b border-slate-700; }
-        td { @apply py-3 border-b border-slate-800/50 text-slate-300; }
-
-        canvas { max-height: 140px !important; width: 100% !important; }
+        canvas { max-height: 130px !important; width: 100% !important; }
     </style>
 </head>
 <body>
 
-    <div class="portal-header flex justify-between items-center">
-        <div>
-            <h1 class="main-title">بوابة الرسائل الجامعية الليبية</h1>
-            <p class="text-sky-400 font-bold text-sm mt-3 tracking-widest uppercase">نظام الإدارة المركزية والسيطرة الرقمية</p>
-        </div>
-        <div class="bg-black/40 p-4 rounded-xl border border-sky-500/20">
-            <div id="live-clock" class="text-3xl font-mono font-bold text-sky-500">00:00:00</div>
-        </div>
+    <div class="header-panel flex justify-between items-center">
+        <h1 class="main-title">بوابة الرسائل الجامعية الليبية</h1>
+        <div id="live-clock" class="text-3xl font-mono font-bold text-sky-500 opacity-60">00:00:00</div>
     </div>
 
     <div class="flex gap-4 mb-8">
-        <a href="upload.html" class="flex-1 py-3 bg-sky-600 border border-sky-400 rounded-xl text-center text-sm font-bold text-white hover:bg-sky-500 shadow-lg shadow-sky-900/20 transition-all">📤 رفع البيانات (Excel)</a>
-        <a href="approved_libraries.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-sm font-bold text-slate-300 hover:border-sky-500">🏛️ المكتبات المعتمدة</a>
-        <a href="requests.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-sm font-bold text-slate-300 hover:border-amber-500">📩 طلبات الانضمام</a>
-        <a href="index.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-sm font-bold text-slate-300 hover:border-white">🌐 البوابة العامة</a>
+        <a href="upload.html" class="flex-1 py-3 bg-sky-600 rounded-xl text-center text-xs font-bold text-white shadow-lg shadow-sky-900/40">📤 رفع البيانات (Excel)</a>
+        <a href="approved_libraries.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-xs font-bold text-slate-300">🏛️ المكتبات المعتمدة</a>
+        <a href="requests.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-xs font-bold text-slate-300">📩 طلبات الانضمام</a>
+        <a href="index.html" class="flex-1 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-xs font-bold text-slate-300">🌐 البوابة العامة</a>
     </div>
 
     <div class="grid grid-cols-3 grid-rows-2 grid-gap flex-grow mb-8 overflow-hidden">
-        <div class="chart-card-light"><canvas id="c_loc"></canvas><span class="chart-label">مكان التواجد (كلي)</span></div>
-        <div class="chart-card-light"><canvas id="c_year"></canvas><span class="chart-label">المنحنى الزمني</span></div>
-        <div class="chart-card-light"><canvas id="c_uni"></canvas><span class="chart-label">أعلى الجامعات</span></div>
-        <div class="chart-card-light"><canvas id="c_coll"></canvas><span class="chart-label">توزيع الكليات</span></div>
-        <div class="chart-card-light"><canvas id="c_dept"></canvas><span class="chart-label">الأقسام العلمية</span></div>
-        <div class="chart-card-light"><canvas id="c_type"></canvas><span class="chart-label">نوع الرسالة (كلي)</span></div>
+        <div class="chart-card"><canvas id="c1"></canvas><span class="chart-label">مكان التواجد (كلي)</span></div>
+        <div class="chart-card"><canvas id="c2"></canvas><span class="chart-label">المنحنى الزمني</span></div>
+        <div class="chart-card"><canvas id="c3"></canvas><span class="chart-label">أعلى الجامعات</span></div>
+        <div class="chart-card"><canvas id="c4"></canvas><span class="chart-label">توزيع الكليات</span></div>
+        <div class="chart-card"><canvas id="c5"></canvas><span class="chart-label">الأقسام العلمية</span></div>
+        <div class="chart-card"><canvas id="c6"></canvas><span class="chart-label">نوع الرسالة (كلي)</span></div>
     </div>
 
     <div class="grid grid-cols-12 grid-gap h-[180px]">
         <div class="col-span-8 flex flex-col">
-            <div class="text-[12px] font-bold text-sky-500 mb-2 border-b border-slate-700 pb-1 uppercase tracking-widest">آخر التحديثات المعتمدة</div>
-            <div class="overflow-y-auto flex-grow">
-                <table>
-                    <thead><tr><th width="20%">الباحث</th><th>عنوان الرسالة</th><th width="25%">الجامعة</th></tr></thead>
-                    <tbody id="recentTable"></tbody>
-                </table>
-            </div>
+            <div class="text-[10px] font-bold text-sky-500 mb-2 border-b border-slate-700 pb-1">آخر التسجيلات المعتمدة</div>
+            <div class="overflow-y-auto h-full"><table id="recentTable"></table></div>
         </div>
-
         <div class="col-span-4 grid grid-cols-2 gap-3">
-            <div class="stat-pill"><span>إجمالي الرسائل</span><b id="st_total">0</b></div>
-            <div class="stat-pill"><span>الجامعات</span><b id="st_unis">0</b></div>
-            <div class="stat-pill"><span>قيد المراجعة</span><b id="st_pending" class="text-amber-500">0</b></div>
-            <div class="stat-pill"><span>مكتبة معتمدة</span><b id="st_libs">0</b></div>
+            <div class="stat-box"><span>إجمالي الرسائل</span><b id="s_total">0</b></div>
+            <div class="stat-box"><span>الجامعات</span><b id="s_unis">0</b></div>
+            <div class="stat-box"><span>قيد المراجعة</span><b id="s_pending" class="text-amber-500">0</b></div>
+            <div class="stat-box"><span>مكتبة معتمدة</span><b id="s_libs">0</b></div>
         </div>
     </div>
 
@@ -106,58 +92,53 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function load() {
+        function loadData() {
             db.ref('بيانات_الرسائل').on('value', snap => {
-                let data = [], s = {loc:{'مركزية':0, 'كليات':0, 'أرشيف':0}, yrs:{}, uni:{}, coll:{}, dept:{}, type:{'ماجستير':0, 'دكتوراه':0}};
+                let data = [], s = {loc:{'مركزية':0, 'كليات':0}, yrs:{}, uni:{}, coll:{}, dept:{}, type:{'ماجستير':0, 'دكتوراه':0}};
                 
                 snap.forEach(c => {
-                    let v = c.val(); data.push(v);
-                    // معالجة نوع الرسالة الكلي
-                    let degree = (v.الدرجة || "").toLowerCase();
+                    let v = c.val() || {};
+                    data.push(v);
+                    
+                    // إصلاح خطأ الـ toLowerCase المذكور في صورتك
+                    let degree = String(v.الدرجة || "").toLowerCase();
                     if(degree.includes('دكتوراه')) s.type['دكتوراه']++;
                     else s.type['ماجستير']++;
 
-                    // محاكاة مكان التواجد
-                    if(v.الجامعة) s.loc['مركزية']++;
-                    
+                    if(v.الجامعة) { s.loc['مركزية']++; s.uni[v.الجامعة] = (s.uni[v.الجامعة]||0)+1; }
                     if(v.السنة) s.yrs[v.السنة] = (s.yrs[v.السنة]||0)+1;
-                    if(v.الجامعة) s.uni[v.الجامعة] = (s.uni[v.الجامعة]||0)+1;
                     if(v.الكلية) s.coll[v.الكلية] = (s.coll[v.الكلية]||0)+1;
                     if(v.القسم) s.dept[v.القسم] = (s.dept[v.القسم]||0)+1;
                 });
                 
-                document.getElementById('st_total').innerText = data.length;
-                document.getElementById('st_unis').innerText = Object.keys(s.uni).length;
+                document.getElementById('s_total').innerText = data.length;
+                document.getElementById('s_unis').innerText = Object.keys(s.uni).length;
                 renderCharts(s);
+                
                 document.getElementById('recentTable').innerHTML = data.reverse().slice(0, 5).map(d => `
-                    <tr><td class="font-bold text-white">${d.الباحث || '-'}</td><td class="text-sky-400">${d.العنوان}</td><td>${d.الجامعة}</td></tr>
+                    <tr><td width="20%">${d.الباحث || '-'}</td><td class="text-sky-400">${d.العنوان || '-'}</td><td>${d.الجامعة || '-'}</td></tr>
                 `).join('');
-            });
-            db.ref('libraries').on('value', snap => {
-                let p = 0; snap.forEach(c => { if(c.val().status === 'pending') p++; });
-                document.getElementById('st_pending').innerText = p;
-                document.getElementById('st_libs').innerText = snap.numChildren() - p;
             });
         }
 
         function renderCharts(s) {
-            Chart.defaults.color = '#cbd5e1';
-            const opt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } } } };
+            // استخدام خطوط داكنة للرسوم لتظهر فوق الخلفية الفاتحة
+            Chart.defaults.color = '#1e293b'; 
+            const opt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9, weight: 'bold' } } } } };
             
-            // تنظيف الرسوم القديمة لمنع التداخل
-            const ctxs = ['c_loc', 'c_year', 'c_uni', 'c_coll', 'c_dept', 'c_type'];
-            ctxs.forEach(id => { let chart = Chart.getChart(id); if(chart) chart.destroy(); });
+            // تنظيف الرسوم السابقة
+            ['c1','c2','c3','c4','c5','c6'].forEach(id => { let c = Chart.getChart(id); if(c) c.destroy(); });
 
-            new Chart(document.getElementById('c_loc'), { type: 'pie', data: { labels: Object.keys(s.loc), datasets: [{ data: Object.values(s.loc), backgroundColor: ['#38bdf8', '#818cf8', '#34d399'], borderWidth: 1, borderColor: '#1e293b' }] }, options: opt });
-            new Chart(document.getElementById('c_year'), { type: 'line', data: { labels: Object.keys(s.yrs), datasets: [{ label: 'الرسائل', data: Object.values(s.yrs), borderColor: '#38bdf8', backgroundColor: 'rgba(56,189,248,0.2)', fill: true, tension: 0.4 }] }, options: opt });
-            new Chart(document.getElementById('c_uni'), { type: 'bar', data: { labels: Object.keys(s.uni).slice(0, 5), datasets: [{ label: 'العدد', data: Object.values(s.uni).slice(0, 5), backgroundColor: '#6366f1' }] }, options: opt });
-            new Chart(document.getElementById('c_coll'), { type: 'bar', data: { labels: Object.keys(s.coll).slice(0, 5), datasets: [{ label: 'العدد', data: Object.values(s.coll).slice(0, 5), backgroundColor: '#10b981' }] }, options: opt });
-            new Chart(document.getElementById('c_dept'), { type: 'polarArea', data: { labels: Object.keys(s.dept).slice(0, 5), datasets: [{ data: Object.values(s.dept).slice(0, 5), backgroundColor: ['#38bdf8', '#6366f1', '#10b981', '#f59e0b', '#ec4899'], borderWidth: 0 }] }, options: opt });
-            new Chart(document.getElementById('c_type'), { type: 'doughnut', data: { labels: Object.keys(s.type), datasets: [{ data: Object.values(s.type), backgroundColor: ['#8b5cf6', '#f472b6'], borderWidth: 2, borderColor: '#1e293b' }] }, options: opt });
+            new Chart(document.getElementById('c1'), { type: 'pie', data: { labels: Object.keys(s.loc), datasets: [{ data: Object.values(s.loc), backgroundColor: ['#0ea5e9', '#6366f1'] }] }, options: opt });
+            new Chart(document.getElementById('c2'), { type: 'line', data: { labels: Object.keys(s.yrs), datasets: [{ label: 'النمو', data: Object.values(s.yrs), borderColor: '#0ea5e9', tension: 0.3 }] }, options: opt });
+            new Chart(document.getElementById('c3'), { type: 'bar', data: { labels: Object.keys(s.uni).slice(0, 5), datasets: [{ label: 'جامعات', data: Object.values(s.uni).slice(0, 5), backgroundColor: '#6366f1' }] }, options: opt });
+            new Chart(document.getElementById('c4'), { type: 'bar', data: { labels: Object.keys(s.coll).slice(0, 5), datasets: [{ label: 'كليات', data: Object.values(s.coll).slice(0, 5), backgroundColor: '#10b981' }] }, options: opt });
+            new Chart(document.getElementById('c5'), { type: 'polarArea', data: { labels: Object.keys(s.dept).slice(0, 5), datasets: [{ data: Object.values(s.dept).slice(0, 5), backgroundColor: ['#0ea5e9', '#6366f1', '#10b981', '#f59e0b'] }] }, options: opt });
+            new Chart(document.getElementById('c6'), { type: 'doughnut', data: { labels: Object.keys(s.type), datasets: [{ data: Object.values(s.type), backgroundColor: ['#8b5cf6', '#ec4899'] }] }, options: opt });
         }
 
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
-        window.onload = load;
+        window.onload = loadData;
     </script>
 </body>
 </html>
