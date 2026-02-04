@@ -2,65 +2,95 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إحصائيات بوابة الرسائل الجامعية الليبية</title>
+    <title>بوابة الرسائل الجامعية الليبية | لوحة الإدارة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; padding: 10px; }
-        .grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto 1fr 1fr; gap: 10px; height: 95vh; }
-        .card { background: #1e293b; border-radius: 12px; padding: 15px; border: 1px solid #334155; }
-        .stat-val { font-size: 2rem; font-weight: 900; color: #38bdf8; }
-        .chart-container { position: relative; height: 100%; width: 100%; }
+        body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; padding: 8px; display: flex; flex-direction: column; }
+        .main-header { background: white; padding: 12px; border-radius: 12px; border-bottom: 4px solid #1e3a8a; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        
+        /* البطاقات الثلاث الأولى بتدرجات أخف */
+        .card-1 { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; }
+        .card-2 { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; }
+        .card-3 { background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); border: 1px solid #fef08a; }
+        .card-4 { background: white; border: 1px solid #e2e8f0; }
+
+        .btn-action { @apply flex flex-col items-center justify-center p-2 rounded-xl transition-all hover:shadow-md active:scale-95 text-[10px] font-bold text-slate-700 border border-slate-200 bg-white; }
+        .stat-num { @apply text-2xl font-black text-slate-800 block; }
+        canvas { max-height: 160px !important; }
     </style>
 </head>
 <body>
 
-    <div class="grid-layout">
-        <div class="col-span-4 flex justify-between items-center bg-slate-800 p-4 rounded-xl">
-            <h1 class="text-xl font-bold text-sky-400">📊 لوحة الإحصائيات والنمو الرقمي</h1>
-            <a href="admin.html" class="bg-sky-600 px-4 py-2 rounded-lg text-sm font-bold">← العودة للتحكم</a>
+    <div class="main-header shadow-sm">
+        <div>
+            <h1 class="text-xl font-black text-blue-900">بوابة الرسائل الجامعية الليبية</h1>
+            <p class="text-[10px] text-gray-500 font-bold">لوحة الإدارة الرئيسية والتحكم الكامل</p>
         </div>
+        <div class="flex gap-2">
+            <span id="live-clock" class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-mono text-slate-600 border italic">جاري التحميل...</span>
+        </div>
+    </div>
 
-        <div class="card flex flex-col items-center">
-            <span class="text-xs text-slate-400">إجمالي الأبحاث</span>
-            <div id="total_theses" class="stat-val">-</div>
-        </div>
-        <div class="card flex flex-col items-center">
-            <span class="text-xs text-slate-400">الجامعات المشاركة</span>
-            <div id="total_unis" class="stat-val">-</div>
-        </div>
-        <div class="card flex flex-col items-center">
-            <span class="text-xs text-slate-400">المكتبات المعتمدة</span>
-            <div id="total_libs" class="stat-val">-</div>
-        </div>
-        <div class="card flex flex-col items-center border-amber-500/50">
-            <span class="text-xs text-slate-400">طلبات قيد المراجعة</span>
-            <div id="pending_libs" class="stat-val text-amber-500">-</div>
-        </div>
+    <div class="grid grid-cols-6 gap-2 mb-3">
+        <a href="index.html" class="btn-action hover:border-blue-500 hover:text-blue-600">
+            <span class="text-lg mb-1">🌐</span> بوابة الجمهور
+        </a>
+        <a href="add_thesis.html" class="btn-action hover:border-emerald-500 hover:text-emerald-600">
+            <span class="text-lg mb-1">➕</span> إضافة رسالة
+        </a>
+        <a href="requests.html" class="btn-action hover:border-amber-500 hover:text-amber-600">
+            <span class="text-lg mb-1">📩</span> طلبات الانضمام
+        </a>
+        <a href="libraries_mgt.html" class="btn-action hover:border-indigo-500 hover:text-indigo-600">
+            <span class="text-lg mb-1">🏛️</span> إدارة المكتبات
+        </a>
+        <button onclick="window.print()" class="btn-action hover:border-rose-500 hover:text-rose-600">
+            <span class="text-lg mb-1">🖨️</span> طباعة التقارير
+        </button>
+        <button onclick="location.reload()" class="btn-action hover:border-slate-400">
+            <span class="text-lg mb-1">🔄</span> تحديث البيانات
+        </button>
+    </div>
 
-        <div class="card col-span-2">
-            <h3 class="text-center text-sm mb-4">توزيع الرسائل حسب السنوات</h3>
-            <div class="chart-container"><canvas id="yearChart"></canvas></div>
+    <div class="grid grid-cols-4 gap-3 mb-3 text-center">
+        <div class="card-1 p-3 rounded-xl shadow-sm">
+            <span class="text-[10px] uppercase font-bold text-blue-600">إجمالي الرسائل</span>
+            <b id="total_theses" class="stat-num">-</b>
         </div>
-        <div class="card col-span-2">
-            <h3 class="text-center text-sm mb-4">أكثر 5 جامعات مساهمة</h3>
-            <div class="chart-container"><canvas id="uniChart"></canvas></div>
+        <div class="card-2 p-3 rounded-xl shadow-sm">
+            <span class="text-[10px] uppercase font-bold text-emerald-600">الجامعات المشاركة</span>
+            <b id="total_unis" class="stat-num">-</b>
         </div>
-        <div class="card col-span-2">
-            <h3 class="text-center text-sm mb-4">تصنيف الدرجات العلمية</h3>
-            <div class="chart-container"><canvas id="degreeChart"></canvas></div>
+        <div class="card-3 p-3 rounded-xl shadow-sm">
+            <span class="text-[10px] uppercase font-bold text-amber-600">طلبات الانتظار</span>
+            <b id="pending_libs" class="stat-num">-</b>
         </div>
-        <div class="card col-span-2 flex flex-col">
-            <h3 class="text-center text-sm mb-2">آخر النشاطات</h3>
-            <div id="recent_list" class="text-[10px] space-y-2 overflow-y-auto">
-                </div>
+        <div class="card-4 p-3 rounded-xl shadow-sm border-l-4 border-indigo-600">
+            <span class="text-[10px] uppercase font-bold text-indigo-600">المكتبات المعتمدة</span>
+            <b id="total_libs" class="stat-num">-</b>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3 flex-grow">
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+            <h3 class="text-[11px] font-black mb-2 text-slate-700 border-b pb-1">توزيع الدرجات (ماجستير/دكتوراه)</h3>
+            <div class="flex-grow"><canvas id="degreeChart"></canvas></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+            <h3 class="text-[11px] font-black mb-2 text-slate-700 border-b pb-1">نمو الرسائل حسب السنوات</h3>
+            <div class="flex-grow"><canvas id="yearChart"></canvas></div>
+        </div>
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+            <h3 class="text-[11px] font-black mb-2 text-slate-700 border-b pb-1">أكثر 5 جامعات مساهمة</h3>
+            <div class="flex-grow"><canvas id="uniChart"></canvas></div>
         </div>
     </div>
 
     <script>
-        // ضع كود Firebase Config هنا (نفس الكود الخاص بك)
+        // إعدادات Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -73,45 +103,61 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // منطق جلب البيانات والرسوم (نفس المنطق السابق لكنه هنا في ملف نظيف)
-        db.ref('بيانات_الرسائل').on('value', snap => {
-            let stats = { degree: {}, years: {}, unis: {} };
-            let recent = [];
-            snap.forEach(child => {
-                let d = child.val();
-                if(d.الدرجة) stats.degree[d.الدرجة] = (stats.degree[d.الدرجة] || 0) + 1;
-                if(d.السنة) stats.years[d.السنة] = (stats.years[d.السنة] || 0) + 1;
-                if(d.الجامعة) stats.unis[d.الجامعة] = (stats.unis[d.الجامعة] || 0) + 1;
-                recent.push(d);
-            });
-            
-            document.getElementById('total_theses').innerText = recent.length;
-            document.getElementById('total_unis').innerText = Object.keys(stats.unis).length;
-            
-            renderDashboardCharts(stats);
-            updateRecentList(recent.reverse().slice(0, 5));
-        });
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = "📅 " + now.toLocaleDateString('ar-LY') + " | 🕒 " + now.toLocaleTimeString('ar-LY');
+        }
+        setInterval(updateClock, 1000);
 
-        // دوال الرسم والتحديث تستمر هنا...
-        function renderDashboardCharts(stats) {
-            Chart.defaults.color = '#94a3b8';
-            // كود Chart.js (نفس الذي صممناه سابقاً)
+        function loadStats() {
+            db.ref('بيانات_الرسائل').on('value', snap => {
+                let stats = { degree: {}, years: {}, unis: {} };
+                let count = 0;
+                snap.forEach(child => {
+                    let d = child.val();
+                    count++;
+                    if(d.الدرجة) stats.degree[d.الدرجة] = (stats.degree[d.الدرجة] || 0) + 1;
+                    if(d.السنة) stats.years[d.السنة] = (stats.years[d.السنة] || 0) + 1;
+                    if(d.الجامعة) stats.unis[d.الجامعة] = (stats.unis[d.الجامعة] || 0) + 1;
+                });
+                document.getElementById('total_theses').innerText = count;
+                document.getElementById('total_unis').innerText = Object.keys(stats.unis).length;
+                renderCharts(stats);
+            });
+
+            db.ref('libraries').on('value', snap => {
+                let p = 0, a = 0;
+                snap.forEach(child => {
+                    if(child.val().status === 'pending') p++;
+                    else a++;
+                });
+                document.getElementById('pending_libs').innerText = p;
+                document.getElementById('total_libs').innerText = a;
+            });
+        }
+
+        function renderCharts(stats) {
+            // كود Chart.js المركز مع ألوان متناسقة
+            new Chart(document.getElementById('degreeChart'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(stats.degree), datasets: [{ data: Object.values(stats.degree), backgroundColor: ['#1e40af', '#fbbf24'] }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 9 } } } } }
+            });
+
             new Chart(document.getElementById('yearChart'), {
-                type: 'line',
-                data: {
-                    labels: Object.keys(stats.years),
-                    datasets: [{ label: 'النمو السنوي', data: Object.values(stats.years), borderColor: '#38bdf8', tension: 0.4 }]
-                },
-                options: { maintainAspectRatio: false }
+                type: 'bar',
+                data: { labels: Object.keys(stats.years), datasets: [{ label: 'الرسائل', data: Object.values(stats.years), backgroundColor: '#10b981' }] },
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
-            // ... باقي الرسوم
+
+            new Chart(document.getElementById('uniChart'), {
+                type: 'pie',
+                data: { labels: Object.keys(stats.unis).slice(0, 5), datasets: [{ data: Object.values(stats.unis).slice(0, 5), backgroundColor: ['#1e3a8a', '#334155', '#059669', '#d97706', '#7c3aed'] }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 8 } } } } }
+            });
         }
 
-        function updateRecentList(list) {
-            document.getElementById('recent_list').innerHTML = list.map(item => 
-                `<div class="bg-slate-700/50 p-2 rounded">تمت إضافة: <b>${item.العنوان}</b> من قبل <b>${item.الباحث}</b></div>`
-            ).join('');
-        }
+        loadStats();
     </script>
 </body>
 </html>
