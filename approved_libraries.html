@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>المكتبات المعتمدة | الفهرس الليبي الموحد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background: #020617; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 20px; }
+        
+        /* هيدر الصفحة */
+        .header-panel { background: rgba(255, 255, 255, 0.05); border-bottom: 2px solid #10b981; padding: 15px 25px; border-radius: 15px; margin-bottom: 20px; }
+        .page-title { font-size: 40px; font-weight: 900; color: #ffffff; line-height: 1; }
+
+        /* منطقة المحتوى المزدحمة */
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; overflow-y: auto; flex-grow: 1; padding-bottom: 20px; }
+        
+        /* بطاقة المكتبة - فاتحة وواضحة */
+        .lib-card { 
+            background: rgba(255, 255, 255, 0.9); 
+            border-radius: 12px; 
+            padding: 15px; 
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .lib-name { font-size: 16px; font-weight: 900; color: #065f46; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 8px; }
+        .lib-info { font-size: 12px; font-weight: bold; color: #475569; margin-bottom: 4px; }
+        .lib-tag { background: #10b981; color: white; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: black; display: inline-block; }
+
+        /* شريط التنقل السفلي */
+        .nav-footer { background: #0f172a; border-top: 1px solid #1e293b; padding: 15px; display: flex; justify-content: center; gap: 20px; }
+        .nav-link { @apply text-slate-400 hover:text-white font-bold text-sm transition-all; }
+    </style>
+</head>
+<body>
+
+    <div class="header-panel flex justify-between items-center">
+        <div>
+            <h1 class="page-title">المكتبات المعتمدة</h1>
+            <p class="text-emerald-400 font-bold text-xs mt-2 uppercase tracking-widest">الجهات الرسمية المغذية للفهرس الليبي الموحد</p>
+        </div>
+        <div class="text-center bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+            <span class="text-[10px] text-emerald-500 font-black block">إجمالي الجهات</span>
+            <b id="lib-count" class="text-2xl text-white">0</b>
+        </div>
+    </div>
+
+    <div id="lib-container" class="lib-grid">
+        </div>
+
+    <div class="nav-footer">
+        <a href="dashboard.html" class="nav-link">← لوحة التحكم</a>
+        <a href="upload.html" class="nav-link">📤 رفع بيانات</a>
+        <a href="requests.html" class="nav-link">📩 طلبات الانضمام</a>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "libyan-theses-portal"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function loadLibraries() {
+            db.ref('libraries').orderByChild('status').equalTo('approved').on('value', snap => {
+                const container = document.getElementById('lib-container');
+                const countBox = document.getElementById('lib-count');
+                container.innerHTML = "";
+                let count = 0;
+
+                snap.forEach(child => {
+                    const lib = child.val();
+                    count++;
+                    container.innerHTML += `
+                        <div class="lib-card">
+                            <div>
+                                <div class="lib-name">${lib.name}</div>
+                                <div class="lib-info">🏛️ الجامعة: ${lib.university}</div>
+                                <div class="lib-info">📍 المدينة: ${lib.city}</div>
+                                <div class="lib-info">📞 تواصل: ${lib.phone || 'غير مدرج'}</div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <span class="lib-tag font-bold">معتمدة رسمياً</span>
+                                <span class="text-[10px] font-black text-slate-400">${lib.email}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                countBox.innerText = count;
+            });
+        }
+
+        window.onload = loadLibraries;
+    </script>
+</body>
+</html>
