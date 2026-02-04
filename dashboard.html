@@ -2,98 +2,112 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة الرسائل الجامعية الليبية | لوحة التحكم</title>
+    <title>بوابة الرسائل الجامعية الليبية | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background: #fdfdfd; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 12px; }
+        body { background: #1e293b; color: #f1f5f9; font-family: 'Segoe UI', Tahoma, sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 10px; }
         
-        /* هيدر فخم وعريض */
-        .giant-header { padding: 30px; border-bottom: 8px solid #1e3a8a; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        /* الهيدر العلوي بنمط نيون خفيف */
+        .glass-header { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-bottom: 2px solid #38bdf8; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         
-        /* أزرار في سطر واحد */
-        .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { @apply flex-1 py-2.5 rounded-xl border border-slate-200 bg-white text-[11px] font-black text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm; }
+        /* الحاويات الجانبية والمركزية */
+        .panel { background: #334155; border-radius: 12px; border: 1px solid #475569; padding: 12px; shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .panel-title { font-size: 11px; font-weight: bold; color: #94a3b8; border-bottom: 1px solid #475569; margin-bottom: 10px; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* منطقة الرسوم - كبيرة وبدون خلفيات */
-        .charts-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; flex: 2; align-items: center; margin-bottom: 20px; }
-        .chart-wrap { position: relative; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .chart-label { font-size: 11px; font-weight: 900; color: #64748b; margin-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; text-align: center; padding-top: 5px; }
-
-        /* الأسفل: بطاقات رشيقة وجدول */
-        .bottom-section { display: grid; grid-template-columns: 1.2fr 2fr; gap: 15px; flex: 1.2; min-height: 0; }
-        .lean-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-strip { @apply bg-white border border-slate-100 rounded-lg flex flex-col items-center justify-center p-2 shadow-sm; }
-        .stat-strip b { @apply text-2xl text-blue-900 leading-none; }
-        .stat-strip span { @apply text-[9px] font-bold text-slate-400 mt-1; }
-
-        .table-wrap { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-        table { width: 100%; font-size: 10px; }
-        th { @apply bg-slate-800 text-white p-2 text-center; }
-        td { @apply p-2 border-b text-center truncate; }
+        /* الأزرار بنمط الصورة */
+        .grid-btn { @apply flex items-center gap-3 bg-[#475569] hover:bg-[#38bdf8] hover:text-white transition-all p-3 rounded-lg text-[10px] font-bold border border-[#64748b]; }
         
-        canvas { max-height: 200px !important; }
+        /* البطاقات النحيفة Lean Stats */
+        .stat-line { @apply flex items-center justify-between p-2.5 bg-[#1e293b] rounded-md border-r-4 border-sky-400 mb-2; }
+        .stat-line b { @apply text-sky-400 text-lg; }
+        .stat-line span { @apply text-[10px] text-slate-400; }
+
+        /* الجدول المظلم */
+        table { width: 100%; font-size: 10px; border-collapse: collapse; }
+        th { background: #0f172a; color: #38bdf8; padding: 8px; text-align: center; position: sticky; top: 0; }
+        td { border-bottom: 1px solid #475569; padding: 6px; text-align: center; }
+        tr:hover { background: rgba(56, 189, 248, 0.05); }
+
+        canvas { max-height: 110px !important; } /* كثافة عالية للرسوم */
     </style>
 </head>
 <body>
 
-    <div class="giant-header bg-white rounded-2xl shadow-sm">
-        <div class="flex items-center gap-8">
-            <div class="text-5xl bg-blue-900 text-white p-5 rounded-3xl shadow-lg">🏛️</div>
+    <div class="glass-header">
+        <div class="flex items-center gap-5">
+            <div class="bg-sky-500 text-white p-3 rounded-xl text-3xl shadow-lg shadow-sky-500/20">🏛️</div>
             <div>
-                <h1 class="text-4xl font-black text-blue-900 tracking-tighter">بوابة الرسائل الجامعية الليبية</h1>
-                <div class="flex items-center gap-3 mt-2">
-                    <span class="h-1 w-20 bg-blue-600 rounded"></span>
-                    <p class="text-sm font-bold text-slate-400">نظام القيادة والسيطرة الرقمي</p>
+                <h1 class="text-3xl font-black tracking-tight">بوابة الرسائل الجامعية الليبية</h1>
+                <p class="text-xs text-sky-400 font-bold uppercase tracking-widest">Dashboard System v2.0</p>
+            </div>
+        </div>
+        <div class="bg-black/30 p-4 rounded-xl border border-sky-500/30">
+            <div id="live-clock" class="text-2xl font-mono font-bold text-sky-400">00:00:00</div>
+            <div class="text-[9px] text-slate-500 text-center uppercase mt-1">Status: Online / Live Data</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-3 flex-grow overflow-hidden">
+        
+        <div class="col-span-3 flex flex-col gap-3 h-full">
+            <div class="panel">
+                <div class="panel-title">Navigation / الإجراءات</div>
+                <div class="grid grid-cols-1 gap-2">
+                    <a href="upload.html" class="grid-btn"><span class="text-lg text-emerald-400">📤</span> رفع البيانات (Exel)</a>
+                    <a href="requests.html" class="grid-btn"><span class="text-lg text-amber-400">📩</span> طلبات الانضمام</a>
+                    <a href="approved_libraries.html" class="grid-btn"><span class="text-lg text-indigo-400">🏛️</span> المكتبات المعتمدة</a>
+                    <a href="index.html" class="grid-btn"><span class="text-lg text-sky-400">🌐</span> بوابة الجمهور</a>
+                </div>
+            </div>
+            
+            <div class="panel flex-grow overflow-y-auto">
+                <div class="panel-title">Lean Stats / الأرقام الحالية</div>
+                <div id="stats-container">
+                    <div class="stat-line"><span>إجمالي الرسائل</span><b id="s_total">-</b></div>
+                    <div class="stat-line border-emerald-400"><span>الجامعات</span><b id="s_unis">-</b></div>
+                    <div class="stat-line border-amber-400"><span>انتظار</span><b id="s_pending">-</b></div>
+                    <div class="stat-line border-indigo-400"><span>مكتبات</span><b id="s_libs">-</b></div>
                 </div>
             </div>
         </div>
-        <div id="clock" class="text-lg font-mono font-bold text-blue-700 bg-blue-50 px-6 py-3 rounded-2xl border-2 border-blue-100 shadow-inner"></div>
-    </div>
 
-    <div class="nav-bar">
-        <a href="index.html" class="nav-btn border-b-4 border-b-blue-500">🌐 بوابة الجمهور</a>
-        <a href="upload.html" class="nav-btn border-b-4 border-b-emerald-500">📤 رفع البيانات (Excel)</a>
-        <a href="requests.html" class="nav-btn border-b-4 border-b-amber-500">📩 طلبات الانضمام</a>
-        <a href="approved_libraries.html" class="nav-btn border-b-4 border-b-indigo-500">🏛️ المكتبات المعتمدة</a>
-        <button onclick="window.print()" class="nav-btn border-b-4 border-b-rose-500">🖨️ تقارير النظام</button>
-    </div>
-
-    <div class="charts-container">
-        <div class="chart-wrap">
-            <canvas id="degChart"></canvas>
-            <span class="chart-label">تصنيف الدرجات العلمية</span>
-        </div>
-        <div class="chart-wrap">
-            <canvas id="yearChart"></canvas>
-            <span class="chart-label">المسار الزمني للنمو</span>
-        </div>
-        <div class="chart-wrap">
-            <canvas id="uniChart"></canvas>
-            <span class="chart-label">توزع القوة البحثية (الجامعات)</span>
-        </div>
-    </div>
-
-    <div class="bottom-section">
-        <div class="lean-stats">
-            <div class="stat-strip"><b>-</b><span id="t_theses">إجمالي الرسائل</span></div>
-            <div class="stat-strip"><b>-</b><span id="t_unis">جامعة مشاركة</span></div>
-            <div class="stat-strip"><b>-</b><span id="t_pending" class="text-amber-600">طلبات انتظار</span></div>
-            <div class="stat-strip"><b>-</b><span id="t_libs">مكتبة معتمدة</span></div>
-        </div>
-
-        <div class="table-wrap">
-            <div class="bg-slate-50 p-2 text-[10px] font-black border-b flex justify-between">
-                <span>آخر البيانات التي تم تدقيقها واعتمادها</span>
-                <span class="text-blue-600">قاعدة البيانات الكاملة ←</span>
+        <div class="col-span-9 grid grid-rows-2 gap-3 h-full">
+            <div class="grid grid-cols-3 gap-3 h-full">
+                <div class="panel flex flex-col items-center">
+                    <div class="panel-title">توزيع الدرجات</div>
+                    <canvas id="c_deg"></canvas>
+                </div>
+                <div class="panel flex flex-col items-center">
+                    <div class="panel-title">النمو السنوي</div>
+                    <canvas id="c_year"></canvas>
+                </div>
+                <div class="panel flex flex-col items-center">
+                    <div class="panel-title">توزع الجامعات</div>
+                    <canvas id="c_uni"></canvas>
+                </div>
             </div>
-            <div class="overflow-y-auto flex-grow">
-                <table id="dashTable">
-                    <thead><tr><th width="20%">الباحث</th><th>عنوان الرسالة</th><th width="25%">الجهة الأكاديمية</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+
+            <div class="grid grid-cols-3 gap-3 h-full">
+                <div class="panel flex flex-col items-center">
+                    <div class="panel-title">الكليات الأكثر نشاطاً</div>
+                    <canvas id="c_coll"></canvas>
+                </div>
+                <div class="panel flex flex-col items-center">
+                    <div class="panel-title">توزع الأقسام</div>
+                    <canvas id="c_dept"></canvas>
+                </div>
+                <div class="panel col-span-1 flex flex-col overflow-hidden">
+                    <div class="panel-title">آخر العمليات المعتمدة</div>
+                    <div class="overflow-y-auto flex-grow">
+                        <table id="dashTable">
+                            <thead><tr><th>الباحث</th><th>العنوان</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -111,44 +125,52 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function load() {
+        function loadData() {
             db.ref('بيانات_الرسائل').on('value', snap => {
-                let data = [], s = {d:{}, y:{}, u:{}};
+                let data = [], s = {deg:{}, yrs:{}, uni:{}, coll:{}, dept:{}};
                 snap.forEach(c => {
                     let v = c.val(); data.push(v);
-                    if(v.الدرجة) s.d[v.الدرجة] = (s.d[v.الدرجة]||0)+1;
-                    if(v.السنة) s.y[v.السنة] = (s.y[v.السنة]||0)+1;
-                    if(v.الجامعة) s.u[v.الجامعة] = (s.u[v.الجامعة]||0)+1;
+                    if(v.الدرجة) s.deg[v.الدرجة] = (s.deg[v.الدرجة]||0)+1;
+                    if(v.السنة) s.yrs[v.السنة] = (s.yrs[v.السنة]||0)+1;
+                    if(v.الجامعة) s.uni[v.الجامعة] = (s.uni[v.الجامعة]||0)+1;
+                    if(v.الكلية) s.coll[v.الكلية] = (s.coll[v.الكلية]||0)+1;
+                    if(v.القسم) s.dept[v.القسم] = (s.dept[v.القسم]||0)+1;
                 });
-                document.querySelector('#t_theses').previousElementSibling.innerText = data.length;
-                document.querySelector('#t_unis').previousElementSibling.innerText = Object.keys(s.u).length;
                 
-                render(s);
-                document.querySelector('#dashTable tbody').innerHTML = data.reverse().slice(0, 8).map(d => `
-                    <tr><td>${d.الباحث || '-'}</td><td class="text-right font-bold text-blue-900">${d.العنوان}</td><td>${d.الجامعة}</td></tr>
+                document.getElementById('s_total').innerText = data.length;
+                document.getElementById('s_unis').innerText = Object.keys(s.uni).length;
+                
+                renderCharts(s);
+                document.querySelector('#dashTable tbody').innerHTML = data.reverse().slice(0, 10).map(d => `
+                    <tr><td>${d.الباحث ? d.الباحث.split(' ')[0] : '-'}</td><td class="text-right font-bold text-sky-400 truncate max-w-[120px]">${d.العنوان}</td></tr>
                 `).join('');
             });
 
             db.ref('libraries').on('value', snap => {
                 let p=0, a=0;
                 snap.forEach(c => { if(c.val().status === 'pending') p++; else a++; });
-                document.querySelector('#t_pending').previousElementSibling.innerText = p;
-                document.querySelector('#t_libs').previousElementSibling.innerText = a;
+                document.getElementById('s_pending').innerText = p;
+                document.getElementById('s_libs').innerText = a;
             });
         }
 
-        function render(s) {
+        function renderCharts(s) {
             Chart.defaults.color = '#94a3b8';
-            const opt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } } } } };
-            
-            // الرسوم البيانية بدون خلفيات (فقط المحتوى)
-            new Chart(document.getElementById('degChart'), { type: 'doughnut', data: { labels: Object.keys(s.d), datasets: [{ data: Object.values(s.d), backgroundColor: ['#1e40af', '#fbbf24'], borderWidth: 0 }] }, options: opt });
-            new Chart(document.getElementById('yearChart'), { type: 'line', data: { labels: Object.keys(s.y), datasets: [{ label: 'الرسائل', data: Object.values(s.y), borderColor: '#10b981', tension: 0.4, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.05)' }] }, options: { ...opt, scales: { y: { display: false }, x: { grid: { display: false } } } } });
-            new Chart(document.getElementById('uniChart'), { type: 'pie', data: { labels: Object.keys(s.u).slice(0, 5), datasets: [{ data: Object.values(s.u).slice(0, 5), backgroundColor: ['#1e3a8a', '#334155', '#059669', '#d97706', '#7c3aed'], borderWidth: 0 }] }, options: opt });
+            const pieOpt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } } } };
+            const barOpt = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#475569' } }, x: { grid: { display: false } } } };
+
+            // الرسوم العلوية
+            new Chart(document.getElementById('c_deg'), { type: 'doughnut', data: { labels: Object.keys(s.deg), datasets: [{ data: Object.values(s.deg), backgroundColor: ['#38bdf8', '#fbbf24'], borderWidth: 0 }] }, options: pieOpt });
+            new Chart(document.getElementById('c_year'), { type: 'line', data: { labels: Object.keys(s.yrs), datasets: [{ label: 'الرسائل', data: Object.values(s.yrs), borderColor: '#38bdf8', fill: true, backgroundColor: 'rgba(56, 189, 248, 0.1)', tension: 0.4 }] }, options: barOpt });
+            new Chart(document.getElementById('c_uni'), { type: 'pie', data: { labels: Object.keys(s.uni).slice(0, 5), datasets: [{ data: Object.values(s.uni).slice(0, 5), backgroundColor: ['#0ea5e9', '#334155', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] }, options: pieOpt });
+
+            // الرسوم السفلية (الكليات والأقسام)
+            new Chart(document.getElementById('c_coll'), { type: 'bar', data: { labels: Object.keys(s.coll).slice(0, 5), datasets: [{ data: Object.values(s.coll).slice(0, 5), backgroundColor: '#10b981' }] }, options: barOpt });
+            new Chart(document.getElementById('c_dept'), { type: 'polarArea', data: { labels: Object.keys(s.dept).slice(0, 5), datasets: [{ data: Object.values(s.dept).slice(0, 5), backgroundColor: ['#38bdf8', '#475569', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] }, options: pieOpt });
         }
 
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleString('ar-LY'); }, 1000);
-        load();
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('ar-LY'); }, 1000);
+        loadData();
     </script>
 </body>
 </html>
