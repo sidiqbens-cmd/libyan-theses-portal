@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إحصائيات بوابة الرسائل الجامعية الليبية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; padding: 10px; }
+        .grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto 1fr 1fr; gap: 10px; height: 95vh; }
+        .card { background: #1e293b; border-radius: 12px; padding: 15px; border: 1px solid #334155; }
+        .stat-val { font-size: 2rem; font-weight: 900; color: #38bdf8; }
+        .chart-container { position: relative; height: 100%; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="grid-layout">
+        <div class="col-span-4 flex justify-between items-center bg-slate-800 p-4 rounded-xl">
+            <h1 class="text-xl font-bold text-sky-400">📊 لوحة الإحصائيات والنمو الرقمي</h1>
+            <a href="admin.html" class="bg-sky-600 px-4 py-2 rounded-lg text-sm font-bold">← العودة للتحكم</a>
+        </div>
+
+        <div class="card flex flex-col items-center">
+            <span class="text-xs text-slate-400">إجمالي الأبحاث</span>
+            <div id="total_theses" class="stat-val">-</div>
+        </div>
+        <div class="card flex flex-col items-center">
+            <span class="text-xs text-slate-400">الجامعات المشاركة</span>
+            <div id="total_unis" class="stat-val">-</div>
+        </div>
+        <div class="card flex flex-col items-center">
+            <span class="text-xs text-slate-400">المكتبات المعتمدة</span>
+            <div id="total_libs" class="stat-val">-</div>
+        </div>
+        <div class="card flex flex-col items-center border-amber-500/50">
+            <span class="text-xs text-slate-400">طلبات قيد المراجعة</span>
+            <div id="pending_libs" class="stat-val text-amber-500">-</div>
+        </div>
+
+        <div class="card col-span-2">
+            <h3 class="text-center text-sm mb-4">توزيع الرسائل حسب السنوات</h3>
+            <div class="chart-container"><canvas id="yearChart"></canvas></div>
+        </div>
+        <div class="card col-span-2">
+            <h3 class="text-center text-sm mb-4">أكثر 5 جامعات مساهمة</h3>
+            <div class="chart-container"><canvas id="uniChart"></canvas></div>
+        </div>
+        <div class="card col-span-2">
+            <h3 class="text-center text-sm mb-4">تصنيف الدرجات العلمية</h3>
+            <div class="chart-container"><canvas id="degreeChart"></canvas></div>
+        </div>
+        <div class="card col-span-2 flex flex-col">
+            <h3 class="text-center text-sm mb-2">آخر النشاطات</h3>
+            <div id="recent_list" class="text-[10px] space-y-2 overflow-y-auto">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // ضع كود Firebase Config هنا (نفس الكود الخاص بك)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
+            authDomain: "libyan-theses-portal.firebaseapp.com",
+            databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "libyan-theses-portal",
+            storageBucket: "libyan-theses-portal.appspot.com",
+            messagingSenderId: "782635467382",
+            appId: "1:782635467382:web:48a60589a194519f964082"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // منطق جلب البيانات والرسوم (نفس المنطق السابق لكنه هنا في ملف نظيف)
+        db.ref('بيانات_الرسائل').on('value', snap => {
+            let stats = { degree: {}, years: {}, unis: {} };
+            let recent = [];
+            snap.forEach(child => {
+                let d = child.val();
+                if(d.الدرجة) stats.degree[d.الدرجة] = (stats.degree[d.الدرجة] || 0) + 1;
+                if(d.السنة) stats.years[d.السنة] = (stats.years[d.السنة] || 0) + 1;
+                if(d.الجامعة) stats.unis[d.الجامعة] = (stats.unis[d.الجامعة] || 0) + 1;
+                recent.push(d);
+            });
+            
+            document.getElementById('total_theses').innerText = recent.length;
+            document.getElementById('total_unis').innerText = Object.keys(stats.unis).length;
+            
+            renderDashboardCharts(stats);
+            updateRecentList(recent.reverse().slice(0, 5));
+        });
+
+        // دوال الرسم والتحديث تستمر هنا...
+        function renderDashboardCharts(stats) {
+            Chart.defaults.color = '#94a3b8';
+            // كود Chart.js (نفس الذي صممناه سابقاً)
+            new Chart(document.getElementById('yearChart'), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(stats.years),
+                    datasets: [{ label: 'النمو السنوي', data: Object.values(stats.years), borderColor: '#38bdf8', tension: 0.4 }]
+                },
+                options: { maintainAspectRatio: false }
+            });
+            // ... باقي الرسوم
+        }
+
+        function updateRecentList(list) {
+            document.getElementById('recent_list').innerHTML = list.map(item => 
+                `<div class="bg-slate-700/50 p-2 rounded">تمت إضافة: <b>${item.العنوان}</b> من قبل <b>${item.الباحث}</b></div>`
+            ).join('');
+        }
+    </script>
+</body>
+</html>
