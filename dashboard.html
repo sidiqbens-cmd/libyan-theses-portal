@@ -2,90 +2,92 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بوابة الرسائل الجامعية الليبية</title>
+    <title>بوابة الرسائل الجامعية الليبية | لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        /* خلفية داكنة كلية مع تخفيف ألوان العناصر الداخلية */
         body { background: #0f172a; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; padding: 20px; }
         
-        /* تباعد 1 سم (38px) */
+        /* هيدر فاتح وشفاف */
+        .portal-header { background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; margin-bottom: 30px; }
+        .main-title { font-size: 55px; font-weight: 900; color: #f8fafc; letter-spacing: -2px; line-height: 1; }
+
+        /* تباعد 1 سم بين العناصر */
         .grid-gap { gap: 38px; }
 
-        /* حاويات الرسوم - لونا أخف (أقل قتامة) */
-        .chart-box-soft { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 255, 255, 0.07); 
+        /* بطاقات رسوم خافتة جداً */
+        .chart-card-mist { 
+            background: rgba(255, 255, 255, 0.02); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
             border-radius: 15px; 
-            height: 180px; 
+            padding: 15px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            padding: 10px;
+            height: 180px;
         }
 
-        .chart-label { @apply text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-tighter; }
+        .chart-label { @apply text-[11px] text-slate-400 font-bold mt-3 uppercase tracking-widest opacity-60; }
 
-        /* بطاقات الإحصاء - ألوان ناعمة */
-        .stat-card-soft { 
-            background: rgba(56, 189, 248, 0.05); 
-            border: 1px solid rgba(56, 189, 248, 0.1); 
-            border-radius: 12px; 
-            padding: 12px; 
-            text-align: center; 
-        }
-        .stat-card-soft b { @apply text-2xl text-sky-400 block; }
-        .stat-card-soft span { @apply text-[9px] text-slate-500 font-bold; }
+        /* بطاقات إحصاء سفلية */
+        .stat-pill { background: rgba(56, 189, 248, 0.03); border: 1px solid rgba(56, 189, 248, 0.1); border-radius: 12px; padding: 12px; text-align: center; }
+        .stat-pill b { @apply text-2xl text-sky-400 block font-black; }
+        .stat-pill span { @apply text-[10px] text-slate-500 font-bold; }
 
-        /* جدول البيانات */
-        .data-table { width: 100%; font-size: 11px; }
-        .data-table th { @apply text-sky-500/70 border-b border-slate-800 pb-2 text-right; }
-        .data-table td { @apply py-2 border-b border-slate-800/30 truncate max-w-[200px] text-slate-400; }
+        table { width: 100%; font-size: 11px; }
+        td { @apply py-2 border-b border-white/5 text-slate-400 truncate max-w-[200px]; }
+        th { @apply text-sky-400/50 text-right pb-2 text-[10px] uppercase; }
 
-        canvas { max-height: 130px !important; width: 100% !important; }
+        canvas { max-height: 120px !important; width: 100% !important; }
     </style>
 </head>
 <body>
 
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-6xl font-black tracking-tighter text-white">بوابة الرسائل الجامعية الليبية</h1>
-        <div id="live-clock" class="text-2xl font-mono font-bold text-sky-500/50">00:00:00</div>
+    <div class="portal-header flex justify-between items-center">
+        <div>
+            <h1 class="main-title">بوابة الرسائل الجامعية الليبية</h1>
+            <p class="text-sky-400/60 font-bold text-xs mt-3 mr-1 tracking-widest uppercase">المنصة الوطنية الموحدة للإدارة الرقمية</p>
+        </div>
+        <div class="text-left">
+            <div id="live-clock" class="text-3xl font-mono font-bold text-white/20">00:00:00</div>
+        </div>
     </div>
 
-    <div class="flex gap-4 mb-8">
-        <a href="upload.html" class="flex-1 py-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-center text-xs font-bold text-sky-400 hover:bg-sky-500 hover:text-white transition-all">📤 رفع البيانات (Excel)</a>
-        <a href="approved_libraries.html" class="flex-1 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl text-center text-xs font-bold text-slate-400 hover:border-sky-500 transition-all">🏛️ المكتبات المعتمدة</a>
-        <a href="requests.html" class="flex-1 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl text-center text-xs font-bold text-slate-400 hover:border-amber-500 transition-all">📩 طلبات الانضمام</a>
-        <a href="index.html" class="flex-1 py-3 bg-slate-800/30 border border-slate-700/50 rounded-xl text-center text-xs font-bold text-slate-400 hover:border-white transition-all">🌐 البوابة العامة</a>
+    <div class="flex gap-4 mb-10">
+        <a href="upload.html" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-center text-xs font-bold text-slate-300 hover:bg-sky-500 hover:text-white transition-all">📤 رفع البيانات (Excel)</a>
+        <a href="approved_libraries.html" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-center text-xs font-bold text-slate-300 hover:border-sky-500">🏛️ المكتبات المعتمدة</a>
+        <a href="requests.html" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-center text-xs font-bold text-slate-300 hover:border-amber-500">📩 طلبات الانضمام</a>
+        <a href="index.html" class="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-center text-xs font-bold text-slate-300 hover:border-white">🌐 البوابة العامة</a>
     </div>
 
-    <div class="grid grid-cols-3 grid-rows-2 grid-gap flex-grow mb-8 overflow-hidden">
-        <div class="chart-box-soft"><canvas id="c1"></canvas><span class="chart-label">توزيع الدرجة العلمية</span></div>
-        <div class="chart-box-soft"><canvas id="c2"></canvas><span class="chart-label">النمو السنوي</span></div>
-        <div class="chart-box-soft"><canvas id="c3"></canvas><span class="chart-label">أعلى الجامعات</span></div>
-        <div class="chart-box-soft"><canvas id="c4"></canvas><span class="chart-label">توزيع الكليات</span></div>
-        <div class="chart-box-soft"><canvas id="c5"></canvas><span class="chart-label">الأقسام العلمية</span></div>
-        <div class="chart-box-soft"><canvas id="c6"></canvas><span class="chart-label">نوع الرسالة (ماجستير/دكتوراه)</span></div>
+    <div class="grid grid-cols-3 grid-rows-2 grid-gap flex-grow mb-10">
+        <div class="chart-card-mist"><canvas id="c_loc"></canvas><span class="chart-label">توزع مكان التواجد (كلي)</span></div>
+        <div class="chart-card-mist"><canvas id="c_year"></canvas><span class="chart-label">المنحنى الزمني للنمو</span></div>
+        <div class="chart-card-mist"><canvas id="c_uni"></canvas><span class="chart-label">أعلى الجامعات مساهمة</span></div>
+        <div class="chart-card-mist"><canvas id="c_coll"></canvas><span class="chart-label">إحصاء الكليات</span></div>
+        <div class="chart-card-mist"><canvas id="c_dept"></canvas><span class="chart-label">توزع الأقسام العلمية</span></div>
+        <div class="chart-card-mist"><canvas id="c_type"></canvas><span class="chart-label">نوع الرسالة (دكتوراه/ماجستير)</span></div>
     </div>
 
-    <div class="grid grid-cols-12 grid-gap h-[180px]">
-        <div class="col-span-8 overflow-hidden flex flex-col">
-            <div class="text-[10px] font-bold text-sky-500/50 mb-2 border-b border-slate-800 pb-1 uppercase">آخر التسجيلات المعتمدة فوريًا</div>
-            <div class="overflow-y-auto flex-grow">
-                <table class="data-table">
+    <div class="grid grid-cols-12 grid-gap h-[160px]">
+        <div class="col-span-8 overflow-hidden">
+            <div class="text-[10px] font-bold text-slate-500 mb-2 border-b border-white/5 pb-1 uppercase tracking-widest">آخر التحديثات المعتمدة</div>
+            <div class="overflow-y-auto h-full">
+                <table>
+                    <thead><tr><th width="20%">الباحث</th><th>عنوان الرسالة</th><th width="25%">الجامعة</th></tr></thead>
                     <tbody id="recentTable"></tbody>
                 </table>
             </div>
         </div>
 
         <div class="col-span-4 grid grid-cols-2 gap-3">
-            <div class="stat-card-soft"><span>الإجمالي</span><b id="st_total">0</b></div>
-            <div class="stat-card-soft"><span>الجامعات</span><b id="st_unis">0</b></div>
-            <div class="stat-card-soft"><span>قيد المراجعة</span><b id="st_pending" class="text-amber-500">0</b></div>
-            <div class="stat-card-soft"><span>مكتبة</span><b id="st_libs">0</b></div>
+            <div class="stat-pill"><span>إجمالي الرسائل</span><b id="st_total">0</b></div>
+            <div class="stat-pill"><span>الجامعات</span><b id="st_unis">0</b></div>
+            <div class="stat-pill"><span>قيد المراجعة</span><b id="st_pending" class="text-amber-500">0</b></div>
+            <div class="stat-pill"><span>مكتبة معتمدة</span><b id="st_libs">0</b></div>
         </div>
     </div>
 
@@ -102,29 +104,32 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        function startDashboard() {
+        function load() {
             db.ref('بيانات_الرسائل').on('value', snap => {
-                let data = [], s = {deg:{}, yrs:{}, uni:{}, coll:{}, dept:{}, type:{}};
+                let data = [], s = {loc:{'مكتبات مركزية':0, 'مكتبات كليات':0, 'الأرشيف الوطني':0}, yrs:{}, uni:{}, coll:{}, dept:{}, type:{'ماجستير':0, 'دكتوراه':0}};
+                
                 snap.forEach(c => {
                     let v = c.val(); data.push(v);
-                    if(v.الدرجة) s.deg[v.الدرجة] = (s.deg[v.الدرجة]||0)+1;
+                    // تجميع نوع الرسالة كلياً
+                    if(v.الدرجة && v.الدرجة.includes('دكتوراه')) s.type['دكتوراه']++;
+                    else s.type['ماجستير']++;
+
+                    // محاكاة مكان التواجد (يمكنك ربطها بحقل حقيقي لاحقاً)
+                    if(v.الجامعة) s.loc['مكتبات مركزية']++;
+                    
                     if(v.السنة) s.yrs[v.السنة] = (s.yrs[v.السنة]||0)+1;
                     if(v.الجامعة) s.uni[v.الجامعة] = (s.uni[v.الجامعة]||0)+1;
                     if(v.الكلية) s.coll[v.الكلية] = (s.coll[v.الكلية]||0)+1;
                     if(v.القسم) s.dept[v.القسم] = (s.dept[v.القسم]||0)+1;
-                    // فرز نوع الرسالة بناءً على الحقل (يمكن تعديل المسمى حسب قاعدة بياناتك)
-                    if(v.الدرجة) s.type[v.الدرجة] = (s.type[v.الدرجة]||0)+1; 
                 });
                 
                 document.getElementById('st_total').innerText = data.length;
                 document.getElementById('st_unis').innerText = Object.keys(s.uni).length;
-                
-                render(s);
-                document.getElementById('recentTable').innerHTML = data.reverse().slice(0, 6).map(d => `
-                    <tr><td class="font-bold text-sky-500/80">${d.الباحث || '-'}</td><td>${d.العنوان}</td><td class="opacity-30 text-[9px]">${d.الجامعة}</td></tr>
+                renderCharts(s);
+                document.getElementById('recentTable').innerHTML = data.reverse().slice(0, 5).map(d => `
+                    <tr><td class="font-bold text-slate-200">${d.الباحث || '-'}</td><td class="text-sky-400/80">${d.العنوان}</td><td>${d.الجامعة}</td></tr>
                 `).join('');
             });
-
             db.ref('libraries').on('value', snap => {
                 let p = 0; snap.forEach(c => { if(c.val().status === 'pending') p++; });
                 document.getElementById('st_pending').innerText = p;
@@ -132,21 +137,20 @@
             });
         }
 
-        function render(s) {
-            Chart.defaults.color = '#64748b';
-            const opt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 6, font: { size: 8 } } } } };
+        function renderCharts(s) {
+            Chart.defaults.color = '#94a3b8';
+            const opt = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 7, font: { size: 9 } } } } };
             
-            new Chart(document.getElementById('c1'), { type: 'doughnut', data: { labels: Object.keys(s.deg), datasets: [{ data: Object.values(s.deg), backgroundColor: ['#38bdf8', '#fbbf24'], borderWidth: 0 }] }, options: opt });
-            new Chart(document.getElementById('c2'), { type: 'line', data: { labels: Object.keys(s.yrs), datasets: [{ label: 'الرسائل', data: Object.values(s.yrs), borderColor: '#38bdf8', fill: true, backgroundColor: 'rgba(56, 189, 248, 0.05)', tension: 0.4 }] }, options: opt });
-            new Chart(document.getElementById('c3'), { type: 'pie', data: { labels: Object.keys(s.uni).slice(0, 5), datasets: [{ data: Object.values(s.uni).slice(0, 5), backgroundColor: ['#0ea5e9', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] }, options: opt });
-            new Chart(document.getElementById('c4'), { type: 'bar', data: { labels: Object.keys(s.coll).slice(0, 5), datasets: [{ label: 'الكلية', data: Object.values(s.coll).slice(0, 5), backgroundColor: '#6366f1' }] }, options: opt });
-            new Chart(document.getElementById('c5'), { type: 'polarArea', data: { labels: Object.keys(s.dept).slice(0, 5), datasets: [{ data: Object.values(s.dept).slice(0, 5), backgroundColor: ['#38bdf8', '#475569', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] }, options: opt });
-            // الرسم السادس: نوع الرسالة
-            new Chart(document.getElementById('c6'), { type: 'doughnut', data: { labels: Object.keys(s.type), datasets: [{ data: Object.values(s.type), backgroundColor: ['#8b5cf6', '#ec4899'], borderWidth: 0 }] }, options: opt });
+            new Chart(document.getElementById('c_loc'), { type: 'pie', data: { labels: Object.keys(s.loc), datasets: [{ data: Object.values(s.loc), backgroundColor: ['#0ea5e9', '#6366f1', '#10b981'], borderWidth: 0 }] }, options: opt });
+            new Chart(document.getElementById('c_year'), { type: 'line', data: { labels: Object.keys(s.yrs), datasets: [{ label: 'الرسائل', data: Object.values(s.yrs), borderColor: '#38bdf8', fill: true, backgroundColor: 'rgba(56,189,248,0.05)', tension: 0.4 }] }, options: opt });
+            new Chart(document.getElementById('c_uni'), { type: 'bar', data: { labels: Object.keys(s.uni).slice(0, 5), datasets: [{ data: Object.values(s.uni).slice(0, 5), backgroundColor: '#6366f1' }] }, options: opt });
+            new Chart(document.getElementById('c_coll'), { type: 'bar', data: { labels: Object.keys(s.coll).slice(0, 5), datasets: [{ data: Object.values(s.coll).slice(0, 5), backgroundColor: '#10b981' }] }, options: opt });
+            new Chart(document.getElementById('c_dept'), { type: 'polarArea', data: { labels: Object.keys(s.dept).slice(0, 5), datasets: [{ data: Object.values(s.dept).slice(0, 5), backgroundColor: ['#38bdf8', '#475569', '#10b981', '#f59e0b', '#8b5cf6'], borderWidth: 0 }] }, options: opt });
+            new Chart(document.getElementById('c_type'), { type: 'doughnut', data: { labels: Object.keys(s.type), datasets: [{ data: Object.values(s.type), backgroundColor: ['#8b5cf6', '#ec4899'], borderWidth: 0 }] }, options: opt });
         }
 
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-GB'); }, 1000);
-        startDashboard();
+        load();
     </script>
 </body>
 </html>
