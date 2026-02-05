@@ -12,7 +12,7 @@
     <div class="flex justify-between items-center mb-4 bg-slate-800 p-4 border border-slate-700 rounded-xl shadow-lg">
         <div>
             <h1 class="text-white font-black text-lg italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
-            <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">مراجعة واعتماد المؤسسات التعليمية</p>
+            <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">تجهيز البيانات للعرض العام</p>
         </div>
         <div id="stats" class="bg-sky-500/10 text-sky-400 px-4 py-2 rounded-lg border border-sky-500/20 font-black">جاري المزامنة...</div>
     </div>
@@ -21,10 +21,10 @@
         <table class="w-full border-collapse">
             <thead>
                 <tr class="bg-slate-700 text-sky-400">
-                    <th class="p-3 border-b border-slate-600 text-right">المؤسسة / المكتبة</th>
+                    <th class="p-3 border-b border-slate-600 text-right">المؤسسة والمدينة</th>
                     <th class="p-3 border-b border-slate-600 text-right">المسؤول والتبعية</th>
-                    <th class="p-3 border-b border-slate-600 text-center">بيانات التواصل</th>
-                    <th class="p-3 border-b border-slate-600 text-center">الإجراء الإداري</th>
+                    <th class="p-3 border-b border-slate-600 text-center">الروابط والاتصال</th>
+                    <th class="p-3 border-b border-slate-600 text-center">الإجراء</th>
                 </tr>
             </thead>
             <tbody id="requestsTableBody" class="text-right">
@@ -48,11 +48,16 @@
                     const v = child.val();
                     const key = child.key;
                     count++;
+                    
+                    // فحص وجود الروابط لعرض أيقونات توضيحية للمشرف
+                    const hasSocial = (v.facebook || v.website) ? '🔗' : '⚪';
+                    const hasMap = v.mapLocation ? '📍' : '❓';
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-700/50 transition-colors border-b border-slate-700/50">
                             <td class="p-3 text-white font-bold">
                                 ${v.libName || '-'} 
-                                <span class="block text-[10px] text-slate-500 font-normal">${v.city || 'ليبيا'}</span>
+                                <span class="block text-[10px] text-slate-500 font-normal">${v.city || 'ليبيا'} ${hasMap}</span>
                             </td>
                             <td class="p-3">
                                 <span class="text-slate-200 block">${v.contact || v.manager || '-'}</span>
@@ -60,15 +65,15 @@
                             </td>
                             <td class="p-3 text-center">
                                 <div class="text-blue-400">${v.email || '-'}</div>
-                                <div class="text-slate-500 text-[10px]">${v.phone || '-'}</div>
+                                <div class="text-[10px] text-slate-500">${v.phone || '-'} | ${hasSocial}</div>
                             </td>
                             <td class="p-3 text-center">
-                                <button onclick="approveRequest('${key}')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">✅ اعتماد</button>
+                                <button onclick="approveRequest('${key}')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-500 transition-all shadow-lg">✅ اعتماد</button>
                                 <button onclick="del('${key}')" class="bg-red-500/10 text-red-500 px-3 py-1.5 rounded-lg font-bold mr-2 hover:bg-red-500 hover:text-white transition-all">حذف</button>
                             </td>
                         </tr>`;
                 });
-                document.getElementById('stats').innerText = `${count} طلبات في الانتظار`;
+                document.getElementById('stats').innerText = `${count} طلبات بانتظار السيطرة`;
             });
         }
 
@@ -77,11 +82,12 @@
             const v = snap.val();
             if(!v) return;
 
+            // توليد كلمة مرور عشوائية للمكتبة
             const pass = "Libya@" + Math.floor(1000 + Math.random() * 9000);
             
-            if(confirm(`هل تريد اعتماد مكتبة "${v.libName}"؟\nسيتم نقل كافة الروابط والبيانات لصفحة الجمهور.`)) {
+            if(confirm(`هل تريد اعتماد "${v.libName}"؟\nسيتم نقل كافة البيانات (بما فيها ساعات العمل والروابط) إلى سجل المكتبات المعتمدة.`)) {
                 
-                // تجميع البيانات مع ضمان نقل روابط الفيسبوك والموقع [ملاحظتك الهامة]
+                // تجميع البيانات الكاملة من النموذج [ملاحظتك الهامة للسيطرة]
                 const approvedData = {
                     libName: v.libName || "",
                     email: v.email || "",
@@ -91,28 +97,30 @@
                     phone: v.phone || "",
                     city: v.city || "",
                     mapLocation: v.mapLocation || "",
-                    // نقل الحقول التي قد لا تملكها بعض المكتبات
                     facebook: v.facebook || "",
                     website: v.website || "",
-                    date: new Date().toLocaleDateString('ar-LY')
+                    // إضافة حقل ساعات العمل الذي حددته أنت لضمان ظهوره للجمهور
+                    workHours: v.workHours || "من الأحد إلى الخميس (09:00 ص - 02:00 ظ)",
+                    dateApproved: new Date().toLocaleDateString('ar-LY'),
+                    status: "approved"
                 };
 
-                // 1. النقل للمسار المعتمد
+                // 1. نقل البيانات إلى السجل الدائم (تحت سيطرة الإدارة)
                 await db.ref('approved_libraries/' + key).set(approvedData);
                 
-                // 2. حذف الطلب
+                // 2. إزالة الطلب من قائمة الانتظار (Move)
                 await db.ref('join_requests/' + key).remove();
 
-                // 3. محتوى الإيميل
-                const msg = `مرحباً مكتبة ${v.libName}، تم اعتماد انضمامكم للفهرس الليبي الموحد.\nبريد الدخول: ${v.email}\nكلمة المرور: ${pass}`;
+                // 3. إعداد رسالة الاعتماد
+                const msg = `مرحباً مكتبة ${v.libName}، تم اعتماد انضمامكم للفهرس الليبي الموحد.\nبيانات الدخول:\nالبريد: ${v.email}\nكلمة المرور: ${pass}`;
                 const mailtoLink = `mailto:${v.email}?subject=اعتماد انضمام - الفهرس الليبي الموحد&body=${encodeURIComponent(msg)}`;
                 window.location.href = mailtoLink;
 
-                alert("تم الاعتماد بنجاح ونقل كافة البيانات التفاعلية.");
+                alert("✅ تم بنجاح! المكتبة الآن في السجل المعتمد وجاهزة للظهور للجمهور.");
             }
         }
 
-        function del(key) { if(confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) db.ref('join_requests/' + key).remove(); }
+        function del(key) { if(confirm('حذف الطلب نهائياً؟')) db.ref('join_requests/' + key).remove(); }
         
         loadData();
     </script>
