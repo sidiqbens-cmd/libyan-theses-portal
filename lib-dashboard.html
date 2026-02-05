@@ -7,53 +7,83 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background: #020617; font-family: 'Segoe UI', sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(51, 65, 85, 0.5); }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans p-4">
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-300">
 
-    <div id="loginArea" class="max-w-md mx-auto mt-20 bg-slate-800 p-8 rounded-[2rem] border border-slate-700 shadow-2xl">
-        <h2 class="text-xl font-black text-white mb-6 text-center italic">تسجيل دخول المكتبة</h2>
-        <input type="email" id="libEmail" placeholder="البريد الإلكتروني المعتمد" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-4 text-white focus:border-sky-500 outline-none font-bold">
-        <input type="password" id="libPass" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-6 text-white focus:border-sky-500 outline-none font-bold">
-        <button onclick="login()" class="w-full bg-sky-500 text-slate-900 py-4 rounded-2xl font-black hover:bg-sky-400 transition-all">دخول للوحة الرفع</button>
+    <div id="loginArea" class="w-full max-w-md glass p-8 rounded-[2.5rem] shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-black text-white italic">دخول المكتبات المعتمدة</h1>
+            <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest mt-2">الفهرس الليبي الموحد</p>
+        </div>
+        
+        <div class="space-y-4">
+            <input type="email" id="libEmail" placeholder="البريد الإلكتروني" 
+                   class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-sky-500 transition-all font-bold">
+            
+            <input type="password" id="libPass" placeholder="كلمة المرور" 
+                   class="w-full bg-slate-900/50 border border-slate-700 p-4 rounded-2xl text-white outline-none focus:border-sky-500 transition-all font-bold">
+            
+            <button onclick="login()" id="loginBtn" class="w-full bg-sky-500 text-slate-900 py-4 rounded-2xl font-black text-lg hover:bg-sky-400 transition-all shadow-lg shadow-sky-500/20">
+                دخول للوحة الرفع
+            </button>
+        </div>
     </div>
 
-    <div id="uploadArea" class="max-w-2xl mx-auto hidden">
-        <div class="bg-slate-800 p-8 rounded-[2rem] border border-slate-700 shadow-2xl relative">
-            <button onclick="location.reload()" class="absolute top-6 left-6 text-slate-500 hover:text-red-500 text-[10px] font-bold">تسجيل خروج</button>
+    <div id="uploadArea" class="w-full max-w-2xl hidden animate-in fade-in zoom-in duration-500">
+        <div class="glass p-8 rounded-[2.5rem] shadow-2xl relative">
+            <button onclick="location.reload()" class="absolute top-6 left-6 text-slate-500 hover:text-red-500 text-[10px] font-bold border border-slate-700 px-3 py-1 rounded-full">تسجيل خروج</button>
             
-            <h1 id="welcomeMsg" class="text-2xl font-black text-white mb-2 italic italic text-sky-400">مرحباً...</h1>
-            <p class="text-slate-400 text-[10px] mb-8 font-bold uppercase tracking-widest">يمكنكم الآن رفع ملف الإكسل الخاص بالرسائل العلمية</p>
+            <div class="mb-8">
+                <h1 id="welcomeMsg" class="text-2xl font-black text-white italic">مرحباً...</h1>
+                <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">بوابة رفع الرسائل الجامعية</p>
+            </div>
 
-            <div class="mb-8 p-10 border-2 border-dashed border-slate-600 rounded-[2rem] text-center hover:border-emerald-500 transition-all bg-slate-900/50">
-                <input type="file" id="fileInput" accept=".xlsx, .xls" class="hidden">
-                <label for="fileInput" class="cursor-pointer">
-                    <span class="text-4xl block mb-4">📤</span>
-                    <span class="text-sm font-bold block text-slate-300">اختر ملف الإكسل (Excel)</span>
-                    <span id="fileName" class="text-[10px] text-emerald-400 mt-2 block font-mono"></span>
-                </label>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button onclick="downloadTemplate()" class="flex flex-col items-center justify-center p-6 bg-slate-900/50 border border-slate-700 rounded-[2rem] hover:border-sky-500 transition-all group">
+                    <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">📥</span>
+                    <span class="text-xs font-bold">تحميل نموذج الإكسل</span>
+                </button>
+                
+                <div class="relative flex flex-col items-center justify-center p-6 bg-slate-900/50 border border-slate-700 rounded-[2rem] hover:border-emerald-500 transition-all group">
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" class="hidden" onchange="updateFileName()">
+                    <label for="fileInput" class="cursor-pointer flex flex-col items-center">
+                        <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">📊</span>
+                        <span id="fileName" class="text-xs font-bold">اختر ملف البيانات</span>
+                    </label>
+                </div>
             </div>
 
             <button onclick="processExcel()" id="uploadBtn" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/40">
                 اعتماد ورفع البيانات فوراً
             </button>
 
-            <div id="status" class="mt-6 text-center text-xs font-bold italic"></div>
+            <div id="status" class="mt-6 text-center text-[10px] font-bold italic tracking-wider"></div>
         </div>
     </div>
 
     <script>
+        // إعدادات Firebase
         const firebaseConfig = { databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentLib = null;
 
-        // 1. نظام التحقق من المكتبة
+        // 1. وظيفة تسجيل الدخول
         async function login() {
             const email = document.getElementById('libEmail').value;
             const pass = document.getElementById('libPass').value;
+            const btn = document.getElementById('loginBtn');
 
-            // البحث في سجل المكتبات المعتمدة
+            if(!email || !pass) return alert("يرجى ملء كافة الحقول");
+            
+            btn.innerText = "جاري التحقق...";
+            btn.disabled = true;
+
             const snap = await db.ref('approved_libraries').once('value');
             let found = false;
             
@@ -70,44 +100,71 @@
                 document.getElementById('uploadArea').classList.remove('hidden');
                 document.getElementById('welcomeMsg').innerText = `مكتبة ${currentLib.libName}`;
             } else {
-                alert("بيانات الدخول غير صحيحة أو لم يتم اعتماد مكتبتكم بعد.");
+                alert("البريد أو كلمة المرور غير صحيحة، أو لم يتم تفعيل حسابكم بعد.");
+                btn.innerText = "دخول للوحة الرفع";
+                btn.disabled = false;
             }
         }
 
-        // 2. معالجة الرفع التلقائي
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            document.getElementById('fileName').innerText = e.target.files[0].name;
-        });
+        // 2. وظيفة تحديث اسم الملف المختار
+        function updateFileName() {
+            const file = document.getElementById('fileInput').files[0];
+            if(file) document.getElementById('fileName').innerText = file.name;
+        }
 
+        // 3. وظيفة تحميل النموذج (Template)
+        function downloadTemplate() {
+            // الأعمدة السبعة المطابقة لجدول الإدارة الخاص بك
+            const cols = [["الباحث", "العنوان", "الكلية", "القسم", "السنة", "الدرجة", "المشرف"]];
+            const ws = XLSX.utils.aoa_to_sheet(cols);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "بيانات الرسائل");
+            XLSX.writeFile(wb, "نموذج_الرسائل_الفهرس_الليبي.xlsx");
+        }
+
+        // 4. وظيفة معالجة ورفع الإكسل
         async function processExcel() {
             const file = document.getElementById('fileInput').files[0];
-            if (!file) return alert("يرجى اختيار ملف أولاً");
+            if (!file) return alert("يرجى اختيار ملف الإكسل أولاً");
 
             const btn = document.getElementById('uploadBtn');
+            const status = document.getElementById('status');
+            
             btn.disabled = true;
-            btn.innerText = "جاري المعالجة والربط التلقائي...";
+            btn.innerText = "جاري الربط والرفع التلقائي...";
 
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(sheet);
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet);
 
-                for (let row of rows) {
-                    await db.ref('بيانات_الرسائل').push({
-                        العنوان: row.العنوان || "-",
-                        الباحث: row.الباحث || "-",
-                        الجامعة: currentLib.libName, // اسم المكتبة يُحقن تلقائياً من حسابها
-                        الدرجة: row.الدرجة || "ماجستير",
-                        السنة: row.السنة || "-",
-                        مكان_التواجد_ID: currentLib.id // الـ ID يُحقن تلقائياً للربط مع صفحة الجمهور
-                    });
+                    if(rows.length === 0) throw new Error("الملف فارغ!");
+
+                    for (let row of rows) {
+                        // الربط التلقائي ببيانات المكتبة المسجلة دخولها
+                        await db.ref('بيانات_الرسائل').push({
+                            الباحث: row.الباحث || "-",
+                            العنوان: row.العنوان || "-",
+                            الجامعة: currentLib.libName, // يُؤخذ من حساب المكتبة
+                            الكلية: row.الكلية || "-",
+                            القسم: row.القسم || "-",
+                            السنة: row.السنة || "-",
+                            الدرجة: row.الدرجة || "ماجستير",
+                            مكان_التواجد_ID: currentLib.id // كود الربط السري للجمهور
+                        });
+                    }
+
+                    status.innerHTML = `<span class="text-emerald-400 animate-pulse">✅ نجحت العملية! تم رفع ${rows.length} رسالة وربطها بمكتبتكم.</span>`;
+                    btn.innerText = "رفع ملف إضافي";
+                    btn.disabled = false;
+                } catch (err) {
+                    alert("خطأ في معالجة الملف: " + err.message);
+                    btn.disabled = false;
+                    btn.innerText = "حاول مرة أخرى";
                 }
-
-                document.getElementById('status').innerHTML = `<span class="text-emerald-400">✅ تمت العملية! تم رفع ${rows.length} رسالة بنجاح.</span>`;
-                btn.disabled = false;
-                btn.innerText = "رفع ملف جديد";
             };
             reader.readAsArrayBuffer(file);
         }
