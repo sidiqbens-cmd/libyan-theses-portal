@@ -2,34 +2,37 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الطلبات | بوابة الرسائل الجامعية اللليبية</title>
+    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
-<body class="p-2 bg-slate-50 text-[11px] font-sans">
+<body class="p-4 bg-slate-900 text-[12px] font-sans text-slate-300">
 
-    <div class="flex justify-between items-center mb-2 bg-white p-3 border border-slate-300 shadow-sm">
-        <h1 class="text-blue-900 font-bold text-sm italic">بوابة الرسائل الجامعية اللليبية | إدارة طلبات الانضمام</h1>
-        <div id="stats" class="bg-blue-100 text-blue-800 px-3 py-1 rounded font-bold italic">جاري المزامنة...</div>
+    <div class="flex justify-between items-center mb-4 bg-slate-800 p-4 border border-slate-700 rounded-xl shadow-lg">
+        <div>
+            <h1 class="text-white font-black text-lg italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
+            <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">مراجعة واعتماد المؤسسات التعليمية</p>
+        </div>
+        <div id="stats" class="bg-sky-500/10 text-sky-400 px-4 py-2 rounded-lg border border-sky-500/20 font-black">جاري المزامنة...</div>
     </div>
 
-    <div class="overflow-x-auto border border-slate-300 shadow-md">
+    <div class="overflow-hidden border border-slate-700 rounded-xl shadow-2xl bg-slate-800">
         <table class="w-full border-collapse">
             <thead>
-                <tr class="bg-blue-900 text-white">
-                    <th class="p-2 border border-slate-600 text-right">اسم المكتبة</th>
-                    <th class="p-2 border border-slate-600">المسؤول</th>
-                    <th class="p-2 border border-slate-600">البريد الإلكتروني</th>
-                    <th class="p-2 border border-slate-600">الإجراء</th>
+                <tr class="bg-slate-700 text-sky-400">
+                    <th class="p-3 border-b border-slate-600 text-right">المؤسسة / المكتبة</th>
+                    <th class="p-3 border-b border-slate-600 text-right">المسؤول والتبعية</th>
+                    <th class="p-3 border-b border-slate-600 text-center">بيانات التواصل</th>
+                    <th class="p-3 border-b border-slate-600 text-center">الإجراء الإداري</th>
                 </tr>
             </thead>
-            <tbody id="requestsTableBody" class="bg-white text-center"></tbody>
+            <tbody id="requestsTableBody" class="text-right">
+                </tbody>
         </table>
     </div>
 
     <script>
-        // إعدادات القاعدة فقط (بدون الحاجة لخدمات الـ Auth المعقدة هنا)
         const firebaseConfig = { 
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -46,45 +49,70 @@
                     const key = child.key;
                     count++;
                     tbody.innerHTML += `
-                        <tr>
-                            <td class="p-2 border border-slate-200 font-bold text-blue-900 text-right">${v.libName || '-'}</td>
-                            <td class="p-2 border border-slate-200">${v.contact || '-'}</td>
-                            <td class="p-2 border border-slate-200 text-blue-600">${v.email || '-'}</td>
-                            <td class="p-2 border border-slate-200">
-                                <button onclick="approveManually('${key}', '${v.email}', '${v.libName}', '${v.phone}')" class="bg-green-700 text-white px-2 py-1 rounded font-bold hover:bg-green-800">✅ اعتماد</button>
-                                <button onclick="del('${key}')" class="bg-red-600 text-white px-2 py-1 rounded font-bold mr-1">حذف</button>
+                        <tr class="hover:bg-slate-700/50 transition-colors border-b border-slate-700/50">
+                            <td class="p-3 text-white font-bold">
+                                ${v.libName || '-'} 
+                                <span class="block text-[10px] text-slate-500 font-normal">${v.city || 'ليبيا'}</span>
+                            </td>
+                            <td class="p-3">
+                                <span class="text-slate-200 block">${v.contact || v.manager || '-'}</span>
+                                <span class="text-[10px] text-sky-500 font-bold">${v.affiliation || 'جامعة ليبية'}</span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <div class="text-blue-400">${v.email || '-'}</div>
+                                <div class="text-slate-500 text-[10px]">${v.phone || '-'}</div>
+                            </td>
+                            <td class="p-3 text-center">
+                                <button onclick="approveRequest('${key}')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">✅ اعتماد</button>
+                                <button onclick="del('${key}')" class="bg-red-500/10 text-red-500 px-3 py-1.5 rounded-lg font-bold mr-2 hover:bg-red-500 hover:text-white transition-all">حذف</button>
                             </td>
                         </tr>`;
                 });
-                document.getElementById('stats').innerText = `${count} طلبات انتظار`;
+                document.getElementById('stats').innerText = `${count} طلبات في الانتظار`;
             });
         }
 
-        function approveManually(key, email, name, phone) {
+        async function approveRequest(key) {
+            const snap = await db.ref('join_requests/' + key).once('value');
+            const v = snap.val();
+            if(!v) return;
+
             const pass = "Libya@" + Math.floor(1000 + Math.random() * 9000);
-            const msg = `مرحباً مكتبة ${name}، تم اعتماد انضمامكم لبوابة الرسائل الجامعية اللليبية .\nبريد الدخول: ${email}\nكلمة المرور: ${pass}`;
             
-            if(confirm(`سيتم اعتماد المكتبة بكلمة مرور: ${pass}\nهل تريد النسخ والمتابعة؟`)) {
-                // 1. تسجيل المكتبة في قائمة المعتمدين
-                db.ref('approved_libraries/' + key).set({
-                    libName: name,
-                    email: email,
+            if(confirm(`هل تريد اعتماد مكتبة "${v.libName}"؟\nسيتم نقل كافة الروابط والبيانات لصفحة الجمهور.`)) {
+                
+                // تجميع البيانات مع ضمان نقل روابط الفيسبوك والموقع [ملاحظتك الهامة]
+                const approvedData = {
+                    libName: v.libName || "",
+                    email: v.email || "",
                     password: pass,
-                    date: new Date().toLocaleDateString()
-                }).then(() => {
-                    // 2. حذف الطلب من الانتظار
-                    db.ref('join_requests/' + key).remove();
-                    
-                    // 3. فتح خيار الإرسال (إيميل)
-                    const mailtoLink = `mailto:${email}?subject=اعتماد مكتبة -  بوابة الرسائل الجامعية اللليبية&body=${encodeURIComponent(msg)}`;
-                    window.location.href = mailtoLink;
-                    
-                    alert("تم الحفظ والاعتماد. سيفتح متصفحك الآن لإرسال الإيميل.");
-                });
+                    manager: v.contact || v.manager || "",
+                    affiliation: v.affiliation || "",
+                    phone: v.phone || "",
+                    city: v.city || "",
+                    mapLocation: v.mapLocation || "",
+                    // نقل الحقول التي قد لا تملكها بعض المكتبات
+                    facebook: v.facebook || "",
+                    website: v.website || "",
+                    date: new Date().toLocaleDateString('ar-LY')
+                };
+
+                // 1. النقل للمسار المعتمد
+                await db.ref('approved_libraries/' + key).set(approvedData);
+                
+                // 2. حذف الطلب
+                await db.ref('join_requests/' + key).remove();
+
+                // 3. محتوى الإيميل
+                const msg = `مرحباً مكتبة ${v.libName}، تم اعتماد انضمامكم للفهرس الليبي الموحد.\nبريد الدخول: ${v.email}\nكلمة المرور: ${pass}`;
+                const mailtoLink = `mailto:${v.email}?subject=اعتماد انضمام - الفهرس الليبي الموحد&body=${encodeURIComponent(msg)}`;
+                window.location.href = mailtoLink;
+
+                alert("تم الاعتماد بنجاح ونقل كافة البيانات التفاعلية.");
             }
         }
 
-        function del(key) { if(confirm('حذف الطلب نهائياً؟')) db.ref('join_requests/' + key).remove(); }
+        function del(key) { if(confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟')) db.ref('join_requests/' + key).remove(); }
         
         loadData();
     </script>
