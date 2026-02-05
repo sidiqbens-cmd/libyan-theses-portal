@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة تحكم المكتبة | الفهرس الليبي الموحد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-300 font-sans p-4">
+
+    <div id="loginArea" class="max-w-md mx-auto mt-20 bg-slate-800 p-8 rounded-[2rem] border border-slate-700 shadow-2xl">
+        <h2 class="text-xl font-black text-white mb-6 text-center italic">تسجيل دخول المكتبة</h2>
+        <input type="email" id="libEmail" placeholder="البريد الإلكتروني المعتمد" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-4 text-white focus:border-sky-500 outline-none font-bold">
+        <input type="password" id="libPass" placeholder="كلمة المرور" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl mb-6 text-white focus:border-sky-500 outline-none font-bold">
+        <button onclick="login()" class="w-full bg-sky-500 text-slate-900 py-4 rounded-2xl font-black hover:bg-sky-400 transition-all">دخول للوحة الرفع</button>
+    </div>
+
+    <div id="uploadArea" class="max-w-2xl mx-auto hidden">
+        <div class="bg-slate-800 p-8 rounded-[2rem] border border-slate-700 shadow-2xl relative">
+            <button onclick="location.reload()" class="absolute top-6 left-6 text-slate-500 hover:text-red-500 text-[10px] font-bold">تسجيل خروج</button>
+            
+            <h1 id="welcomeMsg" class="text-2xl font-black text-white mb-2 italic italic text-sky-400">مرحباً...</h1>
+            <p class="text-slate-400 text-[10px] mb-8 font-bold uppercase tracking-widest">يمكنكم الآن رفع ملف الإكسل الخاص بالرسائل العلمية</p>
+
+            <div class="mb-8 p-10 border-2 border-dashed border-slate-600 rounded-[2rem] text-center hover:border-emerald-500 transition-all bg-slate-900/50">
+                <input type="file" id="fileInput" accept=".xlsx, .xls" class="hidden">
+                <label for="fileInput" class="cursor-pointer">
+                    <span class="text-4xl block mb-4">📤</span>
+                    <span class="text-sm font-bold block text-slate-300">اختر ملف الإكسل (Excel)</span>
+                    <span id="fileName" class="text-[10px] text-emerald-400 mt-2 block font-mono"></span>
+                </label>
+            </div>
+
+            <button onclick="processExcel()" id="uploadBtn" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/40">
+                اعتماد ورفع البيانات فوراً
+            </button>
+
+            <div id="status" class="mt-6 text-center text-xs font-bold italic"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentLib = null;
+
+        // 1. نظام التحقق من المكتبة
+        async function login() {
+            const email = document.getElementById('libEmail').value;
+            const pass = document.getElementById('libPass').value;
+
+            // البحث في سجل المكتبات المعتمدة
+            const snap = await db.ref('approved_libraries').once('value');
+            let found = false;
+            
+            snap.forEach(child => {
+                const lib = child.val();
+                if(lib.email === email && lib.password === pass) {
+                    currentLib = { id: child.key, ...lib };
+                    found = true;
+                }
+            });
+
+            if(found) {
+                document.getElementById('loginArea').classList.add('hidden');
+                document.getElementById('uploadArea').classList.remove('hidden');
+                document.getElementById('welcomeMsg').innerText = `مكتبة ${currentLib.libName}`;
+            } else {
+                alert("بيانات الدخول غير صحيحة أو لم يتم اعتماد مكتبتكم بعد.");
+            }
+        }
+
+        // 2. معالجة الرفع التلقائي
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            document.getElementById('fileName').innerText = e.target.files[0].name;
+        });
+
+        async function processExcel() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return alert("يرجى اختيار ملف أولاً");
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerText = "جاري المعالجة والربط التلقائي...";
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet);
+
+                for (let row of rows) {
+                    await db.ref('بيانات_الرسائل').push({
+                        العنوان: row.العنوان || "-",
+                        الباحث: row.الباحث || "-",
+                        الجامعة: currentLib.libName, // اسم المكتبة يُحقن تلقائياً من حسابها
+                        الدرجة: row.الدرجة || "ماجستير",
+                        السنة: row.السنة || "-",
+                        مكان_التواجد_ID: currentLib.id // الـ ID يُحقن تلقائياً للربط مع صفحة الجمهور
+                    });
+                }
+
+                document.getElementById('status').innerHTML = `<span class="text-emerald-400">✅ تمت العملية! تم رفع ${rows.length} رسالة بنجاح.</span>`;
+                btn.disabled = false;
+                btn.innerText = "رفع ملف جديد";
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+</body>
+</html>
