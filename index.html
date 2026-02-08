@@ -11,7 +11,7 @@
         .header-bg { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); }
         /* بطاقة بيانات المكتبة للجمهور */
         #libModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; border-top: 6px solid #1e3a8a; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; border-top: 6px solid #1e3a8a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: #f1f5f9; color: #1e3a8a; padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: right; }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
@@ -33,7 +33,7 @@
                 <div class="flex justify-between border-b pb-2"><b>المسؤول:</b> <span id="mManager" class="text-blue-700 font-bold"></span></div>
                 <div class="flex justify-between border-b pb-2"><b>رقم التواصل:</b> <span id="mPhone" class="text-blue-700 font-bold" dir="ltr"></span></div>
             </div>
-            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-6 bg-blue-900 text-white py-2 rounded-lg font-bold hover:bg-blue-800 transition-colors">إغلاق النافذة</button>
+            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-6 bg-blue-900 text-white py-2 rounded-lg font-bold hover:bg-blue-800 transition-colors">إغلاق</button>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
 
     <main class="container mx-auto px-4">
         <div class="bg-white p-4 rounded-xl shadow-md mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
-            <input type="text" id="mainSearch" onkeyup="searchData()" placeholder="ابحث بالعنوان، الباحث، أو الكلمات المفتاحية..." class="md:col-span-2 border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <input type="text" id="mainSearch" onkeyup="searchData()" placeholder="ابحث بالعنوان، الباحث..." class="md:col-span-2 border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
             <select id="filterUni" onchange="searchData()" class="border p-2 rounded-lg"><option value="">كل الجامعات</option></select>
             <select id="filterDeg" onchange="searchData()" class="border p-2 rounded-lg"><option value="">الدرجة العلمية</option><option>ماجستير</option><option>دكتوراه</option></select>
             <select id="filterYear" onchange="searchData()" class="border p-2 rounded-lg"><option value="">كل السنوات</option></select>
@@ -66,15 +66,13 @@
                             <th width="50px">الرابط</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody">
-                        </tbody>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
     </main>
 
     <script>
-        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
@@ -87,7 +85,7 @@
         let allTheses = [];
         let allLibs = {};
 
-        // جلب بيانات المكتبات أولاً لتجهيز البطاقات
+        // جلب بيانات المكتبات (libraries) أولاً لربطها ببطاقة المكان
         function fetchInitialData() {
             db.ref('libraries').once('value', snap => {
                 snap.forEach(child => { allLibs[child.val().libName] = child.val(); });
@@ -104,17 +102,18 @@
             });
         }
 
+        // دالة عرض بطاقة المكتبة عند الضغط على المكان
         function showLibCard(libName) {
             const lib = allLibs[libName];
             if (lib) {
                 document.getElementById('mLibName').innerText = lib.libName;
-                document.getElementById('mCity').innerText = lib.city || "غير محدد";
-                document.getElementById('mUni').innerText = lib.university || "تبعية مباشرة";
-                document.getElementById('mManager').innerText = lib.manager || "غير متاح";
-                document.getElementById('mPhone').innerText = lib.phone || "لا يوجد رقم";
+                document.getElementById('mCity').innerText = lib.city || "-";
+                document.getElementById('mUni').innerText = lib.university || "-";
+                document.getElementById('mManager').innerText = lib.manager || "-";
+                document.getElementById('mPhone').innerText = lib.phone || "-";
                 document.getElementById('libModal').style.display = 'flex';
             } else {
-                alert("بيانات هذه المكتبة غير متوفرة حالياً");
+                alert("بيانات جهة الإيداع غير متوفرة حالياً");
             }
         }
 
@@ -126,7 +125,7 @@
                     <td class="font-bold text-blue-900">${item.العنوان}</td>
                     <td>${item.الجامعة} / ${item.الكلية}</td>
                     <td class="cursor-pointer text-blue-600 font-bold hover:underline" onclick="showLibCard('${item.المكان}')">
-                        ${item.المكان} <span title="بيانات التواصل" class="text-[10px] bg-blue-100 px-1 rounded">ℹ️</span>
+                        ${item.المكان} <span class="text-[10px] bg-blue-100 px-1 rounded" title="بيانات التواصل">ℹ️</span>
                     </td>
                     <td class="text-center">${item.السنة}</td>
                     <td class="text-center"><span class="bg-gray-100 px-2 py-1 rounded text-[11px]">${item.الدرجة}</span></td>
@@ -137,7 +136,6 @@
             `).join('');
         }
 
-        // دوال البحث والفلترة (تتم هنا)
         function searchData() {
             const txt = document.getElementById('mainSearch').value.toLowerCase();
             const uni = document.getElementById('filterUni').value;
@@ -156,12 +154,8 @@
         function populateFilters() {
             const unis = [...new Set(allTheses.map(t => t.الجامعة))].filter(Boolean).sort();
             const years = [...new Set(allTheses.map(t => t.السنة))].filter(Boolean).sort().reverse();
-            
-            const uniSelect = document.getElementById('filterUni');
-            const yrSelect = document.getElementById('filterYear');
-            
-            uniSelect.innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option>${u}</option>`).join('');
-            yrSelect.innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option>${y}</option>`).join('');
+            document.getElementById('filterUni').innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option>${u}</option>`).join('');
+            document.getElementById('filterYear').innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option>${y}</option>`).join('');
         }
 
         window.onload = fetchInitialData;
