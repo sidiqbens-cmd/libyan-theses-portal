@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الفهرس الليبي الموحد | بوابة الرفع</title>
+    <title>بوابة الرسائل الجامعية الليبية | بوابة الرفع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -11,7 +11,7 @@
         body { background: #f1f5f9; font-family: 'Segoe UI', sans-serif; font-size: 11px; margin: 0; padding: 5px; overflow: hidden; }
         .dense-input { border: 1px solid #cbd5e1; padding: 2px 4px; border-radius: 2px; width: 100%; height: 24px; text-align: right; background: white; }
         .label-dense { width: 95px; text-align: right; color: #1e3a8a; font-weight: bold; font-size: 10px; }
-        .filter-select { background: #fff; border: 1px solid #94a3b8; padding: 1px 4px; border-radius: 4px; font-size: 10px; flex-grow: 1; height: 24px; }
+        .filter-select { background: #fff; border: 1px solid #94a3b8; padding: 1px 4px; border-radius: 4px; font-size: 10px; height: 24px; flex-grow: 1; }
         table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
         th { background: #1e3a8a; color: white; padding: 6px; border: 1px solid #334155; position: sticky; top: 0; z-index: 20; }
         td { border: 1px solid #e2e8f0; padding: 3px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -27,7 +27,7 @@
         </div>
         
         <div class="flex gap-1 items-center bg-blue-50 p-1 rounded border flex-grow mx-4">
-            <input type="text" id="fSearch" onkeyup="applyFilters()" placeholder="بحث بالاسم/العنوان" class="filter-select w-32">
+            <input type="text" id="fSearch" onkeyup="applyFilters()" placeholder="بحث سريع..." class="filter-select w-32">
             <select id="fUni" onchange="applyFilters()" class="filter-select"><option value="">الجامعة</option></select>
             <select id="fCol" onchange="applyFilters()" class="filter-select"><option value="">الكلية</option></select>
             <select id="fDep" onchange="applyFilters()" class="filter-select"><option value="">القسم</option></select>
@@ -36,8 +36,7 @@
         </div>
 
         <div class="text-right min-w-[120px]">
-            <div class="text-blue-900 font-bold text-[10px]">الفهرس الليبي الموحد</div>
-            <div id="libNameDisplay" class="text-[9px] text-gray-500 italic font-bold">جاري التحميل...</div>
+            <div id="libNameDisplay" class="text-blue-900 font-bold text-[10px]">جاري التحميل...</div>
         </div>
     </div>
 
@@ -49,17 +48,21 @@
                 <div class="flex items-center"><span class="label-dense">العنوان</span><input type="text" id="العنوان" class="dense-input" required></div>
                 <div class="flex items-center"><span class="label-dense">المشرف</span><input type="text" id="المشرف" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">رقم الرسالة</span><input type="text" id="الرقم" class="dense-input"></div>
-                <div class="flex items-center"><span class="label-dense">الجامعة</span><input type="text" id="الجامعة" class="dense-input bg-gray-50" readonly></div>
+                
+                <div class="flex items-center"><span class="label-dense">الجامعة</span><input type="text" id="الجامعة" class="dense-input"></div>
+                
                 <div class="flex items-center"><span class="label-dense">الكلية</span><input type="text" id="الكلية" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">القسم</span><input type="text" id="القسم" class="dense-input"></div>
-                <div class="flex items-center"><span class="label-dense">المكان</span><input type="text" id="المكان" class="dense-input"></div>
+                
+                <div class="flex items-center"><span class="label-dense">المكان</span><input type="text" id="المكان" class="dense-input bg-gray-50 font-bold" readonly></div>
+                
                 <div class="flex items-center"><span class="label-dense">الدرجة</span><select id="الدرجة" class="dense-input"><option>ماجستير</option><option>دكتوراه</option></select></div>
                 <div class="flex items-center"><span class="label-dense">الحالة</span><select id="الحالة" class="dense-input"><option>متوفرة</option><option>غير متوفرة</option></select></div>
                 <div class="flex items-center"><span class="label-dense">السنة</span><input type="number" id="السنة" class="dense-input"></div>
                 <div class="flex items-center"><span class="label-dense">رابط PDF</span><input type="url" id="الرابط" class="dense-input"></div>
             </div>
             <div class="grid grid-cols-4 gap-2 mt-2">
-                <button type="submit" id="saveBtn" class="bg-blue-900 text-white py-1 rounded font-bold text-[10px]">حفظ ✅</button>
+                <button type="submit" id="saveBtn" class="bg-blue-900 text-white py-1 rounded font-bold text-[10px]">حفظ البيانات ✅</button>
                 <div class="col-span-3"><input type="text" placeholder="ملاحظات..." id="الملاحظات" class="dense-input"></div>
             </div>
         </form>
@@ -71,7 +74,7 @@
                 <thead>
                     <tr>
                         <th width="120px">الباحث</th><th width="180px">العنوان</th>
-                        <th width="80px">الكلية</th><th width="80px">القسم</th>
+                        <th width="80px">الكلية</th><th width="80px">المكان</th>
                         <th width="45px">السنة</th><th width="55px">الدرجة</th>
                         <th width="40px">🔗</th><th width="90px">الإجراء</th>
                     </tr>
@@ -82,7 +85,6 @@
     </div>
 
     <script>
-        // تكوين Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             authDomain: "libyan-theses-portal.firebaseapp.com",
@@ -98,8 +100,10 @@
         const currentLib = JSON.parse(sessionStorage.getItem('authenticatedLib'));
         if(!currentLib) window.location.href = 'lib-dashboard.html';
 
-        document.getElementById('libNameDisplay').innerText = currentLib.libName;
-        document.getElementById('الجامعة').value = currentLib.libName;
+        // ضبط الحقول عند تحميل الصفحة
+        document.getElementById('libNameDisplay').innerText = "المكتبة: " + currentLib.libName;
+        document.getElementById('المكان').value = currentLib.libName; // اسم المكتبة يذهب للمكان
+        document.getElementById('الجامعة').value = ""; // الجامعة تبقى فارغة للإدخال
 
         let allData = [];
 
@@ -141,7 +145,7 @@
             tbody.innerHTML = filtered.map(d => `
                 <tr>
                     <td>${d.الباحث}</td><td class="font-bold text-blue-900">${d.العنوان}</td>
-                    <td>${d.الكلية}</td><td>${d.القسم}</td><td>${d.السنة}</td><td>${d.الدرجة}</td>
+                    <td>${d.الكلية}</td><td>${d.المكان}</td><td>${d.السنة}</td><td>${d.الدرجة}</td>
                     <td>${d.الرابط && d.الرابط != '#' ? `<a href="${d.الرابط}" target="_blank">📥</a>` : '-'}</td>
                     <td class="flex justify-center gap-1 py-1">
                         <button onclick="editItem('${d.key}')" class="bg-yellow-500 text-white px-2 rounded text-[9px]">تعديل</button>
@@ -156,16 +160,17 @@
             const data = {
                 الباحث: document.getElementById('الباحث').value, العنوان: document.getElementById('العنوان').value,
                 المشرف: document.getElementById('المشرف').value, الرقم: document.getElementById('الرقم').value,
-                الجامعة: currentLib.libName, الكلية: document.getElementById('الكلية').value,
-                القسم: document.getElementById('القسم').value, المكان: document.getElementById('المكان').value,
+                الجامعة: document.getElementById('الجامعة').value, الكلية: document.getElementById('الكلية').value,
+                القسم: document.getElementById('القسم').value, المكان: currentLib.libName,
                 الدرجة: document.getElementById('الدرجة').value, الحالة: document.getElementById('الحالة').value,
                 السنة: document.getElementById('السنة').value, الرابط: document.getElementById('الرابط').value || "#",
                 الملاحظات: document.getElementById('الملاحظات').value, id_المكتبة: currentLib.id
             };
             if(key) db.ref('بيانات_الرسائل/'+key).update(data); else db.ref('بيانات_الرسائل').push(data);
-            this.reset(); document.getElementById('الجامعة').value = currentLib.libName;
+            this.reset();
+            document.getElementById('المكان').value = currentLib.libName;
             document.getElementById('editKey').value = "";
-            document.getElementById('saveBtn').innerText = "حفظ ✅";
+            document.getElementById('saveBtn').innerText = "حفظ البيانات ✅";
         };
 
         window.editItem = function(key) {
@@ -175,8 +180,9 @@
             document.getElementById('saveBtn').innerText = "تحديث 📝";
         };
 
+        window.deleteItem = function(key) { if(confirm("حذف الرسالة؟")) db.ref('بيانات_الرسائل/'+key).remove(); };
         window.downloadFullTemplate = function() {
-            const cols = ["الباحث", "العنوان", "المشرف", "رقم الرسالة", "الكلية", "القسم", "المكان", "الدرجة", "الحالة", "السنة", "رابط PDF", "الملاحظات"];
+            const cols = ["الباحث", "العنوان", "المشرف", "رقم الرسالة", "الجامعة", "الكلية", "القسم", "الدرجة", "الحالة", "السنة", "رابط PDF", "الملاحظات"];
             const ws = XLSX.utils.json_to_sheet([Object.fromEntries(cols.map(c => [c, ""]))]);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Template");
@@ -191,8 +197,8 @@
                 data.forEach(item => {
                     db.ref('بيانات_الرسائل').push({
                         الباحث: item["الباحث"] || "-", العنوان: item["العنوان"] || "-", المشرف: item["المشرف"] || "-",
-                        الرقم: item["رقم الرسالة"] || "-", الجامعة: currentLib.libName, الكلية: item["الكلية"] || "-",
-                        القسم: item["القسم"] || "-", المكان: item["المكان"] || "-", الدرجة: item["الدرجة"] || "ماجستير",
+                        الرقم: item["رقم الرسالة"] || "-", الجامعة: item["الجامعة"] || "-", الكلية: item["الكلية"] || "-",
+                        القسم: item["القسم"] || "-", المكان: currentLib.libName, الدرجة: item["الدرجة"] || "ماجستير",
                         الحالة: item["الحالة"] || "متوفرة", السنة: item["السنة"] || "-", الرابط: item["رابط PDF"] || "#",
                         id_المكتبة: currentLib.id
                     });
@@ -202,7 +208,6 @@
             reader.readAsBinaryString(e.target.files[0]);
         };
 
-        window.deleteItem = function(key) { if(confirm("حذف؟")) db.ref('بيانات_الرسائل/'+key).remove(); };
         function logout() { sessionStorage.clear(); window.location.href = 'lib-dashboard.html'; }
         loadData();
     </script>
