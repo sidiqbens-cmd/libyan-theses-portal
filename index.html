@@ -10,21 +10,21 @@
         body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; direction: rtl; }
         .header-bg { background: white; border-bottom: 2px solid #1e3a8a; }
         
-        /* بطاقة بيانات المكتبة */
+        /* بطاقة بيانات المكتبة المنبثقة */
         #libModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 320px; border-top: 5px solid #1e3a8a; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 320px; border-top: 5px solid #1e3a8a; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: right; }
         
-        /* الجدول المكثف */
+        /* الجدول الاحترافي المكثف */
         table { width: 100%; border-collapse: collapse; }
-        th { background: #334155; color: white; padding: 6px; border: 1px solid #1e293b; text-align: center; font-size: 10px; }
+        th { background: #334155; color: white; padding: 6px; border: 1px solid #1e293b; text-align: center; font-size: 10px; position: sticky; top: 0; }
         td { padding: 4px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
         tr:hover { background-color: #f1f5f9; }
 
-        /* الفلاتر الأفقية - توزيع مرن */
-        .filter-row { display: flex; gap: 4px; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid #1e3a8a; margin-bottom: 8px; }
-        .filter-item { flex: 1; min-width: 0; position: relative; }
-        .filter-box { width: 100%; height: 30px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; outline: none; font-size: 10px; }
-        .filter-box:focus { border-color: #1e3a8a; ring: 1px solid #1e3a8a; }
+        /* شريط الفلاتر الأفقي */
+        .filter-row { display: flex; gap: 4px; background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #1e3a8a; margin-bottom: 8px; align-items: center; }
+        .filter-item { flex: 1; min-width: 0; }
+        .filter-box { width: 100%; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 0 8px; outline: none; font-size: 10px; transition: border 0.2s; }
+        .filter-box:focus { border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1); }
     </style>
 </head>
 <body>
@@ -36,12 +36,12 @@
                 <h2 id="mLibName" class="font-bold text-blue-900 text-sm"></h2>
             </div>
             <div class="space-y-2 text-[11px] border-t pt-3">
-                <div class="flex justify-between border-b pb-1"><b>المدينة:</b> <span id="mCity" class="text-blue-700"></span></div>
-                <div class="flex justify-between border-b pb-1"><b>الجامعة:</b> <span id="mUni" class="text-blue-700"></span></div>
-                <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-700"></span></div>
-                <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-700" dir="ltr"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>المدينة:</b> <span id="mCity" class="text-blue-700 font-bold"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>الجامعة التابعة:</b> <span id="mUni" class="text-blue-700 font-bold"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-700 font-bold"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-700 font-bold" dir="ltr"></span></div>
             </div>
-            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-4 bg-blue-900 text-white py-1.5 rounded text-[10px] font-bold">إغلاق</button>
+            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-4 bg-blue-900 text-white py-1.5 rounded text-[10px] font-bold">إغلاق النافذة</button>
         </div>
     </div>
 
@@ -72,11 +72,11 @@
         <datalist id="listNum"></datalist>
 
         <div class="bg-white border-2 border-blue-900 rounded shadow-lg overflow-hidden">
-            <div class="overflow-y-auto" style="height: calc(100vh - 155px);">
+            <div class="overflow-y-auto" style="height: calc(100vh - 160px);">
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th width="12%">الباحث</th><th width="30%">عنوان الرسالة</th>
+                            <th width="12%">الباحث</th><th width="28%">عنوان الرسالة</th>
                             <th width="10%">المشرف</th><th width="10%">الكلية</th>
                             <th width="8%">القسم</th><th width="5%">السنة</th>
                             <th width="6%">الدرجة</th><th width="7%">رقم الرسالة</th>
@@ -90,6 +90,7 @@
     </main>
 
     <script>
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAogBGo2_OzNITo9D9AXVyAjSjmu-DYotc",
             databaseURL: "https://libyan-theses-portal-default-rtdb.europe-west1.firebasedatabase.app",
@@ -102,7 +103,7 @@
         let allTheses = [];
         let allLibs = {};
 
-        // جلب البيانات مع ربط مؤكد للمكتبات
+        // جلب بيانات المكتبات أولاً لربط حقل المكان
         function fetchInitialData() {
             db.ref('libraries').once('value', snap => {
                 allLibs = {};
@@ -123,7 +124,7 @@
             });
         }
 
-        // دالة عرض البطاقة مع التحقق من وجود البيانات
+        // دالة عرض بيانات المكتبة (المكان)
         function showLibCard(name) {
             const lib = allLibs[name];
             if (lib) {
@@ -134,7 +135,7 @@
                 document.getElementById('mPhone').innerText = lib.phone || "-";
                 document.getElementById('libModal').style.display = 'flex';
             } else {
-                alert("بيانات التواصل مع " + name + " قيد التحديث");
+                alert("بيانات التواصل مع " + name + " سيتم تحديثها قريباً");
             }
         }
 
