@@ -7,63 +7,78 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        .header-bg { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); }
-        /* بطاقة بيانات المكتبة للجمهور */
+        body { background: #f8fafc; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; }
+        .header-bg { background: white; border-bottom: 2px solid #1e3a8a; }
+        
+        /* تصميم بطاقة بيانات المكتبة المعتمدة */
         #libModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; position: relative; border-top: 6px solid #1e3a8a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f1f5f9; color: #1e3a8a; padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: right; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .link-icon { color: #2563eb; text-decoration: none; font-size: 18px; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 100%; max-width: 380px; border-top: 6px solid #1e3a8a; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        
+        /* الجدول المكثف (Dense) */
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #334155; color: white; padding: 8px; border: 1px solid #1e293b; text-align: center; position: sticky; top: 0; }
+        td { padding: 6px; border: 1px solid #e2e8f0; text-align: center; color: #334155; }
+        tr:hover { background-color: #f1f5f9; }
+        
+        /* الفلاتر العلوية */
+        .filter-box { border: 2px solid #1e3a8a; border-radius: 8px; padding: 3px; background: #fff; width: 100%; height: 35px; outline: none; }
     </style>
 </head>
 <body>
 
     <div id="libModal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="text-center mb-5">
+            <div class="text-center mb-4">
                 <div class="text-5xl mb-2">🏛️</div>
-                <h2 id="mLibName" class="font-bold text-blue-900 text-xl"></h2>
-                <p class="text-gray-500 text-xs mt-1">تفاصيل جهة الإيداع</p>
+                <h2 id="mLibName" class="font-bold text-blue-900 text-lg"></h2>
+                <p class="text-gray-500 text-[10px] mt-1">بيانات التواصل مع جهة الإيداع</p>
             </div>
             <div class="space-y-3 text-sm border-t pt-4">
-                <div class="flex justify-between border-b pb-2"><b>المدينة:</b> <span id="mCity" class="text-blue-700 font-bold"></span></div>
-                <div class="flex justify-between border-b pb-2"><b>الجامعة التابعة:</b> <span id="mUni" class="text-blue-700 font-bold"></span></div>
-                <div class="flex justify-between border-b pb-2"><b>المسؤول:</b> <span id="mManager" class="text-blue-700 font-bold"></span></div>
-                <div class="flex justify-between border-b pb-2"><b>رقم التواصل:</b> <span id="mPhone" class="text-blue-700 font-bold" dir="ltr"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>المدينة:</b> <span id="mCity" class="text-blue-800"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>الجامعة:</b> <span id="mUni" class="text-blue-800"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-800"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-800" dir="ltr"></span></div>
             </div>
-            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-6 bg-blue-900 text-white py-2 rounded-lg font-bold hover:bg-blue-800 transition-colors">إغلاق</button>
+            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-5 bg-blue-900 text-white py-2 rounded font-bold hover:bg-blue-800">إغلاق</button>
         </div>
     </div>
 
-    <header class="header-bg text-white py-8 shadow-2xl mb-6">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-black mb-2 tracking-tight">بوابة الرسائل الجامعية الليبية</h1>
-            <p class="text-blue-100 opacity-80">المنصة المركزية للبحث في النتاج العلمي الجامعي الليبي</p>
+    <header class="header-bg p-4 flex justify-between items-center shadow-sm">
+        <div class="text-[10px] text-gray-500 font-bold">وزارة التعليم العالي والبحث العلمي</div>
+        <div class="flex items-center gap-4">
+             <button class="bg-green-600 text-white px-4 py-1 rounded-full text-[11px] font-bold">+ انضمام مكتبة</button>
+             <h1 class="text-2xl font-black text-blue-900">بوابة الرسائل الجامعية الليبية</h1>
         </div>
     </header>
 
-    <main class="container mx-auto px-4">
-        <div class="bg-white p-4 rounded-xl shadow-md mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
-            <input type="text" id="mainSearch" onkeyup="searchData()" placeholder="ابحث بالعنوان، الباحث..." class="md:col-span-2 border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-            <select id="filterUni" onchange="searchData()" class="border p-2 rounded-lg"><option value="">كل الجامعات</option></select>
-            <select id="filterDeg" onchange="searchData()" class="border p-2 rounded-lg"><option value="">الدرجة العلمية</option><option>ماجستير</option><option>دكتوراه</option></select>
-            <select id="filterYear" onchange="searchData()" class="border p-2 rounded-lg"><option value="">كل السنوات</option></select>
+    <main class="p-2">
+        <div class="grid grid-cols-6 gap-2 mb-2">
+            <div class="col-span-1 relative">
+                <input type="text" id="mainSearch" onkeyup="searchData()" placeholder="بحث شامل..." class="filter-box pr-8">
+                <span class="absolute right-2 top-2">🔍</span>
+            </div>
+            <select id="filterUni" onchange="searchData()" class="filter-box"><option value="">الجامعة</option></select>
+            <select id="filterCol" onchange="searchData()" class="filter-box"><option value="">الكلية</option></select>
+            <select id="filterDep" onchange="searchData()" class="filter-box"><option value="">القسم</option></select>
+            <select id="filterYear" onchange="searchData()" class="filter-box"><option value="">السنة</option></select>
+            <select id="filterDeg" onchange="searchData()" class="filter-box"><option value="">الدرجة</option><option>ماجستير</option><option>دكتوراه</option></select>
         </div>
 
-        <div class="bg-white rounded-xl shadow-xl overflow-hidden mb-12">
-            <div class="overflow-x-auto">
+        <div class="bg-white border-2 border-blue-900 rounded-lg overflow-hidden shadow-lg">
+            <div class="overflow-y-auto" style="height: calc(100vh - 160px);">
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th>الباحث</th>
-                            <th>عنوان الرسالة</th>
-                            <th>الجامعة/الكلية</th>
-                            <th>مكان التواجد</th>
-                            <th>السنة</th>
-                            <th>الدرجة</th>
-                            <th width="50px">الرابط</th>
+                            <th width="12%">الباحث</th>
+                            <th width="30%">عنوان الرسالة</th>
+                            <th width="12%">المشرف</th>
+                            <th width="10%">الجامعة</th>
+                            <th width="8%">الكلية</th>
+                            <th width="8%">القسم</th>
+                            <th width="5%">السنة</th>
+                            <th width="6%">الدرجة</th>
+                            <th width="10%">المكان</th>
+                            <th width="4%">🔗</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -85,8 +100,8 @@
         let allTheses = [];
         let allLibs = {};
 
-        // جلب بيانات المكتبات (libraries) أولاً لربطها ببطاقة المكان
         function fetchInitialData() {
+            // جلب بيانات المكتبات أولاً
             db.ref('libraries').once('value', snap => {
                 snap.forEach(child => { allLibs[child.val().libName] = child.val(); });
                 fetchTheses();
@@ -102,7 +117,7 @@
             });
         }
 
-        // دالة عرض بطاقة المكتبة عند الضغط على المكان
+        // دالة فتح بطاقة بيانات المكتبة (المكان)
         function showLibCard(libName) {
             const lib = allLibs[libName];
             if (lib) {
@@ -113,24 +128,27 @@
                 document.getElementById('mPhone').innerText = lib.phone || "-";
                 document.getElementById('libModal').style.display = 'flex';
             } else {
-                alert("بيانات جهة الإيداع غير متوفرة حالياً");
+                alert("بيانات جهة الإيداع سيتم تحديثها قريباً");
             }
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = data.map(item => `
-                <tr class="hover:bg-blue-50 transition-colors">
-                    <td class="font-medium text-gray-700">${item.الباحث}</td>
-                    <td class="font-bold text-blue-900">${item.العنوان}</td>
-                    <td>${item.الجامعة} / ${item.الكلية}</td>
+                <tr>
+                    <td>${item.الباحث}</td>
+                    <td class="font-bold text-blue-900 text-right pr-4">${item.العنوان}</td>
+                    <td>${item.المشرف || "-"}</td>
+                    <td>${item.الجامعة}</td>
+                    <td>${item.الكلية}</td>
+                    <td>${item.القسم}</td>
+                    <td>${item.السنة}</td>
+                    <td><span class="bg-gray-100 px-2 py-0.5 rounded text-[10px]">${item.الدرجة}</span></td>
                     <td class="cursor-pointer text-blue-600 font-bold hover:underline" onclick="showLibCard('${item.المكان}')">
-                        ${item.المكان} <span class="text-[10px] bg-blue-100 px-1 rounded" title="بيانات التواصل">ℹ️</span>
+                        ${item.المكان} ℹ️
                     </td>
-                    <td class="text-center">${item.السنة}</td>
-                    <td class="text-center"><span class="bg-gray-100 px-2 py-1 rounded text-[11px]">${item.الدرجة}</span></td>
-                    <td class="text-center">
-                        ${item.الرابط && item.الرابط !== "#" ? `<a href="${item.الرابط}" target="_blank" class="link-icon" title="فتح الملف">🌍</a>` : '<span class="text-gray-300">-</span>'}
+                    <td>
+                        ${item.الرابط && item.الرابط !== "#" ? `<a href="${item.الرابط}" target="_blank" title="تحميل/عرض">🌍</a>` : '-'}
                     </td>
                 </tr>
             `).join('');
@@ -139,23 +157,32 @@
         function searchData() {
             const txt = document.getElementById('mainSearch').value.toLowerCase();
             const uni = document.getElementById('filterUni').value;
-            const deg = document.getElementById('filterDeg').value;
+            const col = document.getElementById('filterCol').value;
+            const dep = document.getElementById('filterDep').value;
             const yr = document.getElementById('filterYear').value;
+            const deg = document.getElementById('filterDeg').value;
 
             const filtered = allTheses.filter(t => {
                 return (t.العنوان + t.الباحث).toLowerCase().includes(txt) &&
                        (!uni || t.الجامعة === uni) &&
-                       (!deg || t.الدرجة === deg) &&
-                       (!yr || t.السنة === yr);
+                       (!col || t.الكلية === col) &&
+                       (!dep || t.القسم === dep) &&
+                       (!yr || t.السنة === yr) &&
+                       (!deg || t.الدرجة === deg);
             });
             renderTable(filtered);
         }
 
         function populateFilters() {
-            const unis = [...new Set(allTheses.map(t => t.الجامعة))].filter(Boolean).sort();
-            const years = [...new Set(allTheses.map(t => t.السنة))].filter(Boolean).sort().reverse();
-            document.getElementById('filterUni').innerHTML = '<option value="">كل الجامعات</option>' + unis.map(u => `<option>${u}</option>`).join('');
-            document.getElementById('filterYear').innerHTML = '<option value="">كل السنوات</option>' + years.map(y => `<option>${y}</option>`).join('');
+            const fill = (id, prop) => {
+                const vals = [...new Set(allTheses.map(t => t[prop]))].filter(Boolean).sort();
+                const el = document.getElementById(id);
+                const current = el.value;
+                el.innerHTML = `<option value="">${el.options[0].text}</option>` + 
+                               vals.map(v => `<option ${v===current?'selected':''}>${v}</option>`).join('');
+            };
+            fill('filterUni', 'الجامعة'); fill('filterCol', 'الكلية'); 
+            fill('filterDep', 'القسم'); fill('filterYear', 'السنة');
         }
 
         window.onload = fetchInitialData;
