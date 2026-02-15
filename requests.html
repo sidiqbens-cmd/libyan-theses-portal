@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة الطلبات | الفهرس الليبي الموحد</title>
+    <title>إدارة الطلبات | بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -11,7 +11,7 @@
 
     <div class="flex justify-between items-center mb-4 bg-slate-800 p-4 border border-slate-700 rounded-xl shadow-lg">
         <div>
-            <h1 class="text-white font-black text-lg italic">الفهرس الليبي الموحد | إدارة طلبات الانضمام</h1>
+            <h1 class="text-white font-black text-lg italic">بوابة الرسائل الجامعية الليبية | إدارة طلبات الانضمام</h1>
             <p class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">تجهيز البيانات للعرض العام</p>
         </div>
         <div id="stats" class="bg-sky-500/10 text-sky-400 px-4 py-2 rounded-lg border border-sky-500/20 font-black">جاري المزامنة...</div>
@@ -111,9 +111,19 @@
                 // 2. إزالة الطلب من قائمة الانتظار (Move)
                 await db.ref('join_requests/' + key).remove();
 
-                // 3. إعداد رسالة الاعتماد
-                const msg = `مرحباً مكتبة ${v.libName}، تم اعتماد انضمامكم للفهرس الليبي الموحد.\nبيانات الدخول:\nالبريد: ${v.email}\nكلمة المرور: ${pass}`;
-                const mailtoLink = `mailto:${v.email}?subject=اعتماد انضمام - الفهرس الليبي الموحد&body=${encodeURIComponent(msg)}`;
+                // تحسين السطر 115 في كودك
+                const msg = `أهلاً بك في بوابة الرسائل الجامعية الليبية،
+
+                تم اعتماد مكتبة    (${v.libName}) بنجاح. يمكنك الآن الدخول لرفع بيانات الرسائل عبر الرابط التالي:
+                https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html
+
+                بيانات الدخول الخاصة بك:
+                البريد الإلكتروني: ${v.email}
+                كلمة المرور: ${pass}
+
+                مع تحيات إدارة بوابة الرسائل الجامعية الليبية.`;
+
+                const mailtoLink = `mailto:${v.email}?subject=${encodeURIComponent("اعتماد انضمام - بوابة الرسائل الجامعية الليبية")}&body=${encodeURIComponent(msg)}`;
                 window.location.href = mailtoLink;
 
                 alert("✅ تم بنجاح! المكتبة الآن في السجل المعتمد وجاهزة للظهور للجمهور.");
