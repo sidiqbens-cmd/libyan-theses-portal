@@ -12,7 +12,7 @@
         
         /* بطاقة بيانات المكتبة */
         #libModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 320px; border-top: 5px solid #1e3a8a; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: right; }
+        .modal-content { background: white; padding: 15px; border-radius: 8px; width: 320px; border-top: 5px solid #1e3a8a; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); text-align: right; }
         
         /* شريط الفلاتر الأفقي المكثف */
         .filter-row { display: flex; gap: 4px; background: #fff; padding: 8px; border: 1px solid #1e3a8a; margin-bottom: 5px; align-items: center; }
@@ -22,7 +22,7 @@
         /* الجدول */
         .table-container { background: white; border: 1px solid #1e3a8a; border-radius: 4px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #334155; color: white; padding: 5px; border: 1px solid #1e293b; text-align: center; font-size: 10px; position: sticky; top: 0; }
+        th { background: #334155; color: white; padding: 5px; border: 1px solid #1e293b; text-align: center; font-size: 10px; position: sticky; top: 0; z-index: 10; }
         td { padding: 4px; border: 1px solid #e2e8f0; text-align: center; color: #334155; white-space: nowrap; }
         tr:hover { background-color: #f1f5f9; }
         .status-badge { padding: 2px 6px; border-radius: 10px; font-weight: bold; font-size: 9px; }
@@ -32,27 +32,30 @@
 
     <div id="libModal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="text-center mb-4">
+            <div class="text-center mb-3">
                 <div class="text-3xl mb-1">🏛️</div>
                 <h2 id="mLibName" class="font-bold text-blue-900 text-sm"></h2>
                 <p class="text-gray-500 text-[9px]">بيانات جهة الإيداع المعتمدة</p>
             </div>
-            <div class="space-y-2 text-[11px] border-t pt-3">
+            <div class="space-y-1.5 text-[11px] border-t pt-3">
                 <div class="flex justify-between border-b pb-1"><b>المدينة:</b> <span id="mCity" class="text-blue-700"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>التبعية:</b> <span id="mUni" class="text-blue-700"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-700"></span></div>
-                <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-700" dir="ltr"></span></div>
+                <div class="flex justify-between border-b pb-1"><b>رقم الهاتف:</b> <span id="mPhone" class="text-blue-700" dir="ltr"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>ساعات العمل:</b> <span id="mHours" class="text-blue-700"></span></div>
-                <div id="mMapRow" class="flex justify-between border-b pb-1 bg-green-50 p-1 rounded" style="display: none;">
+                <div id="mMapRow" class="flex justify-between border-b pb-1 bg-green-50 p-1 rounded">
                     <b>الموقع الجغرافي:</b> 
-                    <a id="mMap" href="#" target="_blank" class="text-green-700 font-bold underline">📍 عرض على الخريطة</a>
+                    <a id="mMap" href="#" target="_blank" class="text-green-700 font-bold underline">📍 عرض الخريطة</a>
                 </div>
             </div>
+            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-4 bg-blue-900 text-white py-1.5 rounded text-[10px] font-bold">إغلاق</button>
+        </div>
+    </div>
 
     <header class="header-bg p-2 flex justify-between items-center">
         <div class="text-[9px] text-gray-400 font-bold">وزارة التعليم العالي والبحث العلمي</div>
         <div class="flex items-center gap-3">
-            <button onclick="window.location.href='join.html'" class="bg-green-600 text-white px-3 py-1 rounded-full text-[10px] font-bold hover:bg-green-700"> + انضمام مكتبة</button>
+            <button onclick="window.location.href='join.html'" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold hover:bg-green-700 transition-colors"> + انضمام مكتبة</button>
             <h1 class="text-xl font-black text-blue-900">بوابة الرسائل الجامعية الليبية</h1>
         </div>
     </header>
@@ -74,14 +77,18 @@
 
         <div class="table-container">
             <div class="overflow-y-auto" style="height: calc(100vh - 120px);">
-                <table>
+                <table id="mainTable">
                     <thead>
                         <tr>
-                            <th width="12%">الباحث</th><th width="32%">العنوان</th>
-                            <th width="10%">الكلية</th><th width="10%">القسم</th>
-                            <th width="6%">السنة</th><th width="8%">الدرجة</th>
-                            <th width="8%">الحالة</th><th width="12%">مكان التواجد</th>
-                            <th width="2%">🔗</th>
+                            <th width="12%">الباحث</th>
+                            <th width="28%">العنوان</th>
+                            <th width="10%">الجامعة</th> <th width="10%">الكلية</th>
+                            <th width="10%">القسم</th>
+                            <th width="5%">السنة</th>
+                            <th width="7%">الدرجة</th>
+                            <th width="7%">الحالة</th>
+                            <th width="10%">مكان التواجد</th>
+                            <th width="1%">🔗</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -104,6 +111,7 @@
         let allLibs = {};
 
         function fetchInitialData() {
+            // جلب المكتبات أولاً لضمان عمل البطاقات
             db.ref('approved_libraries').once('value', snap => {
                 allLibs = {};
                 snap.forEach(child => {
@@ -117,7 +125,10 @@
         function fetchTheses() {
             db.ref('بيانات_الرسائل').on('value', snap => {
                 allTheses = [];
-                snap.forEach(child => { allTheses.push(child.val()); });
+                snap.forEach(child => { 
+                    let item = child.val();
+                    allTheses.push(item); 
+                });
                 renderTable(allTheses);
                 updateDatalists();
             });
@@ -126,16 +137,14 @@
         function showLibCard(name) {
             const cleanName = name ? name.trim() : "";
             const lib = allLibs[cleanName];
-    
             if (lib) {
                 document.getElementById('mLibName').innerText = lib.libName;
                 document.getElementById('mCity').innerText = lib.city || "غير محدد";
-                document.getElementById('mUni').innerText = lib.affiliation || "-"; // التبعية
-                document.getElementById('mManager').innerText = lib.manager || "-"; // تم ربطها بـ manager في الكود المرفق
+                document.getElementById('mUni').innerText = lib.affiliation || "-";
+                document.getElementById('mManager').innerText = lib.manager || "-";
                 document.getElementById('mPhone').innerText = lib.phone || "-";
-                document.getElementById('mHours').innerText = lib.workHours || "-"; // تم ربطها بـ workHours في الكود المرفق
-        
-                // ربط الخريطة (Google Maps)
+                document.getElementById('mHours').innerText = lib.workHours || "-";
+                
                 const mapRow = document.getElementById('mMapRow');
                 const mapLink = document.getElementById('mMap');
                 if (lib.mapLocation && lib.mapLocation.startsWith('http')) {
@@ -144,27 +153,47 @@
                 } else {
                     mapRow.style.display = 'none';
                 }
-        
                 document.getElementById('libModal').style.display = 'flex';
             } else {
-                alert("بيانات المكتبة (" + cleanName + ") غير مسجلة حالياً في قاعدة البيانات المعتمدة.");
+                alert("بيانات المكتبة (" + cleanName + ") قيد التحديث.");
             }
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = data.map(item => `
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="p-4 text-gray-400">لا توجد نتائج مطابقة..</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => {
+                const researcher = item.الباحث || item.researcher || "-";
+                const title = item.العنوان || item.title || "بدون عنوان";
+                const university = item.الجامعة || item.university || "-"; // دعم الحقل الجديد
+                const college = item.الكلية || item.college || "-";
+                const department = item.القسم || item.department || "-";
+                const year = item.السنة || item.year || "-";
+                const degree = item.الدرجة || item.degree || "-";
+                const status = item.الحالة || item.status || "-";
+                const place = item.المكان || item.location || "-";
+                const url = item.الرابط || item.link || "#";
+
+                return `
                 <tr>
-                    <td>${item.الباحث}</td>
-                    <td class="font-bold text-blue-900 text-right pr-2">${item.العنوان}</td>
-                    <td>${item.الكلية}</td><td>${item.القسم}</td>
-                    <td>${item.السنة}</td><td>${item.الدرجة}</td>
-                    <td><span class="status-badge ${item.الحالة === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.الحالة || "-"}</span></td>
-                    <td class="cursor-pointer text-blue-600 font-bold hover:underline" onclick="showLibCard('${item.المكان}')">
-                        ${item.المكان || "-"} ℹ️
+                    <td>${researcher}</td>
+                    <td class="font-bold text-blue-900 text-right pr-2">${title}</td>
+                    <td>${university}</td>
+                    <td>${college}</td>
+                    <td>${department}</td>
+                    <td>${year}</td>
+                    <td>${degree}</td>
+                    <td><span class="status-badge ${status === 'متوفرة' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${status}</span></td>
+                    <td class="cursor-pointer text-blue-600 font-bold hover:underline" onclick="showLibCard('${place}')">
+                        ${place} ℹ️
                     </td>
-                    <td>${item.الرابط && item.الرابط !== "#" ? `<a href="${item.الرابط}" target="_blank">🌍</a>` : '-'}</td>
-                </tr>`).join('');
+                    <td>${url !== "#" ? `<a href="${url}" target="_blank">🌍</a>` : '-'}</td>
+                </tr>`;
+            }).join('');
         }
 
         function searchData() {
@@ -177,13 +206,14 @@
             const st = document.getElementById('fStatus').value;
 
             const filtered = allTheses.filter(t => {
-                return (t.العنوان + t.الباحث).toLowerCase().includes(s) &&
-                       (!u || t.الجامعة === u) &&
-                       (!c || t.الكلية === c) &&
-                       (!p || t.القسم === p) &&
-                       (!y || t.السنة === y) &&
-                       (!d || t.الدرجة === d) &&
-                       (!st || t.الحالة === st);
+                const searchStr = (t.العنوان || "") + (t.الباحث || "");
+                return searchStr.toLowerCase().includes(s) &&
+                       (!u || (t.الجامعة || t.university) === u) &&
+                       (!c || (t.الكلية || t.college) === c) &&
+                       (!p || (t.القسم || t.department) === p) &&
+                       (!y || (t.السنة || t.year) === y) &&
+                       (!d || (t.الدرجة || t.degree) === d) &&
+                       (!st || (t.الحالة || t.status) === st);
             });
             renderTable(filtered);
         }
