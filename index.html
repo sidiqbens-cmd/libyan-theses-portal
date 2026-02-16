@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الفهرس الليبي الموحد</title>
+    <title>بوابة الرسائل الجامعية الليبية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -43,6 +43,10 @@
                 <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-700"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-700" dir="ltr"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>ساعات العمل:</b> <span id="mHours" class="text-blue-700"></span></div>
+                <div id="mMapContainer" class="flex justify-between border-b pb-1 bg-blue-50 p-1">
+                    <b>الموقع الجغرافي:</b> 
+                    <a id="mMap" href="#" target="_blank" class="text-green-600 font-bold underline">📍 عرض الخريطة</a>
+                </div>
             </div>
             <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-4 bg-blue-900 text-white py-1.5 rounded text-[10px] font-bold">إغلاق</button>
         </div>
@@ -51,8 +55,8 @@
     <header class="header-bg p-2 flex justify-between items-center">
         <div class="text-[9px] text-gray-400 font-bold">وزارة التعليم العالي والبحث العلمي</div>
         <div class="flex items-center gap-3">
-            <button onclick="window.location.href='join.html'" class="bg-green-600 ..."> + انضمام مكتبة</button>
-            <h1 class="text-xl font-black text-blue-900">الفهرس الليبي الموحد</h1>
+            <button onclick="window.location.href='join.html'" class="bg-green-600 text-white px-3 py-1 rounded-full text-[10px] font-bold hover:bg-green-700"> + انضمام مكتبة</button>
+            <h1 class="text-xl font-black text-blue-900">بوابة الرسائل الجامعية الليبية</h1>
         </div>
     </header>
 
@@ -102,7 +106,6 @@
         let allTheses = [];
         let allLibs = {};
 
-        // جلب المكتبات من المسار الصحيح المعتمد في الصورة
         function fetchInitialData() {
             db.ref('approved_libraries').once('value', snap => {
                 allLibs = {};
@@ -133,6 +136,17 @@
                 document.getElementById('mManager').innerText = lib.manager || "-";
                 document.getElementById('mPhone').innerText = lib.phone || "-";
                 document.getElementById('mHours').innerText = lib.workHours || "-";
+                
+                // ربط الموقع الجغرافي
+                const mapLink = document.getElementById('mMap');
+                const mapContainer = document.getElementById('mMapContainer');
+                if (lib.mapLocation && lib.mapLocation.startsWith('http')) {
+                    mapLink.href = lib.mapLocation;
+                    mapContainer.style.display = 'flex';
+                } else {
+                    mapContainer.style.display = 'none';
+                }
+
                 document.getElementById('libModal').style.display = 'flex';
             } else {
                 alert("بيانات المكتبة (" + cleanName + ") قيد التدقيق.");
