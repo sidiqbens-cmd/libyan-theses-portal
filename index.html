@@ -43,14 +43,11 @@
                 <div class="flex justify-between border-b pb-1"><b>المسؤول:</b> <span id="mManager" class="text-blue-700"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>الهاتف:</b> <span id="mPhone" class="text-blue-700" dir="ltr"></span></div>
                 <div class="flex justify-between border-b pb-1"><b>ساعات العمل:</b> <span id="mHours" class="text-blue-700"></span></div>
-                <div id="mMapContainer" class="flex justify-between border-b pb-1 bg-blue-50 p-1">
+                <div id="mMapRow" class="flex justify-between border-b pb-1 bg-green-50 p-1 rounded" style="display: none;">
                     <b>الموقع الجغرافي:</b> 
-                    <a id="mMap" href="#" target="_blank" class="text-green-600 font-bold underline">📍 عرض الخريطة</a>
+                    <a id="mMap" href="#" target="_blank" class="text-green-700 font-bold underline">📍 عرض على الخريطة</a>
                 </div>
             </div>
-            <button onclick="document.getElementById('libModal').style.display='none'" class="w-full mt-4 bg-blue-900 text-white py-1.5 rounded text-[10px] font-bold">إغلاق</button>
-        </div>
-    </div>
 
     <header class="header-bg p-2 flex justify-between items-center">
         <div class="text-[9px] text-gray-400 font-bold">وزارة التعليم العالي والبحث العلمي</div>
@@ -129,27 +126,28 @@
         function showLibCard(name) {
             const cleanName = name ? name.trim() : "";
             const lib = allLibs[cleanName];
+    
             if (lib) {
                 document.getElementById('mLibName').innerText = lib.libName;
                 document.getElementById('mCity').innerText = lib.city || "غير محدد";
-                document.getElementById('mUni').innerText = lib.affiliation || "-";
-                document.getElementById('mManager').innerText = lib.manager || "-";
+                document.getElementById('mUni').innerText = lib.affiliation || "-"; // التبعية
+                document.getElementById('mManager').innerText = lib.manager || "-"; // تم ربطها بـ manager في الكود المرفق
                 document.getElementById('mPhone').innerText = lib.phone || "-";
-                document.getElementById('mHours').innerText = lib.workHours || "-";
-                
-                // ربط الموقع الجغرافي
+                document.getElementById('mHours').innerText = lib.workHours || "-"; // تم ربطها بـ workHours في الكود المرفق
+        
+                // ربط الخريطة (Google Maps)
+                const mapRow = document.getElementById('mMapRow');
                 const mapLink = document.getElementById('mMap');
-                const mapContainer = document.getElementById('mMapContainer');
                 if (lib.mapLocation && lib.mapLocation.startsWith('http')) {
                     mapLink.href = lib.mapLocation;
-                    mapContainer.style.display = 'flex';
+                    mapRow.style.display = 'flex';
                 } else {
-                    mapContainer.style.display = 'none';
+                    mapRow.style.display = 'none';
                 }
-
+        
                 document.getElementById('libModal').style.display = 'flex';
             } else {
-                alert("بيانات المكتبة (" + cleanName + ") قيد التدقيق.");
+                alert("بيانات المكتبة (" + cleanName + ") غير مسجلة حالياً في قاعدة البيانات المعتمدة.");
             }
         }
 
