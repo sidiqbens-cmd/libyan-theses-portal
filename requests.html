@@ -87,26 +87,25 @@
             
             if(confirm(`هل تريد اعتماد "${v.libName}"؟\nسيتم نقل كافة البيانات (بما فيها ساعات العمل والروابط) إلى سجل المكتبات المعتمدة.`)) {
                 
-                // تجميع البيانات الكاملة من النموذج [ملاحظتك الهامة للسيطرة]
-                const approvedData = {
-                    libName: v.libName || "",
-                    email: v.email || "",
-                    password: pass,
-                    manager: v.contact || v.manager || "",
-                    affiliation: v.affiliation || "",
-                    phone: v.phone || "",
-                    city: v.city || "",
-                    mapLocation: v.mapLocation || "",
-                    facebook: v.facebook || "",
-                    website: v.website || "",
-                    // إضافة حقل ساعات العمل الذي حددته أنت لضمان ظهوره للجمهور
-                    workHours: v.workHours || "من الأحد إلى الخميس (09:00 ص - 02:00 ظ)",
-                    dateApproved: new Date().toLocaleDateString('ar-LY'),
-                    status: "approved"
-                };
+               // تجميع البيانات الكاملة من النموذج لضمان المطابقة التامة
+            const approvedData = {
+                libName: v.libName || "",       // اسم المكتبة الرسمي
+                affiliation: v.affiliation || "", // التبعية (جامعة/وزارة)
+                manager: v.manager || v.contact || "", // المسؤول عن التواصل
+                phone: v.phone || "",           // رقم الهاتف
+                email: v.email || "",           // البريد الإلكتروني
+                city: v.city || "",             // المدينة
+                workHours: v.workHours || "من الأحد إلى الخميس (09:00 ص - 02:00 ظ)", // مواعيد العمل
+                mapLocation: v.mapLocation || "", // رابط خرائط جوجل
+                facebook: v.facebook || "",     // رابط فيسبوك
+                website: v.website || "",       // الموقع الإلكتروني
+                password: pass,                 // كلمة المرور المولدة
+                dateApproved: new Date().toLocaleDateString('ar-LY'),
+                status: "approved"
+            };
 
-                // 1. نقل البيانات إلى السجل الدائم (تحت سيطرة الإدارة)
-                await db.ref('approved_libraries/' + key).set(approvedData);
+            // نقل البيانات إلى السجل الدائم
+            await db.ref('approved_libraries/' + key).set(approvedData);
                 
                 // 2. إزالة الطلب من قائمة الانتظار (Move)
                 await db.ref('join_requests/' + key).remove();
