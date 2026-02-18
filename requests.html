@@ -132,7 +132,8 @@ https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html
 إدارة بوابة الرسائل الجامعية الليبية
 وزارة التعليم العالي والبحث العلمي`;
 
-const mailtoLink = `mailto:${v.email}?subject=${encodeURIComponent("إشعار اعتماد انضمام - بوابة الرسائل الجامعية الليبية")}&body=${encodeURIComponent(msg)}`;
+const subject = "إشعار اعتماد انضمام - الفهرس الليبي الموحد";
+const mailtoLink = `mailto:${v.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;
 window.location.href = mailtoLink;
         
         loadData(); // استدعاء الوظيفة لتحديث القائمة بعد العملية
