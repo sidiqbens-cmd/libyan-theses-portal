@@ -111,64 +111,24 @@
                 await db.ref('join_requests/' + key).remove();
 
 // تحضير نص الرسالة بشكل سليم
-                const msg = `السلام عليكم ورحمة الله وبركاته،
-
-إلى إدارة المكتبة الموقرة،
-
-يسرنا إبلاغكم بأنه قد تم اعتماد طلب انضمام مكتبتكم إلى "الفهرس الليبي الموحد" بنجاح.
-
-بإمكانكم الآن البدء في رفع بيانات الرسائل الخاصة بمكتبتكم عبر الرابط التالي:
-https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html
-
-يرجى استخدام بيانات الدخول المعتمدة التالية:
-• البريد الإلكتروني: ${v.email}
-• كلمة المرور: ${pass}
-
-شاكرين لكم حسن تعاونكم،
-إدارة الفهرس الليبي الموحد`;
-
-                // الحل الجذري لمشكلة الحروف غير الواضحة
-                const encodedSubject = encodeURIComponent("إشعار اعتماد انضمام - الفهرس الليبي الموحد");
-                const encodedBody = encodeURIComponent(msg);
-                
-                // 1. تحضير نص الرسالة (استخدام emailBody)
-                const emailBody = `السلام عليكم ورحمة الله وبركاته،
-                
-إلى إدارة المكتبة الموقرة،
-تم اعتماد طلبكم في "الفهرس الليبي الموحد" بنجاح.
-
+               // 1. تجهيز نص الرسالة الخام (بدون أي رموز برمجية)
+                const rawText = `السلام عليكم، تم اعتماد مكتبتكم في "الفهرس الليبي الموحد".
 بيانات الدخول:
-• الإيميل: ${v.email}
-• كلمة المرور: ${pass}
+البريد: ${v.email}
+كلمة المرور: ${pass}
+الرابط: https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html`;
 
-الرابط: https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html
+                // 2. إظهار نافذة منبثقة تسمح بنسخ النص يدوياً (Prompt)
+                // هذه النافذة تضمن لك الحصول على النص سليماً 100%
+                window.prompt("تم الاعتماد! انسخ نص الرسالة أدناه (Ctrl+C):", rawText);
 
-إدارة الفهرس الليبي الموحد`;
+                // 3. محاولة فتح الإيميل (كإجراء إضافي)
+                const subject = encodeURIComponent("إشعار اعتماد - الفهرس الليبي الموحد");
+                const body = encodeURIComponent(rawText);
+                window.location.href = `mailto:${v.email}?subject=${subject}&body=${body}`;
 
-                // 2. إظهار نافذة منبثقة احتياطية (تظهر دائماً بحروف سليمة)
-                alert("✔️ تم الاعتماد بنجاح!\n\nيرجى نسخ بيانات الدخول لإرسالها في حال عدم وضوح الإيميل:\n" + emailBody);
-
-               // 1. تحضير نص الرسالة (بدون فراغات زائدة في الكود لضمان التنسيق)
-                const plainText = `السلام عليكم ورحمة الله وبركاته،
-إلى إدارة المكتبة الموقرة،
-تم اعتماد طلبكم في "الفهرس الليبي الموحد" بنجاح.
-
-بيانات الدخول:
-• الإيميل: ${v.email}
-• كلمة المرور: ${pass}
-
-الرابط: https://sidiqbens-cmd.github.io/libyan-theses-portal/lib-dashboard.html
-
-إدارة الفهرس الليبي الموحد`;
-
-                // 2. إظهار التنبيه (سيظهر دائماً بشكل سليم)
-                alert("✔️ تم الاعتماد بنجاح!\n\nبيانات الدخول:\n" + plainText);
-
-                // 3. فتح الإيميل (الحل السحري: إرسال النص مباشرة دون تشفير معقد)
-                const subject = "إشعار اعتماد انضمام - الفهرس الليبي الموحد";
-                window.location.href = `mailto:${v.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(plainText)}`;
-
-                loadData(); // تحديث الجدول
+                // 4. تحديث الجدول
+                loadData();
     }
 }
 
